@@ -7,3 +7,5 @@ next-env.d.ts
 out/
 public/harness.py
 public/pyodide-worker.mjs
+bugs/
+HOSTED_MODE_PROMPT.md
