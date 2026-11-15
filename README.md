@@ -7,13 +7,14 @@
 Lessons you can run, quizzes that remember what you miss, and coding exercises graded by **real tests**.<br>
 No accounts. No tracking. No server. Your progress is one file you own.
 
+[![Live demo](https://img.shields.io/badge/live%20demo-open-000000?style=for-the-badge&logo=vercel)](https://pypath-bice.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3776AB?style=for-the-badge)](LICENSE)
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs)
 ![Python](https://img.shields.io/badge/Python-3.10+-FFD43B?style=for-the-badge&logo=python&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Local first](https://img.shields.io/badge/local--first-100%25-2ea44f?style=for-the-badge)
 
-[Quick start](#-quick-start) · [What you get](#-what-you-get) · [Curriculum](#-curriculum) · [Hosted mode](#hosted-mode-vercel) · [Contributing](#-adding-or-editing-content) · [License](#-license)
+[🌐 Live demo](https://pypath-bice.vercel.app/) · [Quick start](#-quick-start) · [What you get](#-what-you-get) · [Curriculum](#-curriculum) · [Hosted mode](#hosted-mode-vercel) · [Contributing](#-adding-or-editing-content) · [License](#-license)
 
 </div>
 
@@ -124,9 +125,11 @@ content/
 
 The app executes Python code you write, with your user's permissions, just like running a script yourself. The API only answers requests from this computer (loopback host, same origin, custom header), so other websites and devices on your network can't trigger code execution.
 
-## Hosted mode (Vercel)
+## 🌐 Try it online (hosted mode)
 
-Besides the local app, PyPath can be built as a **fully static site with no server code**. Progress is saved to a file on the visitor's own computer, and Python runs in their browser with [Pyodide](https://pyodide.org) (WebAssembly). Local mode is unchanged.
+**Live demo: https://pypath-bice.vercel.app/**
+
+Besides the local app, PyPath is also available as a website. It can be built as a **fully static site with no server code**. Progress is saved to a file on the visitor's own computer, and Python runs in their browser with [Pyodide](https://pyodide.org) (WebAssembly). Local mode is unchanged.
 
 ```bash
 npm run dev:hosted     # http://localhost:3001
@@ -152,14 +155,6 @@ The mode is chosen at build time with `NEXT_PUBLIC_PYPATH_MODE` (`local` by defa
 Real network calls, sending email, running servers (`uvicorn`), threads and `subprocess` don't work in Pyodide. `npm run check:content:browser` runs every exercise solution and every lesson `python` block in Pyodide, compares with real Python, and writes `content/browser-compat.json`. In hosted mode, anything on that list shows a notice instead of a Run button. Packages are loaded from the Pyodide distribution, or from PyPI through micropip when they are pure Python.
 
 Exercise tests are sent to the browser so they can be graded there, which means anyone reading the page source can see them. That is fine for a learning tool.
-
-### Deploy on Vercel
-
-1. Environment variables: `NEXT_PUBLIC_PYPATH_MODE=hosted` and `NEXT_PUBLIC_REPO_URL=https://github.com/you/pypath` (used for the "get PyPath to run it locally" notices).
-2. Build command: `npm run build:hosted`. Output directory: `out`.
-
-`prebuild` of the hosted scripts copies `python/harness.py` to `public/harness.py` and generates `public/pyodide-worker.mjs` (the Pyodide worker, served as a plain module script because Pyodide won't run inside the classic workers Turbopack emits). Both are generated files and are git-ignored.
-
 
 ## 📄 License
 
