@@ -1,0 +1,20 @@
+- q: What does `Counter("banana").most_common(1)` return?
+  options: ["`[('b', 1)]`", "`[('a', 3)]`", "`{'a': 3}`", "`'a'`"]
+  answer: 1
+  explain: "`most_common(n)` returns a list of the n most frequent (item, count) pairs."
+- q: Why use `defaultdict(list)` for grouping?
+  options: ["It sorts the groups", "Missing keys automatically start as an empty list", "It uses less memory", "It prevents duplicate values"]
+  answer: 1
+  explain: You can `append` to `groups[key]` without first checking whether the key exists.
+- q: Which function turns the text `"14/11/2026"` into a datetime?
+  options: ["`datetime.strftime`", "`datetime.strptime`", "`date.fromtext`", "`datetime.parse`"]
+  answer: 1
+  explain: "`strptime` = string **parse** time. `strftime` = string **format** time goes the other way."
+- q: Which module should generate a password-reset token?
+  options: ["`random`", "`secrets`", "`math`", "`uuid` with a seed"]
+  answer: 1
+  explain: "`random` is predictable by design. `secrets` uses a cryptographically secure source."
+- q: What does `re.findall(r"\d+", "a1b22c333")` return?
+  options: ["`['1', '2', '2', '3', '3', '3']`", "`['1', '22', '333']`", "`[1, 22, 333]`", "`'122333'`"]
+  answer: 1
+  explain: "`\\d+` matches runs of one or more digits, and findall returns them as strings."

@@ -1,0 +1,143 @@
+- id: dataclass-order
+  title: A dataclass
+  difficulty: easy
+  prompt: |
+    Create a dataclass `LineItem` with fields `name: str`, `price: float` and `qty: int = 1`, plus a `total` **property** returning `price * qty`.
+
+    Then write `order_total(items: list[LineItem]) -> float` returning the sum of totals, rounded to 2 decimals.
+  starter: |
+    from dataclasses import dataclass
+
+    class LineItem:
+        pass
+  hints:
+    - "Put `@dataclass` above the class and declare annotated fields."
+  tests:
+    - name: dataclass basics
+      code: |
+        import dataclasses
+        assert dataclasses.is_dataclass(LineItem)
+        a = LineItem("pen", 10.5, 3)
+        assert a.total == 31.5 and LineItem("pen", 1.0).qty == 1
+        assert LineItem("x", 1.0) == LineItem("x", 1.0)
+    - name: order total
+      code: |
+        assert order_total([LineItem("a", 19.99, 2), LineItem("b", 0.015)]) == 39.99
+  solution: |
+    from dataclasses import dataclass
+
+    @dataclass
+    class LineItem:
+        name: str
+        price: float
+        qty: int = 1
+
+        @property
+        def total(self) -> float:
+            return self.price * self.qty
+
+    def order_total(items: list[LineItem]) -> float:
+        return round(sum(i.total for i in items), 2)
+- id: status-enum
+  title: A workflow enum
+  difficulty: medium
+  prompt: |
+    Create an `Enum` called `Status` with members `TODO = "todo"`, `DOING = "doing"`, `DONE = "done"`.
+
+    Write `advance(status: Status) -> Status` that moves TODO → DOING → DONE, and keeps DONE as DONE.
+
+    Write `parse_status(text: str) -> Status` that accepts any case and surrounding spaces (`" Doing "` → `Status.DOING`) and raises `ValueError` for unknown text.
+  starter: |
+    from enum import Enum
+
+    class Status(Enum):
+        TODO = "todo"
+
+    def advance(status):
+        return status
+
+    def parse_status(text):
+        return Status.TODO
+  hints:
+    - "`Status(\"doing\")` looks a member up by value and raises ValueError if it doesn't exist."
+    - "For `advance`, `list(Status)` gives members in order; find the index and step forward."
+  tests:
+    - name: members
+      code: |
+        assert [s.value for s in Status] == ["todo", "doing", "done"]
+    - name: advance
+      code: |
+        assert advance(Status.TODO) is Status.DOING and advance(Status.DOING) is Status.DONE and advance(Status.DONE) is Status.DONE
+    - name: parse
+      code: |
+        assert parse_status(" Doing ") is Status.DOING
+        try:
+            parse_status("blocked")
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    from enum import Enum
+
+    class Status(Enum):
+        TODO = "todo"
+        DOING = "doing"
+        DONE = "done"
+
+    def advance(status: Status) -> Status:
+        order = list(Status)
+        i = order.index(status)
+        return order[min(i + 1, len(order) - 1)]
+
+    def parse_status(text: str) -> Status:
+        return Status(text.strip().lower())
+- id: async-gather
+  title: Concurrent fetches
+  difficulty: medium
+  prompt: |
+    `fake_fetch(name, delay)` simulates a network call. Write an **async** function `fetch_all(requests)` where `requests` is a list of `(name, delay)` tuples. It must run all fetches **concurrently** with `asyncio.gather` and return the list of results in the original order.
+
+    Then write a normal function `run(requests)` that calls `asyncio.run(fetch_all(requests))`.
+
+    Running five 0.2-second fetches should take about 0.2 seconds, not 1.
+  starter: |
+    import asyncio
+
+    async def fake_fetch(name, delay):
+        await asyncio.sleep(delay)
+        return f"{name}:ok"
+
+    async def fetch_all(requests):
+        results = []
+        for name, delay in requests:
+            results.append(await fake_fetch(name, delay))
+        return results
+
+    def run(requests):
+        return asyncio.run(fetch_all(requests))
+  hints:
+    - "Build the coroutines without awaiting them: `[fake_fetch(n, d) for n, d in requests]`."
+    - "`return await asyncio.gather(*coros)`"
+  tests:
+    - name: results in order
+      code: |
+        assert run([("a", 0.05), ("b", 0.01)]) == ["a:ok", "b:ok"]
+    - name: runs concurrently
+      code: |
+        import time
+        start = time.perf_counter()
+        run([(str(i), 0.2) for i in range(5)])
+        elapsed = time.perf_counter() - start
+        assert elapsed < 0.6, f"took {elapsed:.2f}s; are the fetches running one after another?"
+  solution: |
+    import asyncio
+
+    async def fake_fetch(name, delay):
+        await asyncio.sleep(delay)
+        return f"{name}:ok"
+
+    async def fetch_all(requests):
+        return await asyncio.gather(*(fake_fetch(n, d) for n, d in requests))
+
+    def run(requests):
+        return asyncio.run(fetch_all(requests))

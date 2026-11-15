@@ -1,0 +1,61 @@
+- id: write-lines
+  title: Write a list to a file
+  difficulty: easy
+  prompt: |
+    Complete `write_lines(path, lines)` so it writes each string in `lines` to the file at `path`, **one per line**, each ending with a newline. It should overwrite any existing file. Use UTF-8.
+
+    ```py
+    write_lines("todo.txt", ["buy milk", "learn Python"])
+    # todo.txt now contains: "buy milk\nlearn Python\n"
+    ```
+  starter: |
+    def write_lines(path, lines):
+        pass
+  hints:
+    - "Open with `open(path, \"w\", encoding=\"utf-8\")` inside a `with` block."
+    - "Write `line + \"\\n\"` for every line."
+  tests:
+    - name: writes each line
+      code: |
+        write_lines("todo.txt", ["buy milk", "learn Python"])
+        assert open("todo.txt", encoding="utf-8").read() == "buy milk\nlearn Python\n"
+    - name: overwrites old content
+      code: |
+        write_lines("todo.txt", ["one"])
+        write_lines("todo.txt", ["two"])
+        assert open("todo.txt", encoding="utf-8").read() == "two\n"
+    - name: handles unicode
+      code: |
+        write_lines("u.txt", ["₹500", "മലയാളം"])
+        assert open("u.txt", encoding="utf-8").read().splitlines() == ["₹500", "മലയാളം"]
+  solution: |
+    def write_lines(path, lines):
+        with open(path, "w", encoding="utf-8") as f:
+            for line in lines:
+                f.write(line + "\n")
+- id: count-lines
+  title: Count non-empty lines
+  difficulty: easy
+  prompt: |
+    Complete `count_lines(path)` so it returns how many lines in the file are **not blank** (a line with only spaces counts as blank). If the file doesn't exist, return `0`.
+  starter: |
+    def count_lines(path):
+        return 0
+  hints:
+    - "Loop over the open file and check `line.strip()`."
+    - "Catch `FileNotFoundError` and return 0."
+  tests:
+    - name: skips blank lines
+      code: |
+        with open("t.txt", "w", encoding="utf-8") as f:
+            f.write("a\n\n  \nb\nc\n")
+        assert count_lines("t.txt") == 3, count_lines("t.txt")
+    - name: missing file
+      code: assert count_lines("nope.txt") == 0
+  solution: |
+    def count_lines(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return sum(1 for line in f if line.strip())
+        except FileNotFoundError:
+            return 0

@@ -1,0 +1,6 @@
+title: Building APIs with FastAPI
+summary: Build a typed REST API with FastAPI and Pydantic. Routes, validation, status codes, dependencies, a SQLite-backed CRUD service, and tests with TestClient.
+icon: server
+section: career
+skills: [FastAPI, Pydantic, REST API design, Dependency injection, API testing]
+packages: [fastapi, httpx, uvicorn]

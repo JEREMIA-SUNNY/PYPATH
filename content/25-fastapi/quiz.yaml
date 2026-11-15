@@ -1,0 +1,21 @@
+- q: >-
+    In `@app.get("/items/{item_id}")` with `def read(item_id: int, q: str | None = None)`, where does `q` come from?
+  options: ["The path", "The query string", "The JSON body", "A header"]
+  answer: 1
+  explain: Parameters not in the path and not Pydantic models are query parameters, e.g. `/items/5?q=pen`.
+- q: What status code does FastAPI return automatically when a request body fails Pydantic validation?
+  options: ["400", "404", "422", "500"]
+  answer: 2
+  explain: 422 Unprocessable Entity, with a list of which fields failed and why.
+- q: What is `response_model` for?
+  options: ["Choosing the HTTP method", "Validating, filtering and documenting the response shape", "Making the endpoint async", "Setting the URL prefix"]
+  answer: 1
+  explain: It ensures only declared fields are returned (e.g. never a password hash) and documents the schema.
+- q: How do you return a 404 from an endpoint?
+  options: ["`return 404`", "`raise HTTPException(status_code=404, detail=\"...\")`", "`abort(404)`", "`response.status = 404`"]
+  answer: 1
+  explain: "Raising `HTTPException` stops the handler and FastAPI turns it into an error response."
+- q: Why use `Depends(get_db)` instead of opening a connection inside each endpoint?
+  options: ["It's required by Python", "Shared setup/teardown in one place, and tests can override it", "It makes queries faster", "It removes the need for SQL"]
+  answer: 1
+  explain: Dependency injection centralises resources and makes endpoints easy to test with `dependency_overrides`.

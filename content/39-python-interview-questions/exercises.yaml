@@ -1,0 +1,107 @@
+- id: lru-cache
+  title: Implement an LRU cache
+  difficulty: hard
+  prompt: |
+    A classic interview question. Implement `LRUCache(capacity)` with:
+
+    - `get(key)` returns the value, or `-1` if missing. A successful get makes that key the **most recently used**.
+    - `put(key, value)` inserts or updates. If this exceeds `capacity`, evict the **least recently used** key.
+
+    Both must be O(1). Use `collections.OrderedDict` (`move_to_end`, `popitem(last=False)`).
+  starter: |
+    from collections import OrderedDict
+
+    class LRUCache:
+        def __init__(self, capacity):
+            self.capacity = capacity
+            self.data = {}
+
+        def get(self, key):
+            return self.data.get(key, -1)
+
+        def put(self, key, value):
+            self.data[key] = value
+  hints:
+    - "Store items in an `OrderedDict`; the front is least recent, the end most recent."
+    - "On `get` hit: `self.data.move_to_end(key)`. On `put`: set, `move_to_end`, then evict with `popitem(last=False)` if over capacity."
+  tests:
+    - name: classic sequence
+      code: |
+        c = LRUCache(2)
+        c.put(1, 1); c.put(2, 2)
+        assert c.get(1) == 1
+        c.put(3, 3)
+        assert c.get(2) == -1
+        c.put(4, 4)
+        assert c.get(1) == -1 and c.get(3) == 3 and c.get(4) == 4
+    - name: updating refreshes recency
+      code: |
+        c = LRUCache(2)
+        c.put("a", 1); c.put("b", 2); c.put("a", 10); c.put("c", 3)
+        assert c.get("a") == 10 and c.get("b") == -1
+  solution: |
+    from collections import OrderedDict
+
+    class LRUCache:
+        def __init__(self, capacity):
+            self.capacity = capacity
+            self.data = OrderedDict()
+
+        def get(self, key):
+            if key not in self.data:
+                return -1
+            self.data.move_to_end(key)
+            return self.data[key]
+
+        def put(self, key, value):
+            self.data[key] = value
+            self.data.move_to_end(key)
+            if len(self.data) > self.capacity:
+                self.data.popitem(last=False)
+- id: timer-context-manager
+  title: Write a context manager
+  difficulty: medium
+  prompt: |
+    Write a class `Timer` usable as `with Timer() as t: ...`:
+
+    - `__enter__` records the start time with `time.perf_counter()` and returns the Timer itself.
+    - `__exit__` sets `t.elapsed` (seconds, a float) and must **not** swallow exceptions (return `False` or `None`).
+    - Also record `t.error`: the exception **type** if the block raised, otherwise `None`.
+  starter: |
+    import time
+
+    class Timer:
+        pass
+  hints:
+    - "`def __exit__(self, exc_type, exc, tb):` receives the exception info (all None if no error)."
+    - Returning a truthy value from `__exit__` would suppress the exception, so don't.
+  tests:
+    - name: measures time
+      code: |
+        import time
+        with Timer() as t:
+            time.sleep(0.05)
+        assert 0.04 < t.elapsed < 1 and t.error is None
+    - name: records but does not swallow errors
+      code: |
+        t = Timer()
+        try:
+            with t:
+                raise KeyError("x")
+            raise AssertionError("the KeyError should not have been swallowed")
+        except KeyError:
+            pass
+        assert t.error is KeyError and t.elapsed >= 0
+  solution: |
+    import time
+
+    class Timer:
+        def __enter__(self):
+            self.start = time.perf_counter()
+            self.error = None
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            self.elapsed = time.perf_counter() - self.start
+            self.error = exc_type
+            return False

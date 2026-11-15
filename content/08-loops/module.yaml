@@ -1,0 +1,5 @@
+title: Loops and Comprehensions
+summary: for and while loops, the built-ins that make loops elegant (range, enumerate, zip), and list, dict and set comprehensions.
+icon: repeat
+section: foundations
+skills: [Iteration, Comprehensions, enumerate and zip]

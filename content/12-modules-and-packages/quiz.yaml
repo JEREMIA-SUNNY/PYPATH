@@ -1,0 +1,20 @@
+- q: What is a Python module?
+  options: ["A compiled binary", "Any `.py` file", "Only files inside site-packages", "A class with static methods"]
+  answer: 1
+  explain: Any `.py` file can be imported as a module.
+- q: Why use a virtual environment?
+  options: ["To make Python run faster", "To isolate each project's packages and versions", "To hide your code from others", "It's required to run scripts"]
+  answer: 1
+  explain: Separate environments stop projects from fighting over package versions.
+- q: When `report.py` is imported by another file, what is `__name__` inside `report.py`?
+  options: ["`\"__main__\"`", "`\"report\"`", "`None`", "`\"__init__\"`"]
+  answer: 1
+  explain: "`__name__` is `\"__main__\"` only for the file you run directly; imported modules get their own name."
+- q: How do you recreate a project's dependencies on a new machine?
+  options: ["Copy the `.venv` folder", "`pip install -r requirements.txt`", "`python -m venv requirements.txt`", "`pip freeze`"]
+  answer: 1
+  explain: Create a fresh venv, then install from the requirements (or lock) file.
+- q: Which import style is discouraged?
+  options: ["`import math`", "`from math import sqrt`", "`from math import *`", "`import numpy as np`"]
+  answer: 2
+  explain: Star imports pollute your namespace and make it unclear where names come from.

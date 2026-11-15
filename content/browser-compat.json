@@ -1,0 +1,19 @@
+{
+  "pyodide": "314.0.8",
+  "generatedAt": "2026-11-15T10:30:06.582Z",
+  "exercises": {
+    "fastapi/hello-api": {
+      "reason": "threads",
+      "detail": "health: RuntimeError: can't start new thread; square: RuntimeError: can't start new thread; validation: RuntimeError: can't start new thread"
+    },
+    "fastapi/todo-crud": {
+      "reason": "threads",
+      "detail": "create, read, list: RuntimeError: can't start new thread; patch and filter: RuntimeError: can't start new thread; delete and 404s: RuntimeError: can't start new thread"
+    },
+    "fastapi/validated-create": {
+      "reason": "threads",
+      "detail": "creates with 201 and increasing ids: RuntimeError: can't start new thread; rejects invalid bodies: RuntimeError: can't start new thread"
+    }
+  },
+  "blocks": {}
+}

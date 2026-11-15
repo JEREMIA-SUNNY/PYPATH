@@ -1,0 +1,209 @@
+- id: render-board
+  title: "Step 1: Render the board"
+  difficulty: easy
+  prompt: |
+    Write `render_board(board)` that returns the board as a **single string** with three rows separated by divider lines:
+
+    ```text
+     X | O |  
+    ---+---+---
+       | X |  
+    ---+---+---
+     O |   | X
+    ```
+
+    Each row is `" a | b | c"` where a, b, c are the squares (a space for empty), and rows are joined by `"\n---+---+---\n"`.
+  starter: |
+    def render_board(board):
+        return ""
+  hints:
+    - "Build one row with an f-string: `f\" {board[0]} | {board[1]} | {board[2]}\"`."
+    - Make the three rows, then join them with the divider.
+  tests:
+    - name: empty board
+      code: |
+        expected = "   |   |  \n---+---+---\n   |   |  \n---+---+---\n   |   |  "
+        assert render_board([" "] * 9) == expected, repr(render_board([" "] * 9))
+    - name: mixed board
+      code: |
+        b = ["X", "O", " ", " ", "X", " ", "O", " ", "X"]
+        expected = " X | O |  \n---+---+---\n   | X |  \n---+---+---\n O |   | X"
+        assert render_board(b) == expected, repr(render_board(b))
+  solution: |
+    def render_board(board):
+        rows = []
+        for r in range(3):
+            a, b, c = board[r * 3 : r * 3 + 3]
+            rows.append(f" {a} | {b} | {c}")
+        return "\n---+---+---\n".join(rows)
+- id: place-marker
+  title: "Step 2: Place a marker"
+  difficulty: easy
+  prompt: |
+    Write `place_marker(board, position, marker)`. If `position` is between 1 and 9 **and** that square is empty (`" "`), put `marker` there and return `True`. Otherwise leave the board alone and return `False`.
+  starter: |
+    def place_marker(board, position, marker):
+        board[position] = marker
+        return True
+  hints:
+    - Square `position` lives at index `position - 1`.
+    - "Check the range first: `1 <= position <= 9`."
+  tests:
+    - name: places on an empty square
+      code: |
+        b = [" "] * 9
+        assert place_marker(b, 5, "X") is True and b[4] == "X"
+    - name: refuses a taken square
+      code: |
+        b = [" "] * 9
+        place_marker(b, 1, "X")
+        assert place_marker(b, 1, "O") is False and b[0] == "X"
+    - name: refuses out-of-range positions
+      code: |
+        b = [" "] * 9
+        assert place_marker(b, 0, "X") is False and place_marker(b, 10, "X") is False and b == [" "] * 9
+  solution: |
+    def place_marker(board, position, marker):
+        if not 1 <= position <= 9 or board[position - 1] != " ":
+            return False
+        board[position - 1] = marker
+        return True
+- id: winner
+  title: "Step 3: Find the winner"
+  difficulty: medium
+  prompt: |
+    Write `winner(board)` that returns `"X"` or `"O"` if that player has three in a row (any row, column or diagonal), or `None` if nobody has won.
+  starter: |
+    LINES = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
+    ]
+
+    def winner(board):
+        return None
+  hints:
+    - Loop over `LINES` and unpack each into `a, b, c`.
+    - "A line wins when `board[a] != \" \"` and all three squares are equal."
+  tests:
+    - name: row win
+      code: |
+        assert winner(["O", "O", "O", "X", "X", " ", " ", " ", "X"]) == "O"
+    - name: column win
+      code: |
+        assert winner(["X", "O", " ", "X", "O", " ", "X", " ", " "]) == "X"
+    - name: diagonal win
+      code: |
+        assert winner([" ", " ", "X", " ", "X", "O", "X", "O", "O"]) == "X"
+    - name: no winner
+      code: |
+        assert winner(["X", "O", "X", "X", "O", "O", "O", "X", "X"]) is None
+    - name: empty board
+      code: |
+        assert winner([" "] * 9) is None
+  solution: |
+    LINES = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
+    ]
+
+    def winner(board):
+        for a, b, c in LINES:
+            if board[a] != " " and board[a] == board[b] == board[c]:
+                return board[a]
+        return None
+- id: is-full
+  title: "Step 4: Detect a draw"
+  difficulty: easy
+  prompt: |
+    Write `is_full(board)` that returns `True` when there are no empty squares left.
+  starter: |
+    def is_full(board):
+        return False
+  hints:
+    - "`\" \" not in board` is all you need."
+  tests:
+    - name: full board
+      code: |
+        assert is_full(["X", "O", "X", "X", "O", "O", "O", "X", "X"]) is True
+    - name: one gap
+      code: |
+        assert is_full(["X", "O", "X", "X", " ", "O", "O", "X", "X"]) is False
+  solution: |
+    def is_full(board):
+        return " " not in board
+- id: computer-move
+  title: "Step 5: A computer opponent"
+  difficulty: hard
+  prompt: |
+    Write `choose_move(board, marker)` that returns the **position (1-9)** the computer should play, using these rules in order:
+
+    1. If `marker` can win on this move, take that square.
+    2. Otherwise, if the opponent could win next move, block that square.
+    3. Otherwise take the centre (5) if it's free.
+    4. Otherwise take the first free corner, in order 1, 3, 7, 9.
+    5. Otherwise take the first free side, in order 2, 4, 6, 8.
+
+    The opponent's marker is `"O"` if `marker` is `"X"`, and vice versa. `LINES` is provided.
+  starter: |
+    LINES = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
+    ]
+
+    def choose_move(board, marker):
+        return board.index(" ") + 1
+  hints:
+    - "Write a helper `winning_square(board, m)` that tries each empty square: place `m` on a copy and check whether that creates three in a row."
+    - Call the helper first for your marker, then for the opponent's.
+    - "For the fallbacks, loop over `[5, 1, 3, 7, 9, 2, 4, 6, 8]` and return the first free one."
+  tests:
+    - name: takes a winning square
+      code: |
+        b = ["X", "X", " ", "O", "O", " ", " ", " ", " "]
+        assert choose_move(b, "X") == 3, choose_move(b, "X")
+    - name: blocks the opponent
+      code: |
+        b = ["O", "O", " ", " ", "X", " ", " ", " ", " "]
+        assert choose_move(b, "X") == 3, choose_move(b, "X")
+    - name: winning beats blocking
+      code: |
+        b = ["O", "O", " ", "X", "X", " ", " ", " ", " "]
+        assert choose_move(b, "X") == 6, choose_move(b, "X")
+    - name: takes the centre
+      code: |
+        b = ["X", " ", " ", " ", " ", " ", " ", " ", " "]
+        assert choose_move(b, "O") == 5
+    - name: then a corner
+      code: |
+        b = [" ", " ", " ", " ", "X", " ", " ", " ", " "]
+        assert choose_move(b, "O") == 1
+  solution: |
+    LINES = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
+    ]
+
+    def winning_square(board, m):
+        for i, square in enumerate(board):
+            if square == " ":
+                trial = board[:]
+                trial[i] = m
+                for a, b, c in LINES:
+                    if trial[a] == trial[b] == trial[c] == m:
+                        return i + 1
+        return None
+
+    def choose_move(board, marker):
+        opponent = "O" if marker == "X" else "X"
+        for m in (marker, opponent):
+            pos = winning_square(board, m)
+            if pos:
+                return pos
+        for pos in [5, 1, 3, 7, 9, 2, 4, 6, 8]:
+            if board[pos - 1] == " ":
+                return pos
+        return None

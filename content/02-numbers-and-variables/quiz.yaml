@@ -1,0 +1,20 @@
+- q: What is the value of `17 // 5`?
+  options: ["3.4", "3", "2", "4"]
+  answer: 1
+  explain: "`//` is floor division: 5 fits into 17 three whole times."
+- q: What is the value of `17 % 5`?
+  options: ["2", "3", "3.4", "0"]
+  answer: 0
+  explain: "`%` gives the remainder: 17 = 3 × 5 + 2."
+- q: What does `7 / 7` evaluate to?
+  options: ["`1`", "`1.0`", "`0`", "An error"]
+  answer: 1
+  explain: "`/` always returns a float in Python 3, even when the division is exact."
+- q: What happens when you run `"5" + 3`?
+  options: ["`8`", "`\"53\"`", "TypeError", "`None`"]
+  answer: 2
+  explain: Python does not convert types implicitly here. Convert first, with `int("5") + 3` or `"5" + str(3)`.
+- q: After `a, b = 1, 2` then `a, b = b, a`, what are `a` and `b`?
+  options: ["1 and 2", "2 and 1", "2 and 2", "An error"]
+  answer: 1
+  explain: The right side is evaluated first into a tuple `(2, 1)`, which is then unpacked, swapping the values.

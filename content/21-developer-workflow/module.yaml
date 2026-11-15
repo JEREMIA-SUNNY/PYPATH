@@ -1,0 +1,5 @@
+title: Developer Workflow
+summary: Git and GitHub, a professional project layout, environment variables and logging. The habits every Python team expects on day one.
+icon: git
+section: career
+skills: [Git, GitHub, Project structure, Environment config, Logging]

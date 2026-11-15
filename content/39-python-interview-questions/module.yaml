@@ -1,0 +1,5 @@
+title: Python Interview Questions
+summary: The Python-specific concepts interviewers love to probe. Mutability, copying, identity, the GIL, generators, decorators, MRO and context managers, plus two classic implementation questions.
+icon: brain
+section: interview
+skills: [Python internals, Concurrency models, Context managers]

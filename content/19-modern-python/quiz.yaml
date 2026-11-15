@@ -1,0 +1,20 @@
+- q: Are type hints enforced when Python runs your code?
+  options: ["Yes, always", "No. They're used by editors, type checkers and some libraries", "Only for function arguments", "Only with `from __future__ import annotations`"]
+  answer: 1
+  explain: The interpreter ignores hints at runtime. Tools like mypy, and libraries like Pydantic, read them.
+- q: Which type hint means "a string or None"?
+  options: ["`str?`", "`Optional(str)`", "`str | None`", "`str or None`"]
+  answer: 2
+  explain: Since Python 3.10, use `X | None` (older code writes `Optional[X]`).
+- q: Why use `field(default_factory=list)` in a dataclass?
+  options: ["It's faster than `[]`", "So each instance gets its own new list instead of sharing one", "Lists aren't allowed in dataclasses", "To make the field read-only"]
+  answer: 1
+  explain: A mutable default would be shared across instances, which is the same pitfall as mutable default arguments.
+- q: What does `asyncio.gather(a(), b())` do?
+  options: ["Runs a then b, one after the other", "Runs them concurrently and returns both results", "Returns whichever finishes first", "Creates threads for each"]
+  answer: 1
+  explain: "`gather` schedules the coroutines together and returns a list of their results in the original order."
+- q: Which kind of work benefits most from async?
+  options: ["Heavy maths on large arrays", "Many network or database calls that spend time waiting", "Sorting a list", "Reading one small file"]
+  answer: 1
+  explain: Async shines when there's a lot of waiting on I/O. It doesn't add CPU power.

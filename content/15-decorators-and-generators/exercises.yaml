@@ -1,0 +1,144 @@
+- id: make-multiplier
+  title: Closure factory
+  difficulty: easy
+  prompt: |
+    Write `make_multiplier(factor)` that returns a **function** which multiplies its argument by `factor`.
+
+    ```py
+    triple = make_multiplier(3)
+    triple(7)   # -> 21
+    ```
+  starter: |
+    def make_multiplier(factor):
+        return factor
+  hints:
+    - Define an inner function inside `make_multiplier` and return it (without calling it).
+  tests:
+    - name: returns a function
+      code: |
+        assert callable(make_multiplier(2))
+    - name: remembers its factor
+      code: |
+        double, triple = make_multiplier(2), make_multiplier(3)
+        assert double(10) == 20 and triple(10) == 30
+  solution: |
+    def make_multiplier(factor):
+        def multiply(n):
+            return n * factor
+        return multiply
+- id: count-calls
+  title: Counting decorator
+  difficulty: medium
+  prompt: |
+    Write a decorator `count_calls` that counts how many times the decorated function is called. Store the count in a `calls` attribute **on the wrapper**, and keep the original name with `functools.wraps`.
+
+    ```py
+    @count_calls
+    def hello(): return "hi"
+
+    hello(); hello()
+    hello.calls      # -> 2
+    hello.__name__   # -> "hello"
+    ```
+  starter: |
+    import functools
+
+    def count_calls(func):
+        return func
+  hints:
+    - "Inside the decorator, define `wrapper(*args, **kwargs)` that does `wrapper.calls += 1` and then returns `func(*args, **kwargs)`."
+    - "Set `wrapper.calls = 0` before returning `wrapper`."
+  tests:
+    - name: counts calls
+      code: |
+        @count_calls
+        def hello():
+            return "hi"
+        assert hello.calls == 0
+        hello(); hello()
+        assert hello.calls == 2 and hello() == "hi" and hello.calls == 3
+    - name: passes arguments through
+      code: |
+        @count_calls
+        def add(a, b=0):
+            return a + b
+        assert add(2, b=3) == 5 and add.calls == 1
+    - name: keeps the name
+      code: |
+        @count_calls
+        def greet():
+            pass
+        assert greet.__name__ == "greet"
+  solution: |
+    import functools
+
+    def count_calls(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            wrapper.calls += 1
+            return func(*args, **kwargs)
+        wrapper.calls = 0
+        return wrapper
+- id: countdown-generator
+  title: Countdown generator
+  difficulty: easy
+  prompt: |
+    Write a **generator** `countdown(n)` that yields `n, n-1, ..., 1`.
+
+    ```py
+    list(countdown(3))   # -> [3, 2, 1]
+    ```
+  starter: |
+    def countdown(n):
+        return list(range(n, 0, -1))
+  hints:
+    - Use a `while` loop with `yield n` and `n -= 1`.
+  tests:
+    - name: is a generator
+      code: |
+        import types
+        assert isinstance(countdown(3), types.GeneratorType)
+    - name: yields the right values
+      code: |
+        assert list(countdown(3)) == [3, 2, 1] and list(countdown(0)) == []
+  solution: |
+    def countdown(n):
+        while n > 0:
+            yield n
+            n -= 1
+- id: fibonacci-generator
+  title: Infinite Fibonacci
+  difficulty: medium
+  prompt: |
+    Write an **infinite** generator `fibonacci()` that yields 0, 1, 1, 2, 3, 5, 8, …
+
+    Then write `first_n(n)` that returns a list of the first `n` Fibonacci numbers using `itertools.islice`.
+  starter: |
+    from itertools import islice
+
+    def fibonacci():
+        yield 0
+
+    def first_n(n):
+        return []
+  hints:
+    - "Keep two variables `a, b = 0, 1`; in a `while True` loop, `yield a`, then `a, b = b, a + b`."
+    - "`list(islice(fibonacci(), n))`"
+  tests:
+    - name: first ten
+      code: |
+        assert first_n(10) == [0, 1, 1, 2, 3, 5, 8, 13, 21, 34], first_n(10)
+    - name: keeps going
+      code: |
+        assert first_n(50)[-1] == 7778742049
+  solution: |
+    from itertools import islice
+
+    def fibonacci():
+        a, b = 0, 1
+        while True:
+            yield a
+            a, b = b, a + b
+
+    def first_n(n):
+        return list(islice(fibonacci(), n))

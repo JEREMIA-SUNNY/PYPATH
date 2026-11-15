@@ -1,0 +1,90 @@
+- id: parse-dotenv
+  title: Parse a .env file
+  difficulty: medium
+  prompt: |
+    Write `parse_env(text)` that parses the contents of a `.env` file into a dict:
+
+    - Each setting is `KEY=value` on its own line; surrounding whitespace is ignored.
+    - Skip blank lines and lines starting with `#`.
+    - Values may be wrapped in single or double quotes. Strip **one** matching pair.
+    - Only split on the **first** `=` (values can contain `=`).
+    - Ignore an optional `export ` prefix.
+
+    ```py
+    parse_env('DEBUG=true\n# comment\nexport DB_URL="postgres://u:p@h/db?x=1"\n')
+    # -> {"DEBUG": "true", "DB_URL": "postgres://u:p@h/db?x=1"}
+    ```
+  starter: |
+    def parse_env(text):
+        return {}
+  hints:
+    - "`line.partition(\"=\")` splits on the first `=` only."
+    - "`removeprefix(\"export \")` handles the prefix."
+    - Strip quotes only if the value starts and ends with the same quote character.
+  tests:
+    - name: basic and comments
+      code: |
+        assert parse_env("A=1\n\n# note\nB = two \n") == {"A": "1", "B": "two"}
+    - name: quotes and equals signs
+      code: |
+        got = parse_env('export DB_URL="postgres://u:p@h/db?x=1"\nNAME=\'Jerry\'\n')
+        assert got == {"DB_URL": "postgres://u:p@h/db?x=1", "NAME": "Jerry"}, got
+    - name: mismatched quotes are kept
+      code: |
+        assert parse_env("X=\"abc'") == {"X": "\"abc'"}
+  solution: |
+    def parse_env(text):
+        env = {}
+        for raw in text.splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            line = line.removeprefix("export ").strip()
+            key, sep, value = line.partition("=")
+            if not sep:
+                continue
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            env[key.strip()] = value
+        return env
+- id: semver-bump
+  title: Bump a version
+  difficulty: easy
+  prompt: |
+    Write `bump(version, part)` for semantic versions `"MAJOR.MINOR.PATCH"`. `part` is `"major"`, `"minor"` or `"patch"`. Bumping a part resets everything to its right to zero. Raise `ValueError` for an unknown part.
+
+    ```py
+    bump("1.4.2", "minor")   # -> "1.5.0"
+    ```
+  starter: |
+    def bump(version, part):
+        return version
+  hints:
+    - "`major, minor, patch = map(int, version.split(\".\"))`"
+  tests:
+    - name: patch, minor, major
+      code: |
+        assert bump("1.4.2", "patch") == "1.4.3"
+        assert bump("1.4.2", "minor") == "1.5.0"
+        assert bump("1.4.2", "major") == "2.0.0"
+    - name: multi-digit
+      code: |
+        assert bump("0.9.19", "patch") == "0.9.20"
+    - name: unknown part
+      code: |
+        try:
+            bump("1.0.0", "build")
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    def bump(version, part):
+        major, minor, patch = map(int, version.split("."))
+        if part == "major":
+            return f"{major + 1}.0.0"
+        if part == "minor":
+            return f"{major}.{minor + 1}.0"
+        if part == "patch":
+            return f"{major}.{minor}.{patch + 1}"
+        raise ValueError(f"unknown part: {part}")

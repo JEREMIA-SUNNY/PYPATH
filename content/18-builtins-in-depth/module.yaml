@@ -1,0 +1,5 @@
+title: Built-ins in Depth
+summary: The less obvious methods and operators on numbers, strings, lists, dicts and sets that make experienced Python code short and clear.
+icon: binary
+section: foundations
+skills: [Idiomatic Python, Sorting, Set and dict operations]

@@ -1,0 +1,69 @@
+- id: circle-stats
+  title: Use the standard library
+  difficulty: easy
+  prompt: |
+    Use the `math` and `statistics` modules (import them yourself):
+
+    - `circle_area(r)` returns the area rounded to 2 decimals, using `math.pi`.
+    - `middle(values)` returns the **median** of a list using `statistics.median`.
+  starter: |
+    def circle_area(r):
+        return 3.14 * r * r
+
+    def middle(values):
+        return values[len(values) // 2]
+  hints:
+    - "`import math` and `import statistics` at the top."
+    - "`round(math.pi * r ** 2, 2)`"
+  tests:
+    - name: circle area uses pi
+      code: |
+        assert circle_area(2) == 12.57, circle_area(2)
+    - name: median of odd count
+      code: |
+        assert middle([7, 1, 3]) == 3
+    - name: median of even count
+      code: |
+        assert middle([1, 2, 3, 4]) == 2.5
+  solution: |
+    import math
+    import statistics
+
+    def circle_area(r):
+        return round(math.pi * r ** 2, 2)
+
+    def middle(values):
+        return statistics.median(values)
+- id: json-roundtrip
+  title: JSON in and out
+  difficulty: medium
+  prompt: |
+    Using the built-in `json` module:
+
+    - `to_json(data)` returns a JSON string with **keys sorted** and an indent of 2.
+    - `load_scores(text)` parses a JSON object like `{"ana": 91, "bo": 78}` and returns the name with the highest score.
+  starter: |
+    def to_json(data):
+        return str(data)
+
+    def load_scores(text):
+        return None
+  hints:
+    - "`json.dumps(data, indent=2, sort_keys=True)`"
+    - "`json.loads(text)` gives a dict; `max(d, key=d.get)` finds the key with the biggest value."
+  tests:
+    - name: sorted, indented JSON
+      code: |
+        assert to_json({"b": 1, "a": [1, 2]}) == '{\n  "a": [\n    1,\n    2\n  ],\n  "b": 1\n}', to_json({"b": 1, "a": [1, 2]})
+    - name: highest score
+      code: |
+        assert load_scores('{"ana": 91, "bo": 78, "cy": 95}') == "cy"
+  solution: |
+    import json
+
+    def to_json(data):
+        return json.dumps(data, indent=2, sort_keys=True)
+
+    def load_scores(text):
+        scores = json.loads(text)
+        return max(scores, key=scores.get)

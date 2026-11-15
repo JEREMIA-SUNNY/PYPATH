@@ -1,0 +1,6 @@
+title: Data Visualization and Reporting
+summary: Turn analysis into charts and reports people understand. matplotlib fundamentals, choosing the right chart, and exporting a summary.
+icon: chart
+section: career
+skills: [matplotlib, Data storytelling, Reporting]
+packages: [matplotlib, pandas]

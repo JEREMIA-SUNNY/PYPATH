@@ -1,0 +1,84 @@
+- id: bar-chart
+  title: Build a labelled bar chart
+  difficulty: medium
+  prompt: |
+    Write `make_bar_chart(data, title, path)`:
+
+    - `data` is a dict like `{"Kochi": 400, "Pune": 270}`.
+    - Draw a **horizontal** bar chart (`ax.barh`) with bars **sorted by value, largest at the top**.
+    - Set the title to `title` and the x-axis label to `"Revenue (₹)"`.
+    - Save it to `path` as PNG and **return the Figure**.
+
+    Use the `Agg` backend so it runs without a display. Requires `pip install matplotlib`.
+  starter: |
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    def make_bar_chart(data, title, path):
+        fig, ax = plt.subplots()
+        return fig
+  hints:
+    - "`items = sorted(data.items(), key=lambda kv: kv[1])`. barh draws the first item at the bottom, so ascending order puts the largest on top."
+    - "`ax.barh([k for k, _ in items], [v for _, v in items])`"
+  tests:
+    - name: saves a PNG and labels the chart
+      code: |
+        import os
+        fig = make_bar_chart({"Pune": 270, "Kochi": 400, "Agra": 120}, "Kochi leads revenue", "chart.png")
+        ax = fig.axes[0]
+        assert os.path.exists("chart.png") and os.path.getsize("chart.png") > 1000
+        assert ax.get_title() == "Kochi leads revenue" and ax.get_xlabel() == "Revenue (₹)"
+    - name: bars sorted with largest on top
+      code: |
+        fig = make_bar_chart({"Pune": 270, "Kochi": 400, "Agra": 120}, "t", "c2.png")
+        ax = fig.axes[0]
+        widths = [p.get_width() for p in ax.patches]
+        labels = [t.get_text() for t in ax.get_yticklabels()]
+        assert widths == [120, 270, 400], widths
+        assert labels == ["Agra", "Pune", "Kochi"], labels
+  solution: |
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    def make_bar_chart(data, title, path):
+        items = sorted(data.items(), key=lambda kv: kv[1])
+        fig, ax = plt.subplots(figsize=(6, 3))
+        ax.barh([k for k, _ in items], [v for _, v in items], color="#6366f1")
+        ax.set_title(title)
+        ax.set_xlabel("Revenue (₹)")
+        fig.tight_layout()
+        fig.savefig(path, dpi=120)
+        return fig
+- id: markdown-summary
+  title: Generate a Markdown report table
+  difficulty: easy
+  prompt: |
+    Write `summary_table(rows)` where `rows` is a list of `(city, revenue, orders)` tuples. Return a Markdown table string, sorted by revenue descending, with revenue formatted with thousands separators:
+
+    ```text
+    | City | Revenue (₹) | Orders |
+    | --- | ---: | ---: |
+    | Kochi | 12,400 | 2 |
+    | Pune | 870 | 3 |
+    ```
+
+    Lines are joined with `\n` and there is no trailing newline.
+  starter: |
+    def summary_table(rows):
+        return ""
+  hints:
+    - "Start with the two header lines in a list, then append one f-string per row: `f\"| {c} | {r:,} | {n} |\"`."
+  tests:
+    - name: builds the table
+      code: |
+        out = summary_table([("Pune", 870, 3), ("Kochi", 12400, 2)])
+        expected = "| City | Revenue (₹) | Orders |\n| --- | ---: | ---: |\n| Kochi | 12,400 | 2 |\n| Pune | 870 | 3 |"
+        assert out == expected, repr(out)
+  solution: |
+    def summary_table(rows):
+        lines = ["| City | Revenue (₹) | Orders |", "| --- | ---: | ---: |"]
+        for city, revenue, orders in sorted(rows, key=lambda r: r[1], reverse=True):
+            lines.append(f"| {city} | {revenue:,} | {orders} |")
+        return "\n".join(lines)

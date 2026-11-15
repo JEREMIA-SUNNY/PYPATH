@@ -1,0 +1,5 @@
+title: Standard Library Power Tools
+summary: The batteries-included modules every Python developer reaches for. collections, datetime, math and random, files and folders, regular expressions, timing and debugging.
+icon: wrench
+section: foundations
+skills: [collections, datetime, pathlib and shutil, Regular expressions, Debugging]

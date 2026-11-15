@@ -1,0 +1,123 @@
+- id: csv-totals
+  title: Totals from CSV text
+  difficulty: medium
+  prompt: |
+    Write `category_totals(csv_text)` that takes CSV **text** with the header `category,amount` and returns a dict of total amount per category, as floats rounded to 2 decimals.
+
+    ```py
+    category_totals("category,amount\nfood,120.5\ntravel,300\nfood,79.5\n")
+    # -> {"food": 200.0, "travel": 300.0}
+    ```
+
+    Use `csv.DictReader` with `io.StringIO(csv_text)` so quoted fields with commas work.
+  starter: |
+    import csv
+    import io
+
+    def category_totals(csv_text):
+        return {}
+  hints:
+    - "`csv.DictReader(io.StringIO(csv_text))` reads text as if it were a file."
+    - "Convert `row[\"amount\"]` with `float()` and accumulate with `dict.get`."
+  tests:
+    - name: totals by category
+      code: |
+        assert category_totals("category,amount\nfood,120.5\ntravel,300\nfood,79.5\n") == {"food": 200.0, "travel": 300.0}
+    - name: quoted category with a comma
+      code: |
+        assert category_totals('category,amount\n"bills, utilities",10.10\n"bills, utilities",5.05\n') == {"bills, utilities": 15.15}
+    - name: header only
+      code: |
+        assert category_totals("category,amount\n") == {}
+  solution: |
+    import csv
+    import io
+
+    def category_totals(csv_text):
+        totals = {}
+        for row in csv.DictReader(io.StringIO(csv_text)):
+            totals[row["category"]] = totals.get(row["category"], 0) + float(row["amount"])
+        return {k: round(v, 2) for k, v in totals.items()}
+- id: extract-links
+  title: Extract links from HTML
+  difficulty: medium
+  prompt: |
+    Without third-party packages, write `extract_links(html)` that returns a list of every `href` value of `<a>` tags, in order. Use the standard library's `html.parser.HTMLParser` by subclassing it and overriding `handle_starttag(self, tag, attrs)`.
+
+    ```py
+    extract_links('<p><a href="/a">A</a> <a class="x" href="https://b.com">B</a></p>')
+    # -> ["/a", "https://b.com"]
+    ```
+  starter: |
+    from html.parser import HTMLParser
+
+    def extract_links(html):
+        return []
+  hints:
+    - "`attrs` is a list of `(name, value)` tuples. `dict(attrs).get(\"href\")` finds the link."
+    - Create the parser, call `parser.feed(html)`, then return the list it collected.
+  tests:
+    - name: finds hrefs in order
+      code: |
+        h = '<p><a href="/a">A</a> <a class="x" href="https://b.com">B</a></p>'
+        assert extract_links(h) == ["/a", "https://b.com"], extract_links(h)
+    - name: ignores anchors without href and other tags
+      code: |
+        assert extract_links('<a name="top">x</a><link href="style.css"><a href="#c">c</a>') == ["#c"]
+  solution: |
+    from html.parser import HTMLParser
+
+    class LinkParser(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.links = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "a":
+                href = dict(attrs).get("href")
+                if href:
+                    self.links.append(href)
+
+    def extract_links(html):
+        parser = LinkParser()
+        parser.feed(html)
+        return parser.links
+- id: build-email
+  title: Build an email message
+  difficulty: easy
+  prompt: |
+    Write `build_report_email(to, total)` that returns an `email.message.EmailMessage` with:
+
+    - `From`: `reports@pypath.local`
+    - `To`: the `to` argument
+    - `Subject`: `Daily report: ₹{total:,}` (e.g. `Daily report: ₹48,200`)
+    - body text: `Total sales today were ₹{total:,}.`
+  starter: |
+    from email.message import EmailMessage
+
+    def build_report_email(to, total):
+        msg = EmailMessage()
+        return msg
+  hints:
+    - "Set headers like a dict: `msg[\"Subject\"] = ...`."
+    - "`msg.set_content(text)` sets the body."
+  tests:
+    - name: headers
+      code: |
+        m = build_report_email("jerry@example.com", 48200)
+        assert m["From"] == "reports@pypath.local" and m["To"] == "jerry@example.com"
+        assert m["Subject"] == "Daily report: ₹48,200", m["Subject"]
+    - name: body
+      code: |
+        m = build_report_email("a@b.c", 1234567)
+        assert m.get_content().strip() == "Total sales today were ₹1,234,567.", m.get_content()
+  solution: |
+    from email.message import EmailMessage
+
+    def build_report_email(to, total):
+        msg = EmailMessage()
+        msg["From"] = "reports@pypath.local"
+        msg["To"] = to
+        msg["Subject"] = f"Daily report: ₹{total:,}"
+        msg.set_content(f"Total sales today were ₹{total:,}.")
+        return msg

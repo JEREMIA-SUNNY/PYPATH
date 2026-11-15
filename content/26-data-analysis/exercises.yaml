@@ -1,0 +1,141 @@
+- id: numpy-zscores
+  title: Normalise with NumPy
+  difficulty: easy
+  prompt: |
+    Write `zscores(values)` that takes a list of numbers and returns a **NumPy array** of z-scores: `(x - mean) / std` (population std, NumPy's default), rounded to 2 decimals. No Python loops; use vectorised operations.
+
+    Requires `pip install numpy`.
+  starter: |
+    import numpy as np
+
+    def zscores(values):
+        return values
+  hints:
+    - "`arr = np.array(values, dtype=float)`"
+    - "`np.round((arr - arr.mean()) / arr.std(), 2)`"
+  tests:
+    - name: returns an ndarray
+      code: |
+        import numpy as np
+        assert isinstance(zscores([1, 2, 3]), np.ndarray)
+    - name: correct values
+      code: |
+        import numpy as np
+        assert zscores([2, 4, 4, 4, 5, 5, 7, 9]).tolist() == [-1.5, -0.5, -0.5, -0.5, 0.0, 0.0, 1.0, 2.0], zscores([2, 4, 4, 4, 5, 5, 7, 9]).tolist()
+  solution: |
+    import numpy as np
+
+    def zscores(values):
+        arr = np.array(values, dtype=float)
+        return np.round((arr - arr.mean()) / arr.std(), 2)
+- id: clean-sales
+  title: Clean a messy DataFrame
+  difficulty: medium
+  prompt: |
+    Write `clean_sales(df)` that returns a **new** cleaned DataFrame:
+
+    1. Drop exact duplicate rows.
+    2. Strip whitespace and title-case the `city` column.
+    3. Convert `qty` to numbers; anything unparseable or missing becomes `0`, and the column should be integers.
+    4. Add a `revenue` column = `qty * price`.
+    5. Reset the index (0, 1, 2, …).
+
+    Requires `pip install pandas`.
+  starter: |
+    import pandas as pd
+
+    def clean_sales(df):
+        return df
+  hints:
+    - "`df.drop_duplicates()` then work on a `.copy()`."
+    - "`pd.to_numeric(df[\"qty\"], errors=\"coerce\").fillna(0).astype(int)`"
+    - "`df[\"city\"].str.strip().str.title()`"
+  tests:
+    - name: cleans the data
+      code: |
+        import pandas as pd
+        raw = pd.DataFrame({
+            "city": [" kochi", "PUNE ", "PUNE ", "agra"],
+            "qty": ["3", "x", "x", None],
+            "price": [60, 180, 180, 55],
+        })
+        out = clean_sales(raw)
+        assert out["city"].tolist() == ["Kochi", "Pune", "Agra"], out["city"].tolist()
+        assert out["qty"].tolist() == [3, 0, 0], out["qty"].tolist()
+        assert out["revenue"].tolist() == [180, 0, 0], out["revenue"].tolist()
+        assert out.index.tolist() == [0, 1, 2]
+    - name: does not modify the input
+      code: |
+        import pandas as pd
+        raw = pd.DataFrame({"city": [" a"], "qty": ["1"], "price": [2]})
+        clean_sales(raw)
+        assert raw["city"].tolist() == [" a"] and "revenue" not in raw.columns
+  solution: |
+    import pandas as pd
+
+    def clean_sales(df):
+        out = df.drop_duplicates().copy()
+        out["city"] = out["city"].str.strip().str.title()
+        out["qty"] = pd.to_numeric(out["qty"], errors="coerce").fillna(0).astype(int)
+        out["revenue"] = out["qty"] * out["price"]
+        return out.reset_index(drop=True)
+- id: revenue-by-city
+  title: groupby report
+  difficulty: medium
+  prompt: |
+    `df` has columns `city`, `product`, `revenue`. Write `city_report(df)` that returns a DataFrame with **one row per city**, columns `city`, `total` (sum of revenue) and `orders` (number of rows), sorted by `total` descending, with a fresh 0-based index.
+  starter: |
+    import pandas as pd
+
+    def city_report(df):
+        return df
+  hints:
+    - "`df.groupby(\"city\").agg(total=(\"revenue\", \"sum\"), orders=(\"revenue\", \"size\"))`"
+    - "Then `.reset_index()` and `.sort_values(\"total\", ascending=False)` and `.reset_index(drop=True)`."
+  tests:
+    - name: aggregates and sorts
+      code: |
+        import pandas as pd
+        df = pd.DataFrame({"city": ["Kochi", "Pune", "Kochi", "Agra", "Pune"], "product": list("abcde"), "revenue": [100, 50, 300, 500, 20]})
+        out = city_report(df)
+        assert list(out.columns) == ["city", "total", "orders"], list(out.columns)
+        assert out.values.tolist() == [["Agra", 500, 1], ["Kochi", 400, 2], ["Pune", 70, 2]], out.values.tolist()
+        assert out.index.tolist() == [0, 1, 2]
+  solution: |
+    import pandas as pd
+
+    def city_report(df):
+        out = (
+            df.groupby("city")
+            .agg(total=("revenue", "sum"), orders=("revenue", "size"))
+            .reset_index()
+            .sort_values("total", ascending=False)
+            .reset_index(drop=True)
+        )
+        return out
+- id: merge-top-city
+  title: Merge two tables
+  difficulty: medium
+  prompt: |
+    `orders` has `customer_id` and `total`; `customers` has `customer_id` and `city`. Write `top_city(orders, customers)` that joins them (only orders with a known customer) and returns the **city with the highest total order value** as a string.
+  starter: |
+    import pandas as pd
+
+    def top_city(orders, customers):
+        return ""
+  hints:
+    - "`orders.merge(customers, on=\"customer_id\", how=\"inner\")`"
+    - "`.groupby(\"city\")[\"total\"].sum().idxmax()` gives the label with the largest sum."
+  tests:
+    - name: finds the top city
+      code: |
+        import pandas as pd
+        orders = pd.DataFrame({"customer_id": [1, 2, 1, 3, 99], "total": [100, 500, 450, 120, 10000]})
+        customers = pd.DataFrame({"customer_id": [1, 2, 3], "city": ["Kochi", "Pune", "Kochi"]})
+        assert top_city(orders, customers) == "Kochi", top_city(orders, customers)
+  solution: |
+    import pandas as pd
+
+    def top_city(orders, customers):
+        joined = orders.merge(customers, on="customer_id", how="inner")
+        return str(joined.groupby("city")["total"].sum().idxmax())

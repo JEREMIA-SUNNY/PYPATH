@@ -1,0 +1,5 @@
+title: Arrays, Strings and Hashing
+summary: The most common interview pattern of all. Trade memory for speed with hash maps and sets to count, group and look things up in O(1).
+icon: hash
+section: interview
+skills: [Hash maps, Frequency counting, Arrays and strings]

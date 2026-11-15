@@ -1,0 +1,20 @@
+- q: In the hash-map solution to two sum, what do you look up for each number `x`?
+  options: ["`x` itself", "`target - x`", "`target + x`", "`x * 2`"]
+  answer: 1
+  explain: You need a partner `y` with `x + y = target`, so `y = target - x`.
+- q: What key groups anagrams together?
+  options: ["The word's length", "The word's sorted letters", "The first letter", "The word reversed"]
+  answer: 1
+  explain: Anagrams contain the same letters, so sorting them produces an identical key.
+- q: What's the time complexity of the set-based longest consecutive sequence solution?
+  options: ["O(n log n)", "O(n)", "O(n²)", "O(log n)"]
+  answer: 1
+  explain: Each number is visited a constant number of times because runs only start at their smallest element.
+- q: What do hash-map solutions usually trade for speed?
+  options: ["Correctness", "Extra memory", "Readability", "Nothing"]
+  answer: 1
+  explain: Typically O(n) extra space to bring time down from O(n²) to O(n).
+- q: With prefix sums, how do you get the sum of `nums[i:j]`?
+  options: ["`prefix[j] + prefix[i]`", "`prefix[j] - prefix[i]`", "`prefix[j - i]`", "`prefix[i] * prefix[j]`"]
+  answer: 1
+  explain: The prefix up to j minus the prefix up to i leaves exactly the elements from i to j-1.

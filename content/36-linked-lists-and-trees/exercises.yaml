@@ -1,0 +1,190 @@
+- id: reverse-linked-list
+  title: Reverse a linked list
+  difficulty: easy
+  prompt: |
+    `ListNode` is provided. Write `reverse_list(head)` that reverses the list **in place** (by rewiring `next` references; don't create new nodes) and returns the new head.
+  starter: |
+    class ListNode:
+        def __init__(self, val, next=None):
+            self.val = val
+            self.next = next
+
+    def reverse_list(head):
+        return head
+  hints:
+    - "Keep `prev = None`. For each node: save `nxt = head.next`, point `head.next = prev`, then move `prev = head` and `head = nxt`."
+  tests:
+    - name: reverses
+      code: |
+        def build(vals):
+            h = None
+            for v in reversed(vals):
+                h = ListNode(v, h)
+            return h
+        def to_list(h):
+            out = []
+            while h:
+                out.append(h.val)
+                h = h.next
+            return out
+        assert to_list(reverse_list(build([1, 2, 3, 4, 5]))) == [5, 4, 3, 2, 1]
+        assert reverse_list(None) is None and to_list(reverse_list(build([7]))) == [7]
+    - name: reuses the same nodes
+      code: |
+        a = ListNode(1, ListNode(2))
+        b = a.next
+        new_head = reverse_list(a)
+        assert new_head is b and b.next is a and a.next is None
+  solution: |
+    class ListNode:
+        def __init__(self, val, next=None):
+            self.val = val
+            self.next = next
+
+    def reverse_list(head):
+        prev = None
+        while head:
+            nxt = head.next
+            head.next = prev
+            prev = head
+            head = nxt
+        return prev
+- id: linked-list-cycle
+  title: Detect a cycle
+  difficulty: easy
+  prompt: |
+    Write `has_cycle(head)` that returns `True` if the linked list loops back on itself. Use **O(1) extra memory** (fast and slow pointers), not a set of visited nodes.
+  starter: |
+    class ListNode:
+        def __init__(self, val, next=None):
+            self.val = val
+            self.next = next
+
+    def has_cycle(head):
+        seen = set()
+        while head:
+            if head in seen:
+                return True
+            seen.add(head)
+            head = head.next
+        return False
+  hints:
+    - "`slow = fast = head`; loop `while fast and fast.next`."
+    - "Advance slow by one and fast by two; if they're ever the same node (`is`), there's a cycle."
+  tests:
+    - name: with and without a cycle
+      code: |
+        a, b, c, d = ListNode(1), ListNode(2), ListNode(3), ListNode(4)
+        a.next, b.next, c.next = b, c, d
+        assert has_cycle(a) is False
+        d.next = b
+        assert has_cycle(a) is True
+        assert has_cycle(None) is False
+        solo = ListNode(0); solo.next = solo
+        assert has_cycle(solo) is True
+    - name: no extra memory structures
+      code: |
+        import inspect
+        src = inspect.getsource(has_cycle)
+        assert "set(" not in src and "{" not in src and "[]" not in src, "use two pointers instead of storing visited nodes"
+  solution: |
+    class ListNode:
+        def __init__(self, val, next=None):
+            self.val = val
+            self.next = next
+
+    def has_cycle(head):
+        slow = fast = head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow is fast:
+                return True
+        return False
+- id: max-depth
+  title: Maximum depth of a tree
+  difficulty: easy
+  prompt: |
+    `TreeNode` is provided. Write `max_depth(root)` returning the number of nodes on the longest path from the root down to a leaf. An empty tree has depth 0.
+  starter: |
+    class TreeNode:
+        def __init__(self, val, left=None, right=None):
+            self.val, self.left, self.right = val, left, right
+
+    def max_depth(root):
+        return 1
+  hints:
+    - "Base case: `None` has depth 0."
+    - "Otherwise `1 + max(max_depth(left), max_depth(right))`."
+  tests:
+    - name: depths
+      code: |
+        T = TreeNode
+        assert max_depth(None) == 0 and max_depth(T(1)) == 1
+        assert max_depth(T(3, T(9), T(20, T(15), T(7)))) == 3
+        assert max_depth(T(1, None, T(2, None, T(3, None, T(4))))) == 4
+  solution: |
+    class TreeNode:
+        def __init__(self, val, left=None, right=None):
+            self.val, self.left, self.right = val, left, right
+
+    def max_depth(root):
+        if root is None:
+            return 0
+        return 1 + max(max_depth(root.left), max_depth(root.right))
+- id: level-order
+  title: Level order traversal
+  difficulty: medium
+  prompt: |
+    Return the tree's values level by level, left to right, as a list of lists. Use BFS with a `deque`.
+
+    ```text
+        3
+       / \
+      9   20
+         /  \
+        15   7      ->  [[3], [9, 20], [15, 7]]
+    ```
+  starter: |
+    from collections import deque
+
+    class TreeNode:
+        def __init__(self, val, left=None, right=None):
+            self.val, self.left, self.right = val, left, right
+
+    def level_order(root):
+        return []
+  hints:
+    - Process the queue one level at a time with `for _ in range(len(q))`.
+    - Append non-None children to the queue.
+  tests:
+    - name: example
+      code: |
+        T = TreeNode
+        assert level_order(T(3, T(9), T(20, T(15), T(7)))) == [[3], [9, 20], [15, 7]]
+    - name: lopsided and empty
+      code: |
+        T = TreeNode
+        assert level_order(None) == [] and level_order(T(1, T(2, T(4)), T(3, None, T(5)))) == [[1], [2, 3], [4, 5]]
+  solution: |
+    from collections import deque
+
+    class TreeNode:
+        def __init__(self, val, left=None, right=None):
+            self.val, self.left, self.right = val, left, right
+
+    def level_order(root):
+        if root is None:
+            return []
+        result, q = [], deque([root])
+        while q:
+            level = []
+            for _ in range(len(q)):
+                node = q.popleft()
+                level.append(node.val)
+                if node.left:
+                    q.append(node.left)
+                if node.right:
+                    q.append(node.right)
+            result.append(level)
+        return result

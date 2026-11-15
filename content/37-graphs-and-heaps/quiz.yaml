@@ -1,0 +1,20 @@
+- q: Which traversal finds the shortest path (fewest edges) in an unweighted graph?
+  options: ["DFS", "BFS", "In-order", "Binary search"]
+  answer: 1
+  explain: BFS visits nodes in order of distance from the start.
+- q: When should a node be marked as seen in BFS?
+  options: ["When it's dequeued", "When it's enqueued", "After the search finishes", "Never"]
+  answer: 1
+  explain: Marking at enqueue time prevents the same node from being queued many times.
+- q: What does Python's `heapq` provide by default?
+  options: ["A max-heap", "A min-heap", "A sorted list", "A balanced tree"]
+  answer: 1
+  explain: The smallest item is always at index 0. Negate values to simulate a max-heap.
+- q: What's the cost of `heappush` and `heappop`?
+  options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"]
+  answer: 1
+  explain: Both sift an item up or down the tree's height.
+- q: Course prerequisites form a cycle (A needs B, B needs A). What does a topological sort tell you?
+  options: ["The courses can be taken in any order", "Not all courses can be completed", "Take A first", "It returns the cycle length"]
+  answer: 1
+  explain: Some nodes never reach zero remaining prerequisites, so no valid ordering exists.

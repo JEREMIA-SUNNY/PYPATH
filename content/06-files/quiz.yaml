@@ -1,0 +1,20 @@
+- q: What happens when you open an existing file with mode `"w"`?
+  options: ["It appends to the end", "Its contents are erased", "You get an error", "It opens read-only"]
+  answer: 1
+  explain: Write mode truncates the file to zero length first. Use `"a"` to add to the end.
+- q: Why use `with open(...) as f:`?
+  options: ["It's faster", "It closes the file automatically, even on errors", "It's required for reading", "It encrypts the file"]
+  answer: 1
+  explain: The `with` block is a context manager. It guarantees `f.close()` runs when the block ends.
+- q: Which mode creates a file but fails if it already exists?
+  options: ["`\"w\"`", "`\"a\"`", "`\"x\"`", "`\"r+\"`"]
+  answer: 2
+  explain: "`\"x\"` is exclusive creation, useful when you must not overwrite anything."
+- q: What does each line yielded by `for line in f:` end with (except possibly the last)?
+  options: ["Nothing", "`\\n`", "A space", "`;`"]
+  answer: 1
+  explain: Lines include their newline character. Use `line.rstrip("\n")` or `line.strip()`.
+- q: How do you join a folder and a file name with pathlib?
+  options: ["`Path(\"a\") + \"b.txt\"`", "`Path(\"a\") / \"b.txt\"`", "`Path(\"a\").join(\"b.txt\")`", "`Path(\"a\", sep=\"b.txt\")`"]
+  answer: 1
+  explain: pathlib overloads `/` to join path segments using the right separator for your OS.

@@ -1,0 +1,5 @@
+title: Lists and Tuples
+summary: Ordered collections. Mutable lists with their everyday methods, immutable tuples, and unpacking.
+icon: brackets
+section: foundations
+skills: [Lists, Tuples, Unpacking]

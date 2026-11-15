@@ -1,0 +1,149 @@
+- id: cosine-similarity
+  title: Cosine similarity
+  difficulty: easy
+  prompt: |
+    Write `cosine(a, b)` for two equal-length lists of numbers: the dot product divided by the product of their lengths (Euclidean norms). If either vector is all zeros, return `0.0`. Round the result to 4 decimals.
+  starter: |
+    import math
+
+    def cosine(a, b):
+        return 0.0
+  hints:
+    - "`dot = sum(x * y for x, y in zip(a, b))`"
+    - "`norm_a = math.sqrt(sum(x * x for x in a))`"
+  tests:
+    - name: same direction
+      code: |
+        assert cosine([1, 2, 3], [2, 4, 6]) == 1.0
+    - name: orthogonal and opposite
+      code: |
+        assert cosine([1, 0], [0, 5]) == 0.0 and cosine([1, 1], [-1, -1]) == -1.0
+    - name: general case
+      code: |
+        assert cosine([1, 2], [2, 1]) == 0.8
+    - name: zero vector
+      code: |
+        assert cosine([0, 0], [1, 2]) == 0.0
+  solution: |
+    import math
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        na = math.sqrt(sum(x * x for x in a))
+        nb = math.sqrt(sum(y * y for y in b))
+        if na == 0 or nb == 0:
+            return 0.0
+        return round(dot / (na * nb), 4)
+- id: chunk-text
+  title: Chunk with overlap
+  difficulty: medium
+  prompt: |
+    Write `chunk_words(text, size, overlap)` that splits `text` into chunks of `size` words, where each chunk starts `size - overlap` words after the previous one. Rules:
+
+    - Chunks are words joined with single spaces.
+    - The last chunk may be shorter, but don't produce a final chunk that contains **only** words already covered by the previous chunk.
+    - Empty text returns `[]`. Raise `ValueError` if `overlap >= size`.
+
+    ```py
+    chunk_words("a b c d e f g", 3, 1)   # -> ["a b c", "c d e", "e f g"]
+    ```
+  starter: |
+    def chunk_words(text, size, overlap):
+        return [text]
+  hints:
+    - "`step = size - overlap`; start positions are `range(0, len(words), step)`."
+    - "Stop once a chunk reaches the end of the word list (`start + size >= len(words)`)."
+  tests:
+    - name: example
+      code: |
+        assert chunk_words("a b c d e f g", 3, 1) == ["a b c", "c d e", "e f g"], chunk_words("a b c d e f g", 3, 1)
+    - name: shorter last chunk
+      code: |
+        assert chunk_words("a b c d e f", 4, 1) == ["a b c d", "d e f"]
+    - name: no redundant tail
+      code: |
+        assert chunk_words("a b c d e", 3, 1) == ["a b c", "c d e"]
+    - name: short text and empty text
+      code: |
+        assert chunk_words("only two", 5, 2) == ["only two"] and chunk_words("   ", 3, 1) == []
+    - name: invalid overlap
+      code: |
+        try:
+            chunk_words("a b", 2, 2)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    def chunk_words(text, size, overlap):
+        if overlap >= size:
+            raise ValueError("overlap must be smaller than size")
+        words = text.split()
+        chunks = []
+        step = size - overlap
+        for start in range(0, len(words), step):
+            chunks.append(" ".join(words[start : start + size]))
+            if start + size >= len(words):
+                break
+        return chunks
+- id: retrieve-top-k
+  title: Retrieve the top k
+  difficulty: medium
+  prompt: |
+    Build a tiny retriever. `embed(text)` (a simple bag-of-words over a fixed vocabulary) and `cosine(a, b)` are provided.
+
+    Write `top_k(query, docs, k)` where `docs` is a dict `{doc_id: text}`. Return a list of the `k` doc ids most similar to the query, highest score first. Break ties by doc id (alphabetical). Leave out documents with a score of 0.
+  starter: |
+    import math
+    import re
+
+    VOCAB = ["refund", "days", "delivery", "express", "return", "items", "payment", "order"]
+
+    def embed(text):
+        words = re.findall(r"[a-z]+", text.lower())
+        return [sum(1 for w in words if w.startswith(v)) for v in VOCAB]
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        n = math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b))
+        return dot / n if n else 0.0
+
+    def top_k(query, docs, k):
+        return list(docs)[:k]
+  hints:
+    - "Score every doc: `cosine(embed(query), embed(text))`."
+    - "Sort with `key=lambda pair: (-score, doc_id)`."
+  tests:
+    - name: ranks by similarity
+      code: |
+        docs = {
+            "refunds": "Refunds reach your payment method in 7 days.",
+            "delivery": "Delivery takes 3 days; express delivery 1 day.",
+            "returns": "Return unused items within 30 days for a refund.",
+            "careers": "We are hiring engineers.",
+        }
+        assert top_k("how many days until my refund", docs, 2) == ["refunds", "returns"], top_k("how many days until my refund", docs, 2)
+    - name: excludes zero scores and respects k
+      code: |
+        docs = {"a": "express delivery", "b": "hello world", "c": "delivery days"}
+        assert top_k("express delivery please", docs, 5) == ["a", "c"], top_k("express delivery please", docs, 5)
+  solution: |
+    import math
+    import re
+
+    VOCAB = ["refund", "days", "delivery", "express", "return", "items", "payment", "order"]
+
+    def embed(text):
+        words = re.findall(r"[a-z]+", text.lower())
+        return [sum(1 for w in words if w.startswith(v)) for v in VOCAB]
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        n = math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b))
+        return dot / n if n else 0.0
+
+    def top_k(query, docs, k):
+        q = embed(query)
+        scored = [(cosine(q, embed(text)), doc_id) for doc_id, text in docs.items()]
+        scored = [s for s in scored if s[0] > 0]
+        scored.sort(key=lambda pair: (-pair[0], pair[1]))
+        return [doc_id for _, doc_id in scored[:k]]

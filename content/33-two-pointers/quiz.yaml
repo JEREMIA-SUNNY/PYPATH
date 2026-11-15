@@ -1,0 +1,20 @@
+- q: In a sorted array, the current pair sum is smaller than the target. Which pointer moves?
+  options: ["The right pointer moves left", "The left pointer moves right", "Both move", "Restart from the beginning"]
+  answer: 1
+  explain: Moving the left pointer to a larger value is the only way to increase the sum.
+- q: What kind of problems does the sliding window pattern solve?
+  options: ["Problems about non-contiguous subsets", "Problems about contiguous subarrays or substrings", "Graph traversal", "Sorting"]
+  answer: 1
+  explain: The window is always a contiguous range between left and right.
+- q: What is the time complexity of a sliding-window solution where each pointer only moves forward?
+  options: ["O(n²)", "O(n log n)", "O(n)", "O(k·n) always"]
+  answer: 2
+  explain: Each index enters and leaves the window at most once.
+- q: In "longest substring without repeating characters", what happens when you meet a repeated character inside the window?
+  options: ["Reset the window to empty", "Move `left` just past the previous occurrence", "Move `right` back", "Return the answer immediately"]
+  answer: 1
+  explain: Shrinking to just after the earlier duplicate keeps the window valid while keeping it as long as possible.
+- q: For a fixed window of size k, how do you update the sum when sliding by one?
+  options: ["Recompute `sum(nums[i:i+k])`", "Add the new element and subtract the one leaving", "Multiply by k", "Sort the window"]
+  answer: 1
+  explain: An O(1) update instead of an O(k) recomputation.

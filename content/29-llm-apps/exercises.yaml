@@ -1,0 +1,158 @@
+- id: build-messages
+  title: Build a chat request
+  difficulty: easy
+  prompt: |
+    Write `build_messages(history, user_text, max_turns=3)`:
+
+    - `history` is a list of `(user, assistant)` text pairs, oldest first.
+    - Keep only the **last `max_turns` pairs**.
+    - Return a list of message dicts alternating `{"role": "user", "content": ...}` and `{"role": "assistant", "content": ...}`, ending with the new user message.
+    - Strip surrounding whitespace from `user_text`; if it's empty after stripping, raise `ValueError`.
+  starter: |
+    def build_messages(history, user_text, max_turns=3):
+        return [{"role": "user", "content": user_text}]
+  hints:
+    - "`history[-max_turns:]` keeps the most recent pairs (works when history is shorter too)."
+    - Watch out for `max_turns=0`, where `history[-0:]` is the whole list.
+  tests:
+    - name: trims history and appends the new message
+      code: |
+        h = [("hi", "hello!"), ("order 4417?", "email please"), ("a@b.c", "found it"), ("eta?", "tomorrow")]
+        msgs = build_messages(h, "  thanks  ", max_turns=2)
+        assert msgs == [
+            {"role": "user", "content": "a@b.c"}, {"role": "assistant", "content": "found it"},
+            {"role": "user", "content": "eta?"}, {"role": "assistant", "content": "tomorrow"},
+            {"role": "user", "content": "thanks"},
+        ], msgs
+    - name: zero turns keeps only the new message
+      code: |
+        assert build_messages([("a", "b")], "q", max_turns=0) == [{"role": "user", "content": "q"}]
+    - name: rejects empty input
+      code: |
+        try:
+            build_messages([], "   ")
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    def build_messages(history, user_text, max_turns=3):
+        text = user_text.strip()
+        if not text:
+            raise ValueError("empty message")
+        recent = history[-max_turns:] if max_turns > 0 else []
+        messages = []
+        for user, assistant in recent:
+            messages.append({"role": "user", "content": user})
+            messages.append({"role": "assistant", "content": assistant})
+        messages.append({"role": "user", "content": text})
+        return messages
+- id: parse-model-json
+  title: Parse and validate model output
+  difficulty: medium
+  prompt: |
+    A model was asked to reply with JSON like `{"category": "...", "urgent": true, "summary": "..."}`. Write `parse_triage(reply)` that:
+
+    1. Extracts the JSON object, whether the reply is bare JSON, wrapped in a code fence ```` ```json ... ``` ````, or surrounded by extra prose.
+    2. Validates it: `category` must be one of `ALLOWED`, `urgent` must be a bool, `summary` a non-empty string.
+    3. Returns the dict, or raises `ValueError` if the JSON is missing, invalid, or fails validation.
+  starter: |
+    import json
+    import re
+
+    ALLOWED = {"refund", "delivery", "product_question", "other"}
+
+    def parse_triage(reply):
+        return json.loads(reply)
+  hints:
+    - "Find the first `{` and the last `}` and parse what's between them; that handles fences and prose."
+    - "`json.JSONDecodeError` is a subclass of `ValueError`, so it already counts."
+    - "Use `isinstance(data.get(\"urgent\"), bool)`."
+  tests:
+    - name: bare JSON
+      code: |
+        assert parse_triage('{"category": "refund", "urgent": false, "summary": "Wants money back"}')["category"] == "refund"
+    - name: fenced with prose
+      code: |
+        r = 'Here you go!\n```json\n{"category": "delivery", "urgent": true, "summary": "Late parcel"}\n```\nAnything else?'
+        assert parse_triage(r) == {"category": "delivery", "urgent": True, "summary": "Late parcel"}
+    - name: rejects bad output
+      code: |
+        bad = [
+            "no json here",
+            '{"category": "shipping", "urgent": true, "summary": "x"}',
+            '{"category": "refund", "urgent": "yes", "summary": "x"}',
+            '{"category": "refund", "urgent": true, "summary": ""}',
+            '{"category": "refund", "urgent": true',
+        ]
+        for b in bad:
+            try:
+                parse_triage(b)
+                raise AssertionError("should reject: " + b)
+            except ValueError:
+                pass
+  solution: |
+    import json
+    import re
+
+    ALLOWED = {"refund", "delivery", "product_question", "other"}
+
+    def parse_triage(reply):
+        start, end = reply.find("{"), reply.rfind("}")
+        if start == -1 or end <= start:
+            raise ValueError("no JSON object found")
+        data = json.loads(reply[start : end + 1])
+        if not isinstance(data, dict):
+            raise ValueError("expected an object")
+        if data.get("category") not in ALLOWED:
+            raise ValueError("bad category")
+        if not isinstance(data.get("urgent"), bool):
+            raise ValueError("urgent must be a bool")
+        if not isinstance(data.get("summary"), str) or not data["summary"].strip():
+            raise ValueError("summary required")
+        return data
+- id: token-budget
+  title: Fit a prompt into a budget
+  difficulty: medium
+  prompt: |
+    You must keep prompts under a token budget. Using the rough estimate `tokens = ceil(len(text) / 4)`:
+
+    - `estimate_tokens(text)` returns that estimate (an int; empty text is 0).
+    - `fit_documents(docs, budget)` takes a list of document strings in **priority order** and returns the longest prefix of them whose **total** estimated tokens is `<= budget`. Stop at the first document that doesn't fit; don't skip ahead.
+  starter: |
+    import math
+
+    def estimate_tokens(text):
+        return len(text)
+
+    def fit_documents(docs, budget):
+        return docs
+  hints:
+    - "`math.ceil(len(text) / 4)`"
+    - Keep a running total and `break` when the next doc would exceed the budget.
+  tests:
+    - name: estimates
+      code: |
+        assert estimate_tokens("") == 0 and estimate_tokens("abcd") == 1 and estimate_tokens("abcde") == 2
+    - name: fits a prefix
+      code: |
+        docs = ["a" * 40, "b" * 40, "c" * 4, "d" * 400]
+        assert fit_documents(docs, 20) == ["a" * 40, "b" * 40], [len(d) for d in fit_documents(docs, 20)]
+        assert fit_documents(docs, 25) == docs[:3]
+    - name: stops at the first doc that doesn't fit
+      code: |
+        assert fit_documents(["x" * 100, "y"], 10) == []
+  solution: |
+    import math
+
+    def estimate_tokens(text):
+        return math.ceil(len(text) / 4)
+
+    def fit_documents(docs, budget):
+        chosen, total = [], 0
+        for d in docs:
+            t = estimate_tokens(d)
+            if total + t > budget:
+                break
+            chosen.append(d)
+            total += t
+        return chosen

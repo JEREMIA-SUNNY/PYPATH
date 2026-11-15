@@ -1,0 +1,165 @@
+- id: write-the-tests
+  title: Write tests that catch bugs
+  difficulty: medium
+  prompt: |
+    This time **you write the tests**. `is_valid_pan(code)` checks an Indian PAN number: exactly 10 characters, 5 uppercase letters, then 4 digits, then 1 uppercase letter (e.g. `ABCDE1234F`).
+
+    Write at least three pytest-style functions named `test_...` that use `assert`. The grader runs your tests against the correct implementation (they must **all pass**) and against three buggy versions (for each, **at least one** of your tests must fail).
+
+    Think about edge cases: lowercase letters, wrong length, digits in the wrong place.
+  starter: |
+    import re
+
+    def is_valid_pan(code):
+        return bool(re.fullmatch(r"[A-Z]{5}[0-9]{4}[A-Z]", code))
+
+    def test_valid_pan():
+        assert is_valid_pan("ABCDE1234F")
+  hints:
+    - "Include a lowercase PAN like `abcde1234f`, which should be invalid."
+    - Include strings that are too short and too long, and one with a letter where a digit should be.
+  tests:
+    - name: your tests pass on the correct code
+      code: |
+        tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
+        assert len(tests) >= 3, f"write at least 3 tests, found {len(tests)}"
+        for t in tests:
+            t()
+    - name: catches a version that ignores case
+      code: |
+        import re
+        good = globals()["is_valid_pan"]
+        globals()["is_valid_pan"] = lambda c: bool(re.fullmatch(r"[A-Za-z]{5}[0-9]{4}[A-Za-z]", c))
+        failed = False
+        for k, t in list(globals().items()):
+            if k.startswith("test_") and callable(t):
+                try:
+                    t()
+                except AssertionError:
+                    failed = True
+        globals()["is_valid_pan"] = good
+        assert failed, "none of your tests noticed lowercase letters being accepted"
+    - name: catches a version that doesn't check length
+      code: |
+        import re
+        good = globals()["is_valid_pan"]
+        globals()["is_valid_pan"] = lambda c: bool(re.match(r"[A-Z]{5}[0-9]{4}[A-Z]", c))
+        failed = False
+        for k, t in list(globals().items()):
+            if k.startswith("test_") and callable(t):
+                try:
+                    t()
+                except AssertionError:
+                    failed = True
+        globals()["is_valid_pan"] = good
+        assert failed, "none of your tests noticed extra characters at the end being accepted"
+    - name: catches a version that allows letters as digits
+      code: |
+        import re
+        good = globals()["is_valid_pan"]
+        globals()["is_valid_pan"] = lambda c: bool(re.fullmatch(r"[A-Z]{5}[A-Z0-9]{4}[A-Z]", c))
+        failed = False
+        for k, t in list(globals().items()):
+            if k.startswith("test_") and callable(t):
+                try:
+                    t()
+                except AssertionError:
+                    failed = True
+        globals()["is_valid_pan"] = good
+        assert failed, "none of your tests noticed letters being accepted in the digit section"
+  solution: |
+    import re
+
+    def is_valid_pan(code):
+        return bool(re.fullmatch(r"[A-Z]{5}[0-9]{4}[A-Z]", code))
+
+    def test_valid_pan():
+        assert is_valid_pan("ABCDE1234F")
+
+    def test_lowercase_is_invalid():
+        assert not is_valid_pan("abcde1234f")
+
+    def test_wrong_length_is_invalid():
+        assert not is_valid_pan("ABCDE1234")
+        assert not is_valid_pan("ABCDE1234FX")
+
+    def test_letters_in_digit_section_are_invalid():
+        assert not is_valid_pan("ABCDE12X4F")
+- id: inject-the-mailer
+  title: Dependency injection with mocks
+  difficulty: medium
+  prompt: |
+    Write `notify_overdue(invoices, mailer, today)`.
+
+    - `invoices` is a list of dicts with `email`, `amount` and `due` (an ISO date string).
+    - For every invoice whose `due` date is **before** `today` (also an ISO string), call `mailer.send(email, subject)` with subject `f"Payment overdue: ₹{amount:,}"`.
+    - Return the number of emails sent.
+
+    The grader passes a `unittest.mock.Mock` as `mailer` and checks the calls, so your function must only use what it's given (no real email!).
+  starter: |
+    def notify_overdue(invoices, mailer, today):
+        return 0
+  hints:
+    - ISO date strings compare correctly as strings, or parse them with `date.fromisoformat`.
+    - "`mailer.send(inv[\"email\"], f\"Payment overdue: ₹{inv['amount']:,}\")`"
+  tests:
+    - name: sends only overdue reminders
+      code: |
+        from unittest.mock import Mock, call
+        m = Mock()
+        inv = [
+            {"email": "a@x.in", "amount": 12000, "due": "2026-11-01"},
+            {"email": "b@x.in", "amount": 500, "due": "2026-11-20"},
+            {"email": "c@x.in", "amount": 1500000, "due": "2026-10-31"},
+        ]
+        assert notify_overdue(inv, m, "2026-11-14") == 2
+        assert m.send.call_args_list == [call("a@x.in", "Payment overdue: ₹12,000"), call("c@x.in", "Payment overdue: ₹1,500,000")], m.send.call_args_list
+    - name: due today is not overdue
+      code: |
+        from unittest.mock import Mock
+        m = Mock()
+        assert notify_overdue([{"email": "a", "amount": 1, "due": "2026-11-14"}], m, "2026-11-14") == 0
+        m.send.assert_not_called()
+  solution: |
+    from datetime import date
+
+    def notify_overdue(invoices, mailer, today):
+        today_d = date.fromisoformat(today)
+        sent = 0
+        for inv in invoices:
+            if date.fromisoformat(inv["due"]) < today_d:
+                mailer.send(inv["email"], f"Payment overdue: ₹{inv['amount']:,}")
+                sent += 1
+        return sent
+- id: fix-the-bug
+  title: Debug a failing function
+  difficulty: medium
+  prompt: |
+    A teammate wrote `average_rating(reviews)` and it's failing in production. Each review is a dict with a `stars` value from 1 to 5; **missing or `None` stars should be ignored**. With no valid ratings the function must return `0.0`. The result is rounded to 1 decimal.
+
+    Run it, read the tracebacks the tests give you, and fix **all** the bugs.
+  starter: |
+    def average_rating(reviews):
+        total = 0
+        for r in reviews:
+            total += r["stars"]
+        return round(total / len(reviews), 1)
+  hints:
+    - "`r.get(\"stars\")` returns `None` instead of raising KeyError."
+    - Count only the valid ratings, and guard against dividing by zero.
+  tests:
+    - name: normal case
+      code: |
+        assert average_rating([{"stars": 5}, {"stars": 4}, {"stars": 4}]) == 4.3
+    - name: ignores missing and None
+      code: |
+        assert average_rating([{"stars": 5}, {}, {"stars": None}, {"stars": 2}]) == 3.5
+    - name: no valid ratings
+      code: |
+        assert average_rating([]) == 0.0 and average_rating([{"stars": None}]) == 0.0
+  solution: |
+    def average_rating(reviews):
+        stars = [r.get("stars") for r in reviews if r.get("stars") is not None]
+        if not stars:
+            return 0.0
+        return round(sum(stars) / len(stars), 1)

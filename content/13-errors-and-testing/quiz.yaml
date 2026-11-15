@@ -1,0 +1,20 @@
+- q: When does the `else` block of a `try` statement run?
+  options: ["Always", "Only if an exception was raised", "Only if no exception was raised", "Only after `finally`"]
+  answer: 2
+  explain: "`else` runs when the `try` block finished without an exception. `finally` runs no matter what."
+- q: Which exception does `int("abc")` raise?
+  options: ["TypeError", "ValueError", "KeyError", "SyntaxError"]
+  answer: 1
+  explain: The argument is the right type (a string) but has an invalid value, so it's a `ValueError`.
+- q: Why avoid a bare `except:`?
+  options: ["It's slower", "It catches everything, including bugs and Ctrl+C, hiding real problems", "It's a syntax error in Python 3", "It doesn't catch anything"]
+  answer: 1
+  explain: Catch the specific exceptions you expect and can handle.
+- q: How do you define a custom exception?
+  options: ["`def MyError(): raise`", "`class MyError(Exception): pass`", "`exception MyError`", "`MyError = Error()`"]
+  answer: 1
+  explain: Custom exceptions are classes that inherit from `Exception` (or one of its subclasses).
+- q: In a traceback, where is the actual error message?
+  options: ["The first line", "The last line", "In the middle", "It isn't shown"]
+  answer: 1
+  explain: Read tracebacks bottom-up. The last line has the exception type and message; above it is the call chain.

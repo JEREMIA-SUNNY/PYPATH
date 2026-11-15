@@ -1,0 +1,5 @@
+title: Stacks, Queues and Binary Search
+summary: Stacks for matching and "next greater" problems, queues with deque, and binary search on sorted data and on the answer itself.
+icon: layers
+section: interview
+skills: [Stacks, Monotonic stacks, Queues, Binary search]

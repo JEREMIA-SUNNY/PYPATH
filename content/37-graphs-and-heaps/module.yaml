@@ -1,0 +1,5 @@
+title: Graphs and Heaps
+summary: Model problems as graphs, traverse them with BFS and DFS (including grids), and use heaps for top-k and shortest-path problems.
+icon: network
+section: interview
+skills: [Graphs, BFS and DFS, Topological sort, Heaps, Dijkstra]

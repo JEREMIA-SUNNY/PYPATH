@@ -1,0 +1,21 @@
+- q: What does `divmod(17, 5)` return?
+  options: ["`3.4`", "`(3, 2)`", "`(2, 3)`", "`[3, 2]`"]
+  answer: 1
+  explain: "`divmod` returns the quotient and remainder together as a tuple."
+- q: What is `round(2.5)` in Python?
+  options: ["3", "2", "2.5", "An error"]
+  answer: 1
+  explain: Python uses banker's rounding, so halves round to the nearest even number. `round(3.5)` is 4.
+- q: >-
+    What is `{"a": 1, "b": 2} | {"b": 3}`?
+  options: ["`{'a': 1, 'b': 2}`", "`{'a': 1, 'b': 3}`", "`{'b': 3}`", "A TypeError"]
+  answer: 1
+  explain: The merge operator keeps every key, and the right-hand side wins on conflicts.
+- q: What does `"report.final.pdf".rpartition(".")` return?
+  options: ["`('report', '.', 'final.pdf')`", "`('report.final', '.', 'pdf')`", "`['report', 'final', 'pdf']`", "`('pdf',)`"]
+  answer: 1
+  explain: "`rpartition` splits at the **last** occurrence of the separator."
+- q: Why is `grid = [[0] * 3] * 3` a bug waiting to happen?
+  options: ["It creates a 3×3 grid of zeros correctly", "All three rows are the same list object", "It raises a TypeError", "It creates a flat list of 9 zeros"]
+  answer: 1
+  explain: The outer `* 3` copies the reference, not the list. Use `[[0] * 3 for _ in range(3)]`.

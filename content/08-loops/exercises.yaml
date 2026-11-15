@@ -1,0 +1,124 @@
+- id: sum-of-evens
+  title: Sum of evens
+  difficulty: easy
+  prompt: |
+    Complete `sum_evens(nums)` so it returns the sum of the even numbers in the list.
+
+    ```py
+    sum_evens([1, 2, 3, 4, 10])   # -> 16
+    ```
+  starter: |
+    def sum_evens(nums):
+        total = 0
+        return total
+  hints:
+    - Loop over the list and add a number when `n % 2 == 0`.
+    - "One-liner: `sum(n for n in nums if n % 2 == 0)`"
+  tests:
+    - name: mixed numbers
+      code: |
+        assert sum_evens([1, 2, 3, 4, 10]) == 16
+    - name: no evens
+      code: |
+        assert sum_evens([1, 3, 5]) == 0
+    - name: negatives count too
+      code: |
+        assert sum_evens([-2, -3, 4]) == 2
+  solution: |
+    def sum_evens(nums):
+        return sum(n for n in nums if n % 2 == 0)
+- id: fizzbuzz-list
+  title: FizzBuzz list
+  difficulty: easy
+  prompt: |
+    Complete `fizzbuzz_list(n)` so it returns a list of strings for the numbers 1 to `n` inclusive, using the FizzBuzz rules (multiples of 3 → `"Fizz"`, of 5 → `"Buzz"`, of both → `"FizzBuzz"`, otherwise the number).
+
+    ```py
+    fizzbuzz_list(5)  # -> ["1", "2", "Fizz", "4", "Buzz"]
+    ```
+  starter: |
+    def fizzbuzz_list(n):
+        result = []
+        return result
+  hints:
+    - "Loop with `range(1, n + 1)`."
+    - Build each word with if/elif, then `append` it.
+  tests:
+    - name: first five
+      code: |
+        assert fizzbuzz_list(5) == ["1", "2", "Fizz", "4", "Buzz"]
+    - name: fifteen ends in FizzBuzz
+      code: |
+        out = fizzbuzz_list(15)
+        assert len(out) == 15 and out[-1] == "FizzBuzz", out
+    - name: zero gives empty list
+      code: |
+        assert fizzbuzz_list(0) == []
+  solution: |
+    def fizzbuzz_list(n):
+        result = []
+        for i in range(1, n + 1):
+            if i % 15 == 0:
+                result.append("FizzBuzz")
+            elif i % 3 == 0:
+                result.append("Fizz")
+            elif i % 5 == 0:
+                result.append("Buzz")
+            else:
+                result.append(str(i))
+        return result
+- id: squares-dict
+  title: Squares dictionary
+  difficulty: easy
+  prompt: |
+    Complete `squares(n)` using a **dict comprehension** so it maps each number from 1 to `n` to its square.
+
+    ```py
+    squares(3)  # -> {1: 1, 2: 4, 3: 9}
+    ```
+  starter: |
+    def squares(n):
+        return {}
+  hints:
+    - "`{k: v for k in iterable}`"
+  tests:
+    - name: three
+      code: |
+        assert squares(3) == {1: 1, 2: 4, 3: 9}
+    - name: size
+      code: |
+        assert len(squares(10)) == 10 and squares(10)[10] == 100
+  solution: |
+    def squares(n):
+        return {i: i * i for i in range(1, n + 1)}
+- id: running-total
+  title: Running total
+  difficulty: medium
+  prompt: |
+    Complete `running_total(nums)` so it returns a list where each position holds the sum of all numbers up to and including that position.
+
+    ```py
+    running_total([3, 1, 4, 1])   # -> [3, 4, 8, 9]
+    ```
+  starter: |
+    def running_total(nums):
+        return nums
+  hints:
+    - Keep a variable with the total so far and append it after each addition.
+  tests:
+    - name: basic
+      code: |
+        assert running_total([3, 1, 4, 1]) == [3, 4, 8, 9]
+    - name: empty
+      code: |
+        assert running_total([]) == []
+    - name: negatives
+      code: |
+        assert running_total([5, -5, 2]) == [5, 0, 2]
+  solution: |
+    def running_total(nums):
+        out, total = [], 0
+        for n in nums:
+            total += n
+            out.append(total)
+        return out

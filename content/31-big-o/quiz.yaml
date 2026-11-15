@@ -1,0 +1,20 @@
+- q: What's the time complexity of `x in my_list`?
+  options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"]
+  answer: 2
+  explain: A list membership test may scan every element.
+- q: What's the average time complexity of `key in my_dict`?
+  options: ["O(1)", "O(log n)", "O(n)", "O(n²)"]
+  answer: 0
+  explain: Hash tables give constant-time lookups on average.
+- q: A function sorts the list and then loops over it once. What's its complexity?
+  options: ["O(n)", "O(n log n)", "O(n² log n)", "O(log n)"]
+  answer: 1
+  explain: O(n log n) + O(n) is dominated by the sort.
+- q: Why is `list.pop(0)` a problem inside a loop over a big list?
+  options: ["It raises an error", "Each call is O(n) because every element shifts", "It's O(log n)", "It changes the list type"]
+  answer: 1
+  explain: Removing from the front shifts all remaining items. Use `collections.deque.popleft()` for O(1).
+- q: Binary search on a sorted list of 1,000,000 items needs about how many steps?
+  options: ["1,000,000", "1,000", "20", "2"]
+  answer: 2
+  explain: log₂(1,000,000) ≈ 20, because each step halves the search range.

@@ -1,0 +1,5 @@
+title: Errors and Testing
+summary: Read tracebacks, handle exceptions with try/except/else/finally, raise your own errors, and write your first automated tests.
+icon: bug
+section: foundations
+skills: [Exception handling, Custom exceptions, unittest, Reading tracebacks]

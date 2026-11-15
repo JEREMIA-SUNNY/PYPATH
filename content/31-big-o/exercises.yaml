@@ -1,0 +1,69 @@
+- id: contains-duplicate
+  title: Contains duplicate (fast)
+  difficulty: easy
+  prompt: |
+    Write `contains_duplicate(nums)` that returns `True` if any value appears at least twice.
+
+    It must run in **O(n)** time. The tests include a list of 200,000 numbers, so a nested-loop O(n²) solution will time out.
+  starter: |
+    def contains_duplicate(nums):
+        for i in range(len(nums)):
+            for j in range(i + 1, len(nums)):
+                if nums[i] == nums[j]:
+                    return True
+        return False
+  hints:
+    - Keep a set of numbers you've seen.
+    - "Or compare `len(set(nums))` with `len(nums)`."
+  tests:
+    - name: small cases
+      code: |
+        assert contains_duplicate([1, 2, 3, 1]) is True and contains_duplicate([1, 2, 3]) is False and contains_duplicate([]) is False
+    - name: large input in under a second
+      code: |
+        import time
+        data = list(range(200_000))
+        t = time.perf_counter()
+        assert contains_duplicate(data) is False
+        assert time.perf_counter() - t < 1.0, "too slow, aim for O(n)"
+  solution: |
+    def contains_duplicate(nums):
+        seen = set()
+        for x in nums:
+            if x in seen:
+                return True
+            seen.add(x)
+        return False
+- id: missing-number
+  title: Missing number
+  difficulty: easy
+  prompt: |
+    `nums` contains `n` distinct numbers taken from `0, 1, 2, ..., n`, so exactly one number in that range is missing. Write `missing_number(nums)` that returns it in **O(n) time and O(1) extra space**.
+
+    ```py
+    missing_number([3, 0, 1])   # -> 2
+    ```
+  starter: |
+    def missing_number(nums):
+        for i in range(len(nums) + 1):
+            if i not in nums:
+                return i
+  hints:
+    - "The sum of 0..n is `n * (n + 1) // 2`."
+    - Subtract the actual sum from the expected sum.
+  tests:
+    - name: examples
+      code: |
+        assert missing_number([3, 0, 1]) == 2 and missing_number([0, 1]) == 2 and missing_number([1]) == 0
+    - name: large input quickly
+      code: |
+        import time
+        n = 300_000
+        data = [i for i in range(n + 1) if i != 123_456]
+        t = time.perf_counter()
+        assert missing_number(data) == 123_456
+        assert time.perf_counter() - t < 0.5, "too slow, avoid `in` on a list inside a loop"
+  solution: |
+    def missing_number(nums):
+        n = len(nums)
+        return n * (n + 1) // 2 - sum(nums)

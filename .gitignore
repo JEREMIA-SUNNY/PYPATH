@@ -1,0 +1,9 @@
+node_modules/
+.next/
+data/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+out/
+public/harness.py
+public/pyodide-worker.mjs

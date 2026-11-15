@@ -1,0 +1,6 @@
+title: Automation and CLI Tools
+summary: Build command-line tools with argparse, automate file chores safely with dry runs and logs, generate Excel reports, and schedule scripts to run on their own.
+icon: workflow
+section: career
+skills: [argparse, CLI design, File automation, openpyxl, Task scheduling]
+packages: [openpyxl]

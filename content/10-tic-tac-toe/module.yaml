@@ -1,0 +1,6 @@
+title: "Project 1: Tic Tac Toe"
+summary: Build a complete two-player Tic Tac Toe game, then an unbeatable-ish computer opponent, one tested function at a time.
+icon: grid
+kind: project
+section: foundations
+skills: [Problem decomposition, Lists, Functions, Game logic]

@@ -1,0 +1,291 @@
+- id: card
+  title: "Step 1: Card"
+  difficulty: easy
+  prompt: |
+    Write a `Card(rank, suit)` class.
+
+    - `rank` is one of `"2"`…`"10"`, `"J"`, `"Q"`, `"K"`, `"A"`; `suit` is e.g. `"Spades"`.
+    - A `value` **property** returns 11 for `"A"`, 10 for `"J"`, `"Q"`, `"K"`, and the number otherwise.
+    - `str(card)` returns `"A of Spades"`.
+  starter: |
+    class Card:
+        def __init__(self, rank, suit):
+            self.rank = rank
+            self.suit = suit
+  hints:
+    - "Decorate `value` with `@property`."
+    - "`int(self.rank)` works for the number cards."
+  tests:
+    - name: number card
+      code: |
+        assert Card("7", "Hearts").value == 7
+    - name: face cards and ace
+      code: |
+        assert [Card(r, "Clubs").value for r in ("J", "Q", "K", "A", "10")] == [10, 10, 10, 11, 10]
+    - name: string form
+      code: |
+        assert str(Card("A", "Spades")) == "A of Spades"
+  solution: |
+    class Card:
+        def __init__(self, rank, suit):
+            self.rank = rank
+            self.suit = suit
+
+        @property
+        def value(self):
+            if self.rank == "A":
+                return 11
+            if self.rank in ("J", "Q", "K"):
+                return 10
+            return int(self.rank)
+
+        def __str__(self):
+            return f"{self.rank} of {self.suit}"
+- id: deck
+  title: "Step 2: Deck"
+  difficulty: medium
+  prompt: |
+    `Card` is provided. Write a `Deck` class:
+
+    - `Deck()` creates all 52 cards: every rank in `RANKS` for every suit in `SUITS`.
+    - `len(deck)` returns how many cards are left.
+    - `shuffle(seed=None)` shuffles the cards using `random.Random(seed)`.
+    - `deal()` removes and returns the **last** card.
+  starter: |
+    import random
+
+    RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    SUITS = ["Hearts", "Diamonds", "Spades", "Clubs"]
+
+    class Card:
+        def __init__(self, rank, suit):
+            self.rank, self.suit = rank, suit
+
+        def __repr__(self):
+            return f"{self.rank} of {self.suit}"
+
+    class Deck:
+        pass
+  hints:
+    - "A nested comprehension builds the cards: `[Card(r, s) for s in SUITS for r in RANKS]`."
+    - "`random.Random(seed).shuffle(self.cards)` shuffles in place."
+    - "`self.cards.pop()` removes and returns the last card."
+  tests:
+    - name: 52 unique cards
+      code: |
+        d = Deck()
+        assert len(d) == 52
+        assert len({(c.rank, c.suit) for c in d.cards}) == 52
+    - name: dealing removes a card
+      code: |
+        d = Deck()
+        c = d.deal()
+        assert isinstance(c, Card) and len(d) == 51
+    - name: seeded shuffles repeat
+      code: |
+        a, b = Deck(), Deck()
+        a.shuffle(seed=7)
+        b.shuffle(seed=7)
+        assert [repr(c) for c in a.cards] == [repr(c) for c in b.cards]
+        assert [repr(c) for c in a.cards] != [repr(c) for c in Deck().cards]
+  solution: |
+    import random
+
+    RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    SUITS = ["Hearts", "Diamonds", "Spades", "Clubs"]
+
+    class Card:
+        def __init__(self, rank, suit):
+            self.rank, self.suit = rank, suit
+
+        def __repr__(self):
+            return f"{self.rank} of {self.suit}"
+
+    class Deck:
+        def __init__(self):
+            self.cards = [Card(r, s) for s in SUITS for r in RANKS]
+
+        def __len__(self):
+            return len(self.cards)
+
+        def shuffle(self, seed=None):
+            random.Random(seed).shuffle(self.cards)
+
+        def deal(self):
+            return self.cards.pop()
+- id: hand
+  title: "Step 3: Hand and aces"
+  difficulty: medium
+  prompt: |
+    A simple `Card` with a `value` property is provided. Write a `Hand` class:
+
+    - `cards` starts as an empty list; `add(card)` appends a card.
+    - A `value` property returns the best total: count Aces as 11, then while the total is over 21 and an Ace is still counted as 11, subtract 10.
+  starter: |
+    class Card:
+        def __init__(self, rank):
+            self.rank = rank
+
+        @property
+        def value(self):
+            if self.rank == "A":
+                return 11
+            if self.rank in ("J", "Q", "K"):
+                return 10
+            return int(self.rank)
+
+    class Hand:
+        def __init__(self):
+            self.cards = []
+  hints:
+    - "Total: `sum(c.value for c in self.cards)`; aces: count cards whose rank is `\"A\"`."
+    - "`while total > 21 and aces: total -= 10; aces -= 1`"
+  tests:
+    - name: simple total
+      code: |
+        h = Hand(); h.add(Card("K")); h.add(Card("7"))
+        assert h.value == 17
+    - name: ace as eleven
+      code: |
+        h = Hand(); h.add(Card("A")); h.add(Card("K"))
+        assert h.value == 21
+    - name: aces drop to one when needed
+      code: |
+        h = Hand()
+        for r in ("A", "A", "9"):
+            h.add(Card(r))
+        assert h.value == 21, h.value
+        h.add(Card("K"))
+        assert h.value == 21, h.value
+    - name: bust
+      code: |
+        h = Hand()
+        for r in ("K", "Q", "5"):
+            h.add(Card(r))
+        assert h.value == 25
+  solution: |
+    class Card:
+        def __init__(self, rank):
+            self.rank = rank
+
+        @property
+        def value(self):
+            if self.rank == "A":
+                return 11
+            if self.rank in ("J", "Q", "K"):
+                return 10
+            return int(self.rank)
+
+    class Hand:
+        def __init__(self):
+            self.cards = []
+
+        def add(self, card):
+            self.cards.append(card)
+
+        @property
+        def value(self):
+            total = sum(c.value for c in self.cards)
+            aces = sum(1 for c in self.cards if c.rank == "A")
+            while total > 21 and aces:
+                total -= 10
+                aces -= 1
+            return total
+- id: chips
+  title: "Step 4: Chips"
+  difficulty: easy
+  prompt: |
+    Write a `Chips(total=100)` class with a `total` and a current `bet` (starting at 0):
+
+    - `bet(amount)` sets the bet. Raise `ValueError` if `amount` is not positive or is more than `total`.
+    - `win_bet()` adds the bet to the total; `lose_bet()` subtracts it. Both reset `bet` to 0.
+  starter: |
+    class Chips:
+        def __init__(self, total=100):
+            self.total = total
+  hints:
+    - "Store `self.bet_amount = 0` (or similar) in `__init__`; a method and an attribute can't share the name `bet`."
+  tests:
+    - name: win
+      code: |
+        c = Chips(100); c.bet(30); c.win_bet()
+        assert c.total == 130
+    - name: lose
+      code: |
+        c = Chips(100); c.bet(30); c.lose_bet()
+        assert c.total == 70
+    - name: can't bet more than you have
+      code: |
+        c = Chips(50)
+        for bad in (60, 0, -5):
+            try:
+                c.bet(bad)
+                raise AssertionError(f"expected ValueError for {bad}")
+            except ValueError:
+                pass
+  solution: |
+    class Chips:
+        def __init__(self, total=100):
+            self.total = total
+            self.current_bet = 0
+
+        def bet(self, amount):
+            if amount <= 0 or amount > self.total:
+                raise ValueError("invalid bet")
+            self.current_bet = amount
+
+        def win_bet(self):
+            self.total += self.current_bet
+            self.current_bet = 0
+
+        def lose_bet(self):
+            self.total -= self.current_bet
+            self.current_bet = 0
+- id: game-rules
+  title: "Step 5: Game rules"
+  difficulty: medium
+  prompt: |
+    Write two functions:
+
+    - `dealer_should_hit(hand)` returns `True` while `hand.value` is below 17.
+    - `decide_winner(player, dealer)` takes two **totals** and returns `"player"`, `"dealer"` or `"push"`:
+      - player over 21 → `"dealer"` (even if the dealer also busts)
+      - dealer over 21 → `"player"`
+      - otherwise the higher total wins; equal totals are a `"push"`
+  starter: |
+    def dealer_should_hit(hand):
+        return False
+
+    def decide_winner(player, dealer):
+        return "push"
+  hints:
+    - Check the player bust first, then the dealer bust, then compare.
+  tests:
+    - name: dealer hits below 17
+      code: |
+        class H:
+            def __init__(self, v): self.value = v
+        assert dealer_should_hit(H(16)) and not dealer_should_hit(H(17))
+    - name: player bust loses even if dealer busts
+      code: |
+        assert decide_winner(23, 25) == "dealer"
+    - name: dealer bust
+      code: |
+        assert decide_winner(18, 22) == "player"
+    - name: higher total and push
+      code: |
+        assert decide_winner(20, 19) == "player" and decide_winner(18, 20) == "dealer" and decide_winner(19, 19) == "push"
+  solution: |
+    def dealer_should_hit(hand):
+        return hand.value < 17
+
+    def decide_winner(player, dealer):
+        if player > 21:
+            return "dealer"
+        if dealer > 21:
+            return "player"
+        if player > dealer:
+            return "player"
+        if dealer > player:
+            return "dealer"
+        return "push"

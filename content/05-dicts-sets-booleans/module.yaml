@@ -1,0 +1,5 @@
+title: Dictionaries, Sets and Booleans
+summary: Key/value lookups, collections of unique items, truthiness and None. The data structures behind most real Python code.
+icon: braces
+section: foundations
+skills: [Dictionaries, Sets, Truthiness]

@@ -1,0 +1,126 @@
+- id: number-of-islands
+  title: Number of islands
+  difficulty: medium
+  prompt: |
+    `grid` is a list of strings of `"1"` (land) and `"0"` (water). An island is land connected **horizontally or vertically**. Return the number of islands.
+
+    The tests include a 300×300 grid, so use an explicit stack or queue rather than deep recursion.
+  starter: |
+    def num_islands(grid):
+        return sum(row.count("1") for row in grid)
+  hints:
+    - Loop over every cell; when you find unvisited land, count an island and flood-fill it.
+    - Flood fill with a stack, marking cells visited in a set.
+  tests:
+    - name: examples
+      code: |
+        assert num_islands(["11110", "11010", "11000", "00000"]) == 1
+        assert num_islands(["11000", "11000", "00100", "00011"]) == 3
+        assert num_islands([]) == 0 and num_islands(["0"]) == 0
+    - name: diagonal is not connected
+      code: |
+        assert num_islands(["101", "010", "101"]) == 5
+    - name: big grid without recursion errors
+      code: |
+        big = ["1" * 300] * 300
+        assert num_islands(big) == 1
+  solution: |
+    def num_islands(grid):
+        if not grid:
+            return 0
+        rows, cols = len(grid), len(grid[0])
+        seen = set()
+        count = 0
+        for r in range(rows):
+            for c in range(cols):
+                if grid[r][c] != "1" or (r, c) in seen:
+                    continue
+                count += 1
+                stack = [(r, c)]
+                seen.add((r, c))
+                while stack:
+                    y, x = stack.pop()
+                    for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                        if 0 <= ny < rows and 0 <= nx < cols and grid[ny][nx] == "1" and (ny, nx) not in seen:
+                            seen.add((ny, nx))
+                            stack.append((ny, nx))
+        return count
+- id: shortest-path-bfs
+  title: Fewest connections
+  difficulty: medium
+  prompt: |
+    `friends` is a dict mapping each person to a list of their friends (friendship is mutual, but the dict may list it only one way). Write `degrees(friends, a, b)` returning the **fewest hops** between `a` and `b` (0 if they're the same person, -1 if not connected).
+  starter: |
+    from collections import deque
+
+    def degrees(friends, a, b):
+        return -1
+  hints:
+    - Build an undirected adjacency list first, adding both directions.
+    - BFS from `a`, tracking the distance with each queued person.
+  tests:
+    - name: hops
+      code: |
+        f = {"ana": ["bo"], "bo": ["cy", "di"], "cy": ["eve"], "fay": ["gus"]}
+        assert degrees(f, "ana", "eve") == 3 and degrees(f, "eve", "ana") == 3
+        assert degrees(f, "di", "cy") == 2 and degrees(f, "ana", "ana") == 0
+    - name: not connected or unknown
+      code: |
+        f = {"ana": ["bo"], "fay": ["gus"]}
+        assert degrees(f, "ana", "gus") == -1 and degrees(f, "ana", "zed") == -1
+  solution: |
+    from collections import defaultdict, deque
+
+    def degrees(friends, a, b):
+        graph = defaultdict(set)
+        for person, fs in friends.items():
+            for f in fs:
+                graph[person].add(f)
+                graph[f].add(person)
+        q = deque([(a, 0)])
+        seen = {a}
+        while q:
+            person, dist = q.popleft()
+            if person == b:
+                return dist
+            for nb in graph[person]:
+                if nb not in seen:
+                    seen.add(nb)
+                    q.append((nb, dist + 1))
+        return -1
+- id: kth-largest
+  title: Kth largest with a heap
+  difficulty: medium
+  prompt: |
+    Write `kth_largest(nums, k)` that returns the k-th largest element (counting duplicates) using a **min-heap of size k** with `heapq`, in O(n log k) time. Don't sort the whole list.
+
+    ```py
+    kth_largest([3, 2, 1, 5, 6, 4], 2)   # -> 5
+    ```
+  starter: |
+    import heapq
+
+    def kth_largest(nums, k):
+        return sorted(nums)[-k]
+  hints:
+    - Push each number onto a heap; if the heap grows past k, pop the smallest.
+    - "At the end the smallest of the k kept numbers, `heap[0]`, is the answer."
+  tests:
+    - name: examples
+      code: |
+        assert kth_largest([3, 2, 1, 5, 6, 4], 2) == 5 and kth_largest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4) == 4 and kth_largest([7], 1) == 7
+    - name: does not sort
+      code: |
+        import inspect
+        src = inspect.getsource(kth_largest)
+        assert "sorted(" not in src and ".sort(" not in src and "heapq" in src
+  solution: |
+    import heapq
+
+    def kth_largest(nums, k):
+        heap = []
+        for x in nums:
+            heapq.heappush(heap, x)
+            if len(heap) > k:
+                heapq.heappop(heap)
+        return heap[0]

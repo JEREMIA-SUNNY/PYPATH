@@ -1,0 +1,34 @@
+- id: backend
+  title: Backend Developer
+  roles: Python backend engineer, API developer
+  icon: server
+  summary: Build and test the APIs and services behind web and mobile apps, on top of SQL databases.
+  modules: [developer-workflow, testing-and-quality, http-and-apis, sql-and-databases, fastapi]
+  project: task-api
+- id: data
+  title: Data Analyst
+  roles: Data analyst, BI analyst, junior data scientist
+  icon: chart
+  summary: Clean, query, analyse and chart data to answer business questions, with pandas and SQL.
+  modules: [developer-workflow, sql-and-databases, data-analysis, data-visualization]
+  project: sales-report
+- id: ai
+  title: AI Engineer
+  roles: GenAI / LLM application developer
+  icon: bot
+  summary: Build products on top of large language models, from prompt design to retrieval-augmented generation.
+  modules: [developer-workflow, testing-and-quality, http-and-apis, fastapi, llm-apps, rag]
+  project: docs-qa
+- id: automation
+  title: Automation Engineer
+  roles: QA automation, DevOps scripting, RPA developer
+  icon: workflow
+  summary: Script away repetitive work, from file wrangling and reports to API calls and test automation.
+  modules: [developer-workflow, testing-and-quality, http-and-apis, automation]
+  project: file-organizer
+- id: interview
+  title: Interview Ready
+  roles: Any Python role
+  icon: brain
+  summary: Master the data-structure and algorithm patterns behind coding interviews, then drill them under time pressure.
+  modules: [big-o, arrays-and-hashing, two-pointers, stacks-queues-binary-search, recursion-backtracking, linked-lists-and-trees, graphs-and-heaps, dynamic-programming, python-interview-questions]

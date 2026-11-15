@@ -1,0 +1,5 @@
+title: Recursion and Backtracking
+summary: Think recursively with clear base cases, then explore every possibility systematically with the choose, explore, un-choose template.
+icon: repeat
+section: interview
+skills: [Recursion, Backtracking, Combinatorics]

@@ -1,0 +1,40 @@
+- q: What's the difference between `is` and `==`?
+  options: ["None, they're aliases", "`is` checks identity (same object); `==` checks equal values", "`==` checks identity; `is` checks values", "`is` only works on numbers"]
+  answer: 1
+  explain: Two different lists can be `==` but not `is`. Use `is` for `None`.
+- q: After `b = copy.copy(a)` where `a = [[1], [2]]`, what does `a[0].append(9)` do to `b`?
+  options: ["Nothing", "`b[0]` also becomes `[1, 9]`", "It raises an error", "`b` becomes empty"]
+  answer: 1
+  explain: A shallow copy creates a new outer list, but the inner lists are shared.
+- q: Which approach speeds up CPU-heavy pure-Python work in standard CPython?
+  options: ["threading", "asyncio", "multiprocessing", "More decorators"]
+  answer: 2
+  explain: The GIL prevents threads from running Python bytecode in parallel; separate processes each have their own interpreter.
+- q: What is the GIL?
+  options: ["A package manager", "A lock that lets only one thread execute Python bytecode at a time in CPython", "A garbage collector", "A type checker"]
+  answer: 1
+  explain: The Global Interpreter Lock simplifies memory management but limits CPU-bound threading.
+- q: Which immutable type can be used as a dictionary key?
+  options: ["list", "dict", "tuple of strings", "set"]
+  answer: 2
+  explain: Keys must be hashable; tuples of hashable items are, lists and sets aren't.
+- q: What does a generator function return when called?
+  options: ["A list", "A generator object; the body runs lazily as you iterate", "The first value", "None"]
+  answer: 1
+  explain: Execution starts only on `next()` or iteration, pausing at each `yield`.
+- q: Which two methods make a class usable in a `with` statement?
+  options: ["`__init__` and `__del__`", "`__enter__` and `__exit__`", "`__open__` and `__close__`", "`__start__` and `__stop__`"]
+  answer: 1
+  explain: "`__exit__` runs even if the block raises, which guarantees cleanup."
+- q: What does the method resolution order (MRO) determine?
+  options: ["How fast methods run", "Which class's method is used when several parents define it", "The order of `__init__` arguments", "Import order"]
+  answer: 1
+  explain: Python linearises the inheritance graph (C3 algorithm); `super()` walks this order.
+- q: Why is `def add(item, items=[])` a bug?
+  options: ["Lists can't be defaults", "The same list is shared across all calls", "It's slow", "It raises SyntaxError"]
+  answer: 1
+  explain: The default is evaluated once at definition time, so state leaks between calls.
+- q: How does CPython free most objects?
+  options: ["Only when the program exits", "Reference counting, plus a cyclic garbage collector", "You must call `del` on everything", "A background thread scans memory every second"]
+  answer: 1
+  explain: When an object's reference count hits zero it's freed immediately; the GC cleans up reference cycles.

@@ -1,0 +1,20 @@
+- q: What's the difference between `WHERE` and `HAVING`?
+  options: ["They are identical", "`WHERE` filters rows before grouping; `HAVING` filters groups after aggregation", "`HAVING` is faster", "`WHERE` only works with numbers"]
+  answer: 1
+  explain: Use `HAVING` to filter on aggregates like `SUM(amount) > 100`.
+- q: How do you safely put a user-supplied email into a sqlite3 query?
+  options: ["`f\"... WHERE email = '{email}'\"`", "`\"... WHERE email = ?\"` with `(email,)` as parameters", "Escape quotes with `replace`", "Use `%` formatting"]
+  answer: 1
+  explain: Parameter placeholders keep data separate from SQL, which prevents SQL injection.
+- q: A LEFT JOIN from customers to orders returns…
+  options: ["Only customers who have orders", "Every customer, with NULL order columns where there's no match", "Only orders without customers", "Every combination of rows"]
+  answer: 1
+  explain: The left table's rows are all kept; unmatched right-side columns are NULL.
+- q: What does `with conn:` do for a sqlite3 connection?
+  options: ["Closes the connection", "Wraps the block in a transaction that commits or rolls back", "Locks the file", "Enables row_factory"]
+  answer: 1
+  explain: On success it commits; if an exception escapes, it rolls back. (It doesn't close the connection.)
+- q: What happens if you run `DELETE FROM orders` with no WHERE clause?
+  options: ["Nothing", "It deletes the first row", "It deletes every row", "It's a syntax error"]
+  answer: 2
+  explain: Without `WHERE`, the statement applies to the whole table. Always run the SELECT first.

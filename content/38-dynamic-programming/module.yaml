@@ -1,0 +1,5 @@
+title: Dynamic Programming
+summary: Solve problems with overlapping subproblems by caching answers, top-down with memoisation or bottom-up with tables.
+icon: grid
+section: interview
+skills: [Dynamic programming, Memoisation, Tabulation]

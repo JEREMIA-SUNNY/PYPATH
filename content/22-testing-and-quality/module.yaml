@@ -1,0 +1,5 @@
+title: Testing and Code Quality
+summary: pytest in depth (fixtures, parametrize, temporary files), mocking dependencies, and the linters, type checkers and CI that keep a codebase healthy.
+icon: test
+section: career
+skills: [pytest, Fixtures, Mocking, ruff, mypy, CI with GitHub Actions]

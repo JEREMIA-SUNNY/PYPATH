@@ -1,0 +1,5 @@
+title: Strings
+summary: Text in Python. Indexing and slicing, the string methods you'll use daily, and f-string formatting.
+icon: type
+section: foundations
+skills: [String manipulation, Slicing, f-strings]

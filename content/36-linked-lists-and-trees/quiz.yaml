@@ -1,0 +1,20 @@
+- q: What does the slow pointer point at when the fast pointer reaches the end of a list?
+  options: ["The head", "The middle node", "The tail", "None"]
+  answer: 1
+  explain: Fast moves twice as far, so slow has covered half the list.
+- q: How does Floyd's algorithm detect a cycle?
+  options: ["It counts nodes until n", "Fast and slow pointers eventually meet inside the cycle", "It stores every node in a set", "It reverses the list"]
+  answer: 1
+  explain: In a cycle, the faster pointer gains one step per iteration and must catch up. That's O(1) extra space.
+- q: Which traversal of a binary search tree yields values in sorted order?
+  options: ["Pre-order", "In-order", "Post-order", "Level order"]
+  answer: 1
+  explain: Left subtree (smaller), node, right subtree (larger) gives ascending order.
+- q: Which data structure does a level-order (BFS) traversal use?
+  options: ["Stack", "Queue", "Heap", "Hash map"]
+  answer: 1
+  explain: A FIFO queue processes nodes in the order they were discovered, level by level.
+- q: What's the time complexity of searching a balanced binary search tree with n nodes?
+  options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"]
+  answer: 1
+  explain: Each comparison discards one subtree, and a balanced tree has height about log n.

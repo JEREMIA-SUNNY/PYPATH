@@ -1,0 +1,108 @@
+- id: initials
+  title: Initials
+  difficulty: easy
+  prompt: |
+    Complete `initials(full_name)` so it returns the uppercase first letter of each word, each followed by a dot.
+
+    ```py
+    initials("ada lovelace")        # -> "A.L."
+    initials("Guido van Rossum")    # -> "G.V.R."
+    ```
+  starter: |
+    def initials(full_name):
+        result = ""
+        return result
+  hints:
+    - "`full_name.split()` gives you the words."
+    - "Take `word[0].upper()` from each word and add a `.` after it."
+  tests:
+    - name: two words
+      code: assert initials("ada lovelace") == "A.L.", initials("ada lovelace")
+    - name: three words with mixed case
+      code: assert initials("Guido van Rossum") == "G.V.R."
+    - name: extra spaces are ignored
+      code: assert initials("  grace   hopper ") == "G.H."
+  solution: |
+    def initials(full_name):
+        result = ""
+        for word in full_name.split():
+            result += word[0].upper() + "."
+        return result
+- id: reverse-words
+  title: Reverse the words
+  difficulty: easy
+  prompt: |
+    Complete `reverse_words(text)` so it returns the words of `text` in reverse order, separated by single spaces.
+
+    ```py
+    reverse_words("python is fun")   # -> "fun is python"
+    ```
+  starter: |
+    def reverse_words(text):
+        return text
+  hints:
+    - "`text.split()` makes a list of words; `[::-1]` reverses a list too."
+    - "`\" \".join(words)` glues them back together."
+  tests:
+    - name: three words
+      code: assert reverse_words("python is fun") == "fun is python", reverse_words("python is fun")
+    - name: one word
+      code: assert reverse_words("hello") == "hello"
+    - name: collapses extra spaces
+      code: assert reverse_words("  a   b  ") == "b a"
+  solution: |
+    def reverse_words(text):
+        return " ".join(text.split()[::-1])
+- id: palindrome
+  title: Palindrome check
+  difficulty: medium
+  prompt: |
+    A palindrome reads the same forwards and backwards. Complete `is_palindrome(text)` so it returns `True` or `False`, **ignoring case and spaces**.
+
+    ```py
+    is_palindrome("Never odd or even")  # -> True
+    is_palindrome("Python")             # -> False
+    ```
+  starter: |
+    def is_palindrome(text):
+        return False
+  hints:
+    - "Normalise first: `text.lower().replace(\" \", \"\")`."
+    - Compare the cleaned string with its reverse, `cleaned[::-1]`.
+  tests:
+    - name: phrase with spaces and capitals
+      code: assert is_palindrome("Never odd or even") is True
+    - name: not a palindrome
+      code: assert is_palindrome("Python") is False
+    - name: single word
+      code: assert is_palindrome("Malayalam") is True
+  solution: |
+    def is_palindrome(text):
+        cleaned = text.lower().replace(" ", "")
+        return cleaned == cleaned[::-1]
+- id: receipt-line
+  title: Receipt line
+  difficulty: medium
+  prompt: |
+    Complete `receipt_line(item, price)` so it returns a 20-character line: the item **left-aligned in 12 characters**, then the price **right-aligned in 8 characters with 2 decimals**.
+
+    ```py
+    receipt_line("Coffee", 180)    # -> "Coffee        180.00"
+    receipt_line("Tea", 9.5)       # -> "Tea             9.50"
+    ```
+  starter: |
+    def receipt_line(item, price):
+        return f"{item} {price}"
+  hints:
+    - "Left-align with `{item:<12}`."
+    - "Right-align a 2-decimal number with `{price:>8.2f}`."
+  tests:
+    - name: coffee line
+      code: assert receipt_line("Coffee", 180) == "Coffee        180.00", repr(receipt_line("Coffee", 180))
+    - name: short item, small price
+      code: assert receipt_line("Tea", 9.5) == "Tea             9.50", repr(receipt_line("Tea", 9.5))
+    - name: always 20 characters
+      code: assert len(receipt_line("Sandwich", 1245.75)) == 20
+  solution: |
+    def receipt_line(item, price):
+        return f"{item:<12}{price:>8.2f}"

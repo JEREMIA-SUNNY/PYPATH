@@ -1,0 +1,89 @@
+- id: task-api
+  title: Task Manager API
+  track: backend
+  summary: A REST API for a to-do app with users, tasks, filtering and token auth, backed by SQLite and covered by tests.
+  skills: [FastAPI, Pydantic, SQLite, pytest, REST design]
+  steps:
+    - Create a repo with a virtual environment, requirements.txt, README and .gitignore
+    - Model Task with Pydantic (title, done, due_date, priority) and create the SQLite table
+    - Implement CRUD endpoints (GET list, GET one, POST, PATCH, DELETE) with correct status codes
+    - Add filtering and pagination (?done=true&limit=20&offset=0)
+    - Add user signup/login with hashed passwords and a bearer token dependency
+    - Write pytest tests with TestClient for every endpoint, including error cases
+    - Add logging, input validation errors and a /health endpoint
+    - Document setup and example requests in the README; push to GitHub
+  stretch: [Dockerfile and docker compose, GitHub Actions running the tests, Deploy to Render or Railway]
+  bullet: Built a REST API in FastAPI with SQLite, token-based auth, pagination and a pytest suite covering every endpoint; documented and published on GitHub.
+- id: sales-report
+  title: Sales Insights Report
+  track: data
+  summary: Take a messy real-world sales CSV, clean it with pandas, answer business questions and publish charts plus a written summary.
+  skills: [pandas, data cleaning, matplotlib, Jupyter, storytelling with data]
+  steps:
+    - Pick a public sales or e-commerce dataset (Kaggle, data.gov.in) and describe it in the README
+    - Load it with pandas and profile it (dtypes, missing values, duplicates, outliers)
+    - Clean it in a reusable function and save a tidy CSV
+    - Answer five business questions with groupby, merges and pivot tables
+    - Create at least four clear, labelled charts with matplotlib
+    - Write a one-page summary of findings and recommendations
+    - Publish the notebook and charts to GitHub
+  stretch: [Load the data into SQLite and answer two questions in SQL, Build an interactive dashboard with Streamlit]
+  bullet: Cleaned and analysed a 100k-row sales dataset with pandas, answered five business questions with pivot tables and charts, and summarised recommendations for stakeholders.
+- id: docs-qa
+  title: Docs Q&A Assistant
+  track: ai
+  summary: A retrieval-augmented chatbot that answers questions about a folder of documents and cites its sources.
+  skills: [RAG, embeddings, LLM APIs, FastAPI, prompt design]
+  steps:
+    - Choose a document set (your own notes, a product's docs) and load it from disk
+    - Split documents into overlapping chunks with metadata (file, heading)
+    - Embed the chunks with an embeddings API or a local model and store the vectors
+    - Retrieve the top-k chunks for a question with cosine similarity
+    - Build a prompt that answers only from the retrieved context and cites sources
+    - Wrap it in a FastAPI endpoint and a minimal web or CLI chat
+    - Write an evaluation set of 20 questions and measure answer quality
+  stretch: [Add a vector database such as Chroma or pgvector, Stream tokens to the UI, Add conversation memory]
+  bullet: Built a retrieval-augmented Q&A assistant over 200+ documents with chunking, embeddings and cosine search, served through FastAPI with cited answers and an evaluation set.
+- id: file-organizer
+  title: Smart File Organizer CLI
+  track: automation
+  summary: A command-line tool that sorts a messy folder by type and date, renames files consistently and writes a report.
+  skills: [argparse, pathlib, shutil, logging, pytest]
+  steps:
+    - Design the CLI with argparse (source folder, --dry-run, --by type|date)
+    - Scan files recursively with pathlib and classify them by extension
+    - Move files into dated or typed folders with shutil, handling name clashes
+    - Add a --dry-run mode that only prints what would happen
+    - Log every action to a file and print a summary table
+    - Test the core functions with pytest using temporary folders
+    - Package it so it runs as a single command; push to GitHub
+  stretch: [Watch a folder and organise new files automatically, Undo the last run from the log]
+  bullet: Wrote a Python CLI that organises thousands of files by type and date with dry-run, logging and undo, tested with pytest on temporary directories.
+- id: job-tracker
+  title: Job Listings Tracker
+  track: data
+  summary: Scrape Python job listings, store them in SQLite and chart which skills are in demand week by week.
+  skills: [requests, BeautifulSoup, SQLite, pandas, scheduling]
+  steps:
+    - Pick a site that allows scraping (check robots.txt and terms) or a public jobs API
+    - Fetch and parse listings with requests and BeautifulSoup
+    - Store listings in SQLite without duplicates
+    - Extract skills mentioned in each listing (Python, Django, FastAPI, pandas...)
+    - Chart weekly skill demand with pandas and matplotlib
+    - Schedule the scraper to run daily
+  stretch: [Email yourself a weekly summary, Add a small web page that shows the charts]
+  bullet: Built a scheduled scraper that collects job listings into SQLite and charts weekly demand for 20 skills, used to guide my own learning plan.
+- id: expense-tracker
+  title: Expense Tracker CLI
+  track: backend
+  summary: A personal budget tool in the terminal with categories, monthly limits and reports, stored in SQLite.
+  skills: [sqlite3, dataclasses, argparse, testing]
+  steps:
+    - Define Expense and Category dataclasses and the SQLite schema
+    - Add commands to add, list, edit and delete expenses
+    - Add monthly budgets per category with warnings when exceeded
+    - Print a monthly report with totals and percentages
+    - Export a month to CSV
+    - Test the database layer with pytest and an in-memory database
+  stretch: [Import bank statement CSVs, Add a FastAPI layer and a small web UI]
+  bullet: Developed a SQLite-backed expense tracker CLI with budgets, monthly reports and CSV export, with a tested data layer.

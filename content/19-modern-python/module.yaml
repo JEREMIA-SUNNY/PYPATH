@@ -1,0 +1,5 @@
+title: Modern Python
+summary: Type hints, dataclasses and enums, and async/await. The features modern codebases and frameworks like FastAPI are built on.
+icon: sparkles
+section: foundations
+skills: [Type hints, Dataclasses, Enums, asyncio]

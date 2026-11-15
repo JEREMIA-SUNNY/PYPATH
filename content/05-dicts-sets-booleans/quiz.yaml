@@ -1,0 +1,21 @@
+- q: >-
+    What does `{"a": 1}.get("b", 0)` return?
+  options: ["`None`", "`0`", "`KeyError`", "`1`"]
+  answer: 1
+  explain: "`get` returns the default you pass when the key is missing."
+- q: What is `type({})`?
+  options: ["`set`", "`dict`", "`list`", "`tuple`"]
+  answer: 1
+  explain: Empty braces create an empty **dict**. Use `set()` for an empty set.
+- q: What is `{1, 2, 3} & {2, 3, 4}`?
+  options: ["`{1, 2, 3, 4}`", "`{2, 3}`", "`{1, 4}`", "`{1}`"]
+  answer: 1
+  explain: "`&` is intersection: items present in both sets."
+- q: Which of these values is truthy?
+  options: ["`0`", "`\"\"`", "`[0]`", "`None`"]
+  answer: 2
+  explain: "`[0]` is a list with one item, so it's non-empty and therefore truthy."
+- q: What's the idiomatic way to check whether `x` is None?
+  options: ["`x == None`", "`x is None`", "`not x`", "`x.isNone()`"]
+  answer: 1
+  explain: "`is None` checks identity with the single `None` object. `not x` would also be true for `0` and empty strings."

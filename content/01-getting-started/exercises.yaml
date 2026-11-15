@@ -1,0 +1,23 @@
+- id: hello-world
+  title: Hello, World!
+  difficulty: easy
+  prompt: |
+    The classic first program. Print exactly this line:
+
+    ```text
+    Hello, World!
+    ```
+
+    Click **Run** to see your output, then **Submit** to check it.
+  starter: |
+    # Print the message here
+
+  hints:
+    - Use the `print()` function with the text in quotes.
+    - "Capitalisation and punctuation matter: `Hello, World!`"
+  tests:
+    - name: prints Hello, World!
+      code: |
+        assert __stdout__.strip() == "Hello, World!", f"Expected 'Hello, World!' but got {__stdout__.strip()!r}"
+  solution: |
+    print("Hello, World!")

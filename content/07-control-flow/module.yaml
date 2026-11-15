@@ -1,0 +1,5 @@
+title: Comparisons and Control Flow
+summary: Comparison and logical operators, if/elif/else, conditional expressions, and structural pattern matching.
+icon: branch
+section: foundations
+skills: [Conditionals, Boolean logic, match statements]

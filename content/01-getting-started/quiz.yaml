@@ -1,0 +1,22 @@
+- q: Which Python version does PyPath require?
+  options: ["2.7 or newer", "3.6 or newer", "3.10 or newer", "Any version"]
+  answer: 2
+  explain: PyPath's runner checks for **Python 3.10+**. Python 2 reached end of life in 2020 and should not be used for new work.
+- q: What defines a block of code (like the body of a function) in Python?
+  options: ["Curly braces `{}`", "Indentation", "The `end` keyword", "Semicolons"]
+  answer: 1
+  explain: Python uses indentation, conventionally **4 spaces**, to group statements into blocks.
+- q: What does this print?
+  code: |
+    print("a", "b", sep="-", end="!")
+  options: ["`a b!`", "`a-b!`", "`a-b`", "`ab-!`"]
+  answer: 1
+  explain: "`sep` goes between the values and `end` replaces the trailing newline, giving `a-b!`."
+- q: You run `python report.py` and get "No such file or directory". What's the most likely cause?
+  options: ["Python isn't installed", "The terminal is in a different folder from the file", "The file has a syntax error", "pip is out of date"]
+  answer: 1
+  explain: The path is resolved relative to the current folder. Use `pwd` and `cd` to get to the folder containing the file.
+- q: What is pip?
+  options: ["A Python code formatter", "Python's package installer", "A built-in debugger", "The Python REPL"]
+  answer: 1
+  explain: "`pip` installs packages from PyPI, for example `pip install requests`."

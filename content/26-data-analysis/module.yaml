@@ -1,0 +1,6 @@
+title: Data Analysis with NumPy and pandas
+summary: Fast numeric arrays with NumPy, then pandas DataFrames for loading, cleaning, filtering, grouping and joining real-world data.
+icon: table
+section: career
+skills: [NumPy, pandas, Data cleaning, groupby and pivot tables, Merging datasets]
+packages: [numpy, pandas]

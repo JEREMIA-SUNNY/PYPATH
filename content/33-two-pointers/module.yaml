@@ -1,0 +1,5 @@
+title: Two Pointers and Sliding Window
+summary: Walk an array from both ends, or slide a window across it, to turn O(n²) scans into a single O(n) pass.
+icon: pointers
+section: interview
+skills: [Two pointers, Sliding window]

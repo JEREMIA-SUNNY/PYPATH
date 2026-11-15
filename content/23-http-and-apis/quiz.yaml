@@ -1,0 +1,20 @@
+- q: Which status code means "you sent too many requests, slow down"?
+  options: ["404", "409", "429", "503"]
+  answer: 2
+  explain: 429 Too Many Requests. Back off and retry later, ideally honouring the `Retry-After` header.
+- q: Which errors are generally worth retrying automatically?
+  options: ["400 and 422", "401 and 403", "Timeouts, 502, 503 and 504", "404"]
+  answer: 2
+  explain: Transient server/network failures may succeed on a retry; client errors will just fail again.
+- q: Why must you always pass `timeout=` to requests calls?
+  options: ["It's required syntax", "Without it a stuck connection can hang forever", "It makes requests faster", "It enables retries"]
+  answer: 1
+  explain: requests has no default timeout, so an unresponsive server could block your program indefinitely.
+- q: What does JSON `null` become in Python?
+  options: ["`0`", "`\"null\"`", "`None`", "`False`"]
+  answer: 2
+  explain: "`json.loads` maps `null` to `None`, `true`/`false` to `True`/`False`."
+- q: What is the typical success status for creating a resource with POST?
+  options: ["200 OK", "201 Created", "204 No Content", "202 Accepted"]
+  answer: 1
+  explain: 201 Created, often with a `Location` header or the new resource in the body.

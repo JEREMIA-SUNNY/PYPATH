@@ -1,0 +1,26 @@
+- q: "What is `@my_decorator` above `def f(): ...` equivalent to?"
+  options: ["`f = my_decorator`", "`f = my_decorator(f)`", "`my_decorator = f(my_decorator)`", "`f()` then `my_decorator()`"]
+  answer: 1
+  explain: The decorator receives the function and its return value replaces the name `f`.
+- q: Why use `functools.wraps` in a decorator?
+  options: ["It makes the function faster", "It preserves the original function's name and docstring", "It's required for decorators to work", "It caches results"]
+  answer: 1
+  explain: Without it, `f.__name__` would be `wrapper`, which confuses debugging, logs and documentation tools.
+- q: What does calling a generator function return?
+  options: ["The first yielded value", "A list of all values", "A generator object", "None"]
+  answer: 2
+  explain: The body doesn't run until you iterate the generator (with `next()` or a loop).
+- q: What prints?
+  code: |
+    def make_adder(n):
+        def add(x):
+            return x + n
+        return add
+    print(make_adder(5)(10))
+  options: ["5", "10", "15", "An error"]
+  answer: 2
+  explain: "`make_adder(5)` returns a closure that remembers `n = 5`; calling it with 10 gives 15."
+- q: What's the main advantage of `(x * x for x in data)` over `[x * x for x in data]`?
+  options: ["It's always faster", "It doesn't build the whole list in memory", "It can be reused many times", "It sorts the data"]
+  answer: 1
+  explain: Generator expressions are lazy and produce one value at a time, but they can only be consumed once.

@@ -1,0 +1,162 @@
+- id: top-words
+  title: Top words with Counter
+  difficulty: easy
+  prompt: |
+    Write `top_words(text, n)` that returns the `n` most common **lowercased** words as a list of `(word, count)` tuples, using `collections.Counter`. Ignore the punctuation characters `.,!?`.
+
+    ```py
+    top_words("The cat. The dog! The cat?", 2)  # -> [("the", 3), ("cat", 2)]
+    ```
+  starter: |
+    from collections import Counter
+
+    def top_words(text, n):
+        return []
+  hints:
+    - "Remove punctuation, e.g. with a loop of `text.replace(ch, \"\")` for each character in `\".,!?\"`."
+    - "`Counter(words).most_common(n)`"
+  tests:
+    - name: top two
+      code: |
+        assert top_words("The cat. The dog! The cat?", 2) == [("the", 3), ("cat", 2)], top_words("The cat. The dog! The cat?", 2)
+    - name: n larger than vocabulary
+      code: |
+        assert top_words("a b", 5) == [("a", 1), ("b", 1)]
+  solution: |
+    from collections import Counter
+
+    def top_words(text, n):
+        for ch in ".,!?":
+            text = text.replace(ch, "")
+        return Counter(text.lower().split()).most_common(n)
+- id: group-by-letter
+  title: Group with defaultdict
+  difficulty: easy
+  prompt: |
+    Write `group_by_first_letter(words)` that returns a regular `dict` mapping each lowercase first letter to a **sorted** list of the words starting with it.
+
+    ```py
+    group_by_first_letter(["pear", "apple", "Plum", "avocado"])
+    # -> {"p": ["Plum", "pear"], "a": ["apple", "avocado"]}
+    ```
+  starter: |
+    from collections import defaultdict
+
+    def group_by_first_letter(words):
+        return {}
+  hints:
+    - "`groups = defaultdict(list)` then `groups[w[0].lower()].append(w)`."
+    - "Return `{k: sorted(v) for k, v in groups.items()}`."
+  tests:
+    - name: groups and sorts
+      code: |
+        assert group_by_first_letter(["pear", "apple", "Plum", "avocado"]) == {"p": ["Plum", "pear"], "a": ["apple", "avocado"]}
+    - name: returns a plain dict
+      code: |
+        assert type(group_by_first_letter(["x"])) is dict
+  solution: |
+    from collections import defaultdict
+
+    def group_by_first_letter(words):
+        groups = defaultdict(list)
+        for w in words:
+            groups[w[0].lower()].append(w)
+        return {k: sorted(v) for k, v in groups.items()}
+- id: days-until
+  title: Days until a date
+  difficulty: easy
+  prompt: |
+    Write `days_until(target, today)` where both arguments are ISO date strings like `"2026-12-25"`. Return the number of days from `today` to `target` (negative if the target is in the past).
+  starter: |
+    from datetime import date
+
+    def days_until(target, today):
+        return 0
+  hints:
+    - "`date.fromisoformat(\"2026-12-25\")` parses the string."
+    - "Subtracting two dates gives a timedelta; use `.days`."
+  tests:
+    - name: future date
+      code: |
+        assert days_until("2026-12-25", "2026-11-14") == 41
+    - name: past date
+      code: |
+        assert days_until("2026-01-01", "2026-01-11") == -10
+    - name: across a leap day
+      code: |
+        assert days_until("2028-03-01", "2028-02-28") == 2
+  solution: |
+    from datetime import date
+
+    def days_until(target, today):
+        return (date.fromisoformat(target) - date.fromisoformat(today)).days
+- id: extract-emails
+  title: Extract emails with regex
+  difficulty: medium
+  prompt: |
+    Write `extract_emails(text)` that returns all email addresses found in `text`, **lowercased**, without duplicates, in the order first seen.
+
+    A simple pattern is fine: one or more of letters, digits, `.`, `_`, `+` or `-`, then `@`, then a domain like `example.co.in`.
+  starter: |
+    import re
+
+    def extract_emails(text):
+        return []
+  hints:
+    - "Try `r\"[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+\"`."
+    - "Keep a list and a set: append only if not already seen."
+  tests:
+    - name: finds emails
+      code: |
+        t = "Write to Jerry@Example.com or sales@shop.co.in. Not: @nobody, or plain text."
+        assert extract_emails(t) == ["jerry@example.com", "sales@shop.co.in"], extract_emails(t)
+    - name: removes duplicates keeping order
+      code: |
+        assert extract_emails("a@x.io b@y.io A@X.IO") == ["a@x.io", "b@y.io"]
+    - name: none found
+      code: |
+        assert extract_emails("no emails here") == []
+  solution: |
+    import re
+
+    def extract_emails(text):
+        seen, out = set(), []
+        for m in re.findall(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", text):
+            e = m.lower()
+            if e not in seen:
+                seen.add(e)
+                out.append(e)
+        return out
+- id: list-py-files
+  title: Find files with pathlib
+  difficulty: medium
+  prompt: |
+    Write `find_files(folder, extension)` that returns a **sorted list of file names** (just the names, not full paths) with the given extension anywhere under `folder`, including subfolders.
+
+    ```py
+    find_files("project", ".py")   # -> ["app.py", "test_app.py", "utils.py"]
+    ```
+  starter: |
+    from pathlib import Path
+
+    def find_files(folder, extension):
+        return []
+  hints:
+    - "`Path(folder).rglob(\"*\" + extension)` searches recursively."
+    - "Use `p.name` and check `p.is_file()`."
+  tests:
+    - name: finds nested files
+      code: |
+        from pathlib import Path
+        for f in ["project/app.py", "project/lib/utils.py", "project/tests/test_app.py", "project/README.md"]:
+            Path(f).parent.mkdir(parents=True, exist_ok=True)
+            Path(f).write_text("x")
+        assert find_files("project", ".py") == ["app.py", "test_app.py", "utils.py"], find_files("project", ".py")
+    - name: other extension
+      code: |
+        assert find_files("project", ".md") == ["README.md"]
+  solution: |
+    from pathlib import Path
+
+    def find_files(folder, extension):
+        return sorted(p.name for p in Path(folder).rglob("*" + extension) if p.is_file())

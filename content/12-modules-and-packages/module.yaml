@@ -1,0 +1,5 @@
+title: Modules, Packages and pip
+summary: Split code across files, import from the standard library and PyPI, and keep each project's dependencies isolated with virtual environments.
+icon: package
+section: foundations
+skills: [Imports, Packages, pip, Virtual environments]

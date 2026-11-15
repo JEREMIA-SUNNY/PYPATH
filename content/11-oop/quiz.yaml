@@ -1,0 +1,20 @@
+- q: What is `self` in a method?
+  options: ["The class itself", "The instance the method was called on", "A reserved keyword", "The parent class"]
+  answer: 1
+  explain: "`obj.method()` passes `obj` as the first argument, which by convention is named `self`."
+- q: Which decorator makes a method readable like an attribute (no parentheses)?
+  options: ["`@staticmethod`", "`@classmethod`", "`@property`", "`@attribute`"]
+  answer: 2
+  explain: "`@property` turns a method into a computed attribute, and can be paired with a setter."
+- q: What does `super().__init__(...)` do in a subclass?
+  options: ["Creates a new parent object", "Calls the parent class's `__init__` on this instance", "Deletes the parent attributes", "Makes the class abstract"]
+  answer: 1
+  explain: It runs the parent's initialiser so the inherited attributes get set up.
+- q: Which dunder method does `print(obj)` use first?
+  options: ["`__repr__`", "`__str__`", "`__print__`", "`__format__`"]
+  answer: 1
+  explain: "`print` uses `__str__`, falling back to `__repr__` if `__str__` isn't defined."
+- q: What is polymorphism?
+  options: ["A class with many attributes", "Different types responding to the same method call in their own way", "Copying a class", "Using several inheritance levels"]
+  answer: 1
+  explain: Calling `pet.speak()` works for a Dog or a Cat, and each gives its own answer.

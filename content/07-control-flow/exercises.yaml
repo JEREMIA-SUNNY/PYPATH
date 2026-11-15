@@ -1,0 +1,102 @@
+- id: letter-grade
+  title: Letter grade
+  difficulty: easy
+  prompt: |
+    Complete `grade(score)` so it returns a letter for a score from 0 to 100:
+
+    | Score | Grade |
+    | --- | --- |
+    | 90 and above | `"A"` |
+    | 80 to 89 | `"B"` |
+    | 70 to 79 | `"C"` |
+    | 60 to 69 | `"D"` |
+    | below 60 | `"F"` |
+  starter: |
+    def grade(score):
+        return "F"
+  hints:
+    - Check from the highest band down with `if` / `elif`.
+    - "Because only the first true branch runs, `elif score >= 80` already implies `score < 90`."
+  tests:
+    - name: boundaries
+      code: |
+        assert [grade(s) for s in (90, 89, 80, 79, 70, 69, 60, 59)] == ["A", "B", "B", "C", "C", "D", "D", "F"]
+    - name: extremes
+      code: |
+        assert grade(100) == "A" and grade(0) == "F"
+  solution: |
+    def grade(score):
+        if score >= 90:
+            return "A"
+        elif score >= 80:
+            return "B"
+        elif score >= 70:
+            return "C"
+        elif score >= 60:
+            return "D"
+        return "F"
+- id: fizzbuzz-word
+  title: FizzBuzz word
+  difficulty: easy
+  prompt: |
+    Complete `fizzbuzz(n)`:
+
+    - multiples of both 3 and 5 return `"FizzBuzz"`
+    - multiples of 3 return `"Fizz"`
+    - multiples of 5 return `"Buzz"`
+    - anything else returns the number as a string
+  starter: |
+    def fizzbuzz(n):
+        return str(n)
+  hints:
+    - "`n % 3 == 0` means n is divisible by 3."
+    - Check the FizzBuzz case **first**, or it will never be reached.
+  tests:
+    - name: fizz
+      code: |
+        assert fizzbuzz(9) == "Fizz"
+    - name: buzz
+      code: |
+        assert fizzbuzz(10) == "Buzz"
+    - name: fizzbuzz
+      code: |
+        assert fizzbuzz(30) == "FizzBuzz"
+    - name: plain number
+      code: |
+        assert fizzbuzz(7) == "7"
+  solution: |
+    def fizzbuzz(n):
+        if n % 15 == 0:
+            return "FizzBuzz"
+        if n % 3 == 0:
+            return "Fizz"
+        if n % 5 == 0:
+            return "Buzz"
+        return str(n)
+- id: leap-year
+  title: Leap year
+  difficulty: medium
+  prompt: |
+    Complete `is_leap(year)`. A year is a leap year if it's divisible by 4, **except** century years, which must also be divisible by 400. So 2024 and 2000 are leap years; 1900 and 2026 are not.
+  starter: |
+    def is_leap(year):
+        return year % 4 == 0
+  hints:
+    - "Try writing it as one boolean expression with `and` / `or`."
+    - "`year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)`"
+  tests:
+    - name: ordinary leap year
+      code: |
+        assert is_leap(2024) is True
+    - name: century that is not a leap year
+      code: |
+        assert is_leap(1900) is False
+    - name: century divisible by 400
+      code: |
+        assert is_leap(2000) is True
+    - name: ordinary year
+      code: |
+        assert is_leap(2026) is False
+  solution: |
+    def is_leap(year):
+        return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)

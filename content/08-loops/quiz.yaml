@@ -1,0 +1,22 @@
+- q: What does `list(range(2, 8, 2))` return?
+  options: ["`[2, 4, 6, 8]`", "`[2, 4, 6]`", "`[4, 6, 8]`", "`[2, 3, 4, 5, 6, 7]`"]
+  answer: 1
+  explain: The stop value 8 is excluded, and the step is 2.
+- q: What does `continue` do inside a loop?
+  options: ["Exits the loop", "Skips to the next iteration", "Restarts the loop from the beginning", "Pauses the program"]
+  answer: 1
+  explain: "`continue` ends the current iteration early and moves on to the next one. `break` exits the loop."
+- q: When does a `for` loop's `else` block run?
+  options: ["When the loop body raises an error", "When the loop completes without `break`", "Only when the iterable is empty", "Never; it's a syntax error"]
+  answer: 1
+  explain: The `else` clause runs if the loop wasn't exited by `break`, which makes it handy for "search, else not found".
+- q: What does this produce?
+  code: |
+    [x * 2 for x in range(5) if x % 2 == 1]
+  options: ["`[2, 6]`", "`[0, 4, 8]`", "`[1, 3]`", "`[2, 4, 6, 8]`"]
+  answer: 0
+  explain: The odd values are 1 and 3, and doubling them gives `[2, 6]`.
+- q: What does `list(zip([1, 2, 3], "ab"))` return?
+  options: ["`[(1, 'a'), (2, 'b'), (3, None)]`", "`[(1, 'a'), (2, 'b')]`", "An error", "`[1, 'a', 2, 'b']`"]
+  answer: 1
+  explain: "`zip` stops at the shortest input unless you pass `strict=True`."

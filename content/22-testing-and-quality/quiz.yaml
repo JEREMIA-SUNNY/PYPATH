@@ -1,0 +1,20 @@
+- q: How does a pytest test get a fixture's value?
+  options: ["By importing it", "By naming the fixture as a parameter", "By calling `fixture()`", "Through a global variable"]
+  answer: 1
+  explain: pytest sees the parameter name, runs the matching fixture and passes in what it returns or yields.
+- q: Which built-in fixture gives each test a fresh temporary directory?
+  options: ["`tmpdir_factory`", "`tmp_path`", "`tempfile`", "`capsys`"]
+  answer: 1
+  explain: "`tmp_path` is a `pathlib.Path` to a unique temporary folder for that test."
+- q: You patch `requests.get` but your module did `import requests` and calls `requests.get` inside `weather.py`. What target do you patch?
+  options: ["`requests.get`", "`weather.requests.get`", "`unittest.requests.get`", "`get`"]
+  answer: 1
+  explain: Patch where the name is looked up at call time, here inside the `weather` module.
+- q: What does `mock.side_effect = TimeoutError` do?
+  options: ["Logs a timeout", "Makes calling the mock raise TimeoutError", "Delays the mock", "Ignores errors"]
+  answer: 1
+  explain: "`side_effect` can be an exception to raise, a function to call, or an iterable of return values."
+- q: What's the main job of CI (e.g. GitHub Actions) in a Python project?
+  options: ["Deploying to PyPI", "Automatically running tests and checks on every push or pull request", "Formatting your code locally", "Writing tests for you"]
+  answer: 1
+  explain: CI makes sure broken code is caught before it's merged.

@@ -1,0 +1,20 @@
+- q: With `parser.add_argument("--dry-run", action="store_true")`, how do you read the value?
+  options: ["`args.dry-run`", "`args.dry_run`", "`args[\"--dry-run\"]`", "`args.dryRun`"]
+  answer: 1
+  explain: argparse converts dashes to underscores in attribute names.
+- q: Why give a file-moving script a `--dry-run` mode?
+  options: ["It's faster", "To preview changes before anything irreversible happens", "argparse requires it", "To skip logging"]
+  answer: 1
+  explain: Seeing the plan first prevents costly mistakes.
+- q: What does `main()` returning 0 mean when used as `raise SystemExit(main())`?
+  options: ["The script failed", "The script succeeded (exit code 0)", "The script should retry", "Nothing"]
+  answer: 1
+  explain: Exit code 0 means success; non-zero signals failure to shells, cron and CI.
+- q: Why use absolute paths in a cron job?
+  options: ["cron doesn't support relative paths at all", "cron runs with a different working directory and minimal environment", "It's faster", "Python requires it"]
+  answer: 1
+  explain: The job doesn't start in your project folder, so relative paths usually point to the wrong place.
+- q: How does openpyxl store a live Excel formula in a cell?
+  options: ["`ws[\"B4\"].formula(\"SUM(B2:B3)\")`", "`ws[\"B4\"] = \"=SUM(B2:B3)\"`", "It can't", "`ws.add_formula(\"B4\", \"SUM\")`"]
+  answer: 1
+  explain: Assign a string starting with `=`; Excel evaluates it when the file is opened.

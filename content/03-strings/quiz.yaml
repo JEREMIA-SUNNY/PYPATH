@@ -1,0 +1,23 @@
+- q: What is `"Python"[1:4]`?
+  options: ["`'Pyt'`", "`'yth'`", "`'ytho'`", "`'yt'`"]
+  answer: 1
+  explain: Slicing starts at index 1 (`y`) and stops *before* index 4, giving `yth`.
+- q: What is `"Python"[::-1]`?
+  options: ["`'P'`", "`'n'`", "`'nohtyP'`", "An error"]
+  answer: 2
+  explain: A step of -1 walks the string backwards, reversing it.
+- q: After running this, what is `s`?
+  code: |
+    s = "hello"
+    s.upper()
+  options: ["`'HELLO'`", "`'hello'`", "`'Hello'`", "`None`"]
+  answer: 1
+  explain: Strings are immutable. `upper()` returns a new string, which was thrown away. You'd need `s = s.upper()`.
+- q: What does `"a,b,,c".split(",")` return?
+  options: ["`['a', 'b', 'c']`", "`['a', 'b', '', 'c']`", "`['a,b,,c']`", "`['a', 'b', ',', 'c']`"]
+  answer: 1
+  explain: With an explicit separator, consecutive separators produce an empty string between them.
+- q: Which f-string prints `3.14` from `pi = 3.14159`?
+  options: ["`f\"{pi:2}\"`", "`f\"{pi:.2f}\"`", "`f\"{pi:.2}\"`", "`f\"{round(pi)}\"`"]
+  answer: 1
+  explain: "`.2f` means fixed-point with two digits after the decimal point. (`.2` alone means two significant digits: `3.1`.)"

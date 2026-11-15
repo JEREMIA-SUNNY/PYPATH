@@ -1,0 +1,5 @@
+title: SQL and Databases
+summary: SQL from SELECT to JOIN and GROUP BY, Python's built-in sqlite3, parameterized queries that stop SQL injection, and the basics of schema design.
+icon: database
+section: career
+skills: [SQL, SQLite, Joins and aggregates, Database design, SQL injection prevention]

@@ -1,0 +1,20 @@
+- q: Which data structure checks whether brackets are balanced?
+  options: ["Queue", "Stack", "Set", "Heap"]
+  answer: 1
+  explain: The most recent unmatched opening bracket must match the next closing one, which is last in, first out.
+- q: Why use `collections.deque` instead of a list for a queue?
+  options: ["deque is sorted", "`popleft()` is O(1), while `list.pop(0)` is O(n)", "Lists can't hold strings", "deque uses less memory for everything"]
+  answer: 1
+  explain: Removing from the front of a list shifts every element.
+- q: What's the time complexity of binary search?
+  options: ["O(n)", "O(log n)", "O(1)", "O(n log n)"]
+  answer: 1
+  explain: Each comparison halves the remaining range.
+- q: What precondition does binary search over an array need?
+  options: ["No duplicates", "The array is sorted", "The array length is a power of two", "All numbers are positive"]
+  answer: 1
+  explain: Discarding half the range is only valid if the data is ordered.
+- q: In the monotonic stack "next greater element" solution, how many times is each index pushed and popped?
+  options: ["At most once each", "Up to n times", "log n times", "Twice"]
+  answer: 0
+  explain: That's why the whole algorithm is O(n) despite the nested while loop.

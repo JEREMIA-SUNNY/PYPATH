@@ -1,0 +1,107 @@
+- id: safe-divide
+  title: Safe division
+  difficulty: easy
+  prompt: |
+    Write `safe_divide(a, b)` that returns `a / b`, but returns `None` instead of crashing when `b` is zero. Use `try`/`except`.
+  starter: |
+    def safe_divide(a, b):
+        return a / b
+  hints:
+    - "Wrap the division in `try:` and catch `ZeroDivisionError`."
+  tests:
+    - name: normal division
+      code: |
+        assert safe_divide(10, 4) == 2.5
+    - name: division by zero
+      code: |
+        assert safe_divide(1, 0) is None
+  solution: |
+    def safe_divide(a, b):
+        try:
+            return a / b
+        except ZeroDivisionError:
+            return None
+- id: parse-age
+  title: Validate input
+  difficulty: medium
+  prompt: |
+    Write `parse_age(text)` that converts a string to an int age.
+
+    - Surrounding whitespace is fine: `" 29 "` → `29`.
+    - If the text isn't a whole number, raise `ValueError` with the message `"age must be a whole number"`.
+    - If the number is below 0 or above 150, raise `ValueError` with the message `"age out of range"`.
+  starter: |
+    def parse_age(text):
+        return int(text)
+  hints:
+    - "Catch the `ValueError` from `int()` and raise your own with the required message."
+    - Then check the range and raise again if needed.
+  tests:
+    - name: valid with spaces
+      code: |
+        assert parse_age(" 29 ") == 29
+    - name: not a number
+      code: |
+        try:
+            parse_age("twenty")
+            raise AssertionError("expected ValueError")
+        except ValueError as e:
+            assert str(e) == "age must be a whole number", str(e)
+    - name: out of range
+      code: |
+        for bad in ("-1", "200"):
+            try:
+                parse_age(bad)
+                raise AssertionError("expected ValueError for " + bad)
+            except ValueError as e:
+                assert str(e) == "age out of range", str(e)
+  solution: |
+    def parse_age(text):
+        try:
+            age = int(text.strip())
+        except ValueError:
+            raise ValueError("age must be a whole number") from None
+        if not 0 <= age <= 150:
+            raise ValueError("age out of range")
+        return age
+- id: custom-exception
+  title: A custom exception
+  difficulty: medium
+  prompt: |
+    1. Define `InsufficientFundsError`, a subclass of `Exception`.
+    2. Write `withdraw(balance, amount)` that returns the new balance, or raises `InsufficientFundsError` if `amount > balance`.
+    3. Write `try_withdraw(balance, amount)` that calls `withdraw` and returns the new balance, or the string `"declined"` if it raised `InsufficientFundsError`.
+  starter: |
+    def withdraw(balance, amount):
+        return balance - amount
+  hints:
+    - "`class InsufficientFundsError(Exception): pass` is enough."
+    - "`try_withdraw` wraps the call in `try`/`except InsufficientFundsError`."
+  tests:
+    - name: is an Exception subclass
+      code: |
+        assert issubclass(InsufficientFundsError, Exception)
+    - name: raises when overdrawn
+      code: |
+        try:
+            withdraw(50, 80)
+            raise AssertionError("expected InsufficientFundsError")
+        except InsufficientFundsError:
+            pass
+    - name: try_withdraw handles both cases
+      code: |
+        assert try_withdraw(100, 30) == 70 and try_withdraw(10, 30) == "declined"
+  solution: |
+    class InsufficientFundsError(Exception):
+        pass
+
+    def withdraw(balance, amount):
+        if amount > balance:
+            raise InsufficientFundsError(f"balance {balance} is less than {amount}")
+        return balance - amount
+
+    def try_withdraw(balance, amount):
+        try:
+            return withdraw(balance, amount)
+        except InsufficientFundsError:
+            return "declined"

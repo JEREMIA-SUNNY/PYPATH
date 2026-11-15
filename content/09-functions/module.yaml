@@ -1,0 +1,5 @@
+title: Functions
+summary: Define reusable functions, master every kind of argument, use lambdas with map and filter, and understand scope.
+icon: function
+section: foundations
+skills: [Functions, "*args and **kwargs", Lambdas, Scope]

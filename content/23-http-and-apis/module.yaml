@@ -1,0 +1,6 @@
+title: HTTP, JSON and APIs
+summary: How the web talks. HTTP methods and status codes, JSON, calling REST APIs with requests, and building robust clients with timeouts, retries and pagination.
+icon: plug
+section: career
+skills: [REST APIs, HTTP, JSON, requests, Retries and backoff]
+packages: [requests]

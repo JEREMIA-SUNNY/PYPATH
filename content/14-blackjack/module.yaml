@@ -1,0 +1,6 @@
+title: "Project 2: Blackjack"
+summary: Model a card game with classes (Card, Deck, Hand, Chips) and write the game rules, then play it in your terminal.
+icon: spade
+kind: project
+section: foundations
+skills: [Object-oriented design, Classes, Game rules, Testing]

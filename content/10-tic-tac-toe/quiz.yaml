@@ -1,0 +1,21 @@
+- q: With the board stored as a list of 9 strings, which index holds square 5 (the centre)?
+  options: ["5", "4", "3", "0"]
+  answer: 1
+  explain: Square `n` is at index `n - 1` because lists are zero-indexed.
+- q: How many distinct winning lines does a 3×3 Tic Tac Toe board have?
+  options: ["6", "8", "9", "12"]
+  answer: 1
+  explain: 3 rows, 3 columns and 2 diagonals.
+- q: Why break the game into functions like `winner` and `is_full`?
+  options: ["Python requires it", "Each piece can be built and tested on its own, and the main loop stays readable", "Functions run faster than loops", "It uses less memory"]
+  answer: 1
+  explain: Decomposition makes each part small enough to reason about and test. That's the core skill of programming.
+- q: >-
+    What does `board[a] == board[b] == board[c]` check?
+  options: ["That a, b and c are equal numbers", "That all three squares hold the same value", "That the board is full", "It is a syntax error"]
+  answer: 1
+  explain: Chained comparisons work with `==` too, so this is true only when all three squares match.
+- q: What does `if __name__ == "__main__":` do in `tictactoe.py`?
+  options: ["Runs the block only when the file is executed directly, not when imported", "Declares the main function", "Makes the file executable", "Imports the game loop"]
+  answer: 0
+  explain: When another file imports your module, `__name__` is the module's name, so the game doesn't start by surprise.

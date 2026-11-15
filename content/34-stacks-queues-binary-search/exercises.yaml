@@ -1,0 +1,163 @@
+- id: valid-parentheses
+  title: Valid parentheses
+  difficulty: easy
+  prompt: |
+    Given a string containing only `()[]{}`, return `True` if every bracket is closed by the same type in the correct order.
+
+    ```py
+    is_valid("{[]}")   # -> True
+    is_valid("([)]")   # -> False
+    ```
+  starter: |
+    def is_valid(s):
+        return s.count("(") == s.count(")")
+  hints:
+    - Push opening brackets onto a stack.
+    - On a closing bracket, the stack's top must be its partner. Also check the stack isn't empty.
+  tests:
+    - name: valid cases
+      code: |
+        assert all(is_valid(s) for s in ["", "()", "()[]{}", "{[]}", "(([]){})"])
+    - name: invalid cases
+      code: |
+        assert not any(is_valid(s) for s in ["(]", "([)]", "(", ")", "){"])
+  solution: |
+    def is_valid(s):
+        pairs = {")": "(", "]": "[", "}": "{"}
+        stack = []
+        for ch in s:
+            if ch in pairs:
+                if not stack or stack.pop() != pairs[ch]:
+                    return False
+            else:
+                stack.append(ch)
+        return not stack
+- id: binary-search
+  title: Binary search
+  difficulty: easy
+  prompt: |
+    Write `search(nums, target)` for a **sorted** list of distinct integers: return the index of `target`, or `-1`. It must be O(log n), so don't use `index()` or `in`. The tests check how many elements you read.
+  starter: |
+    def search(nums, target):
+        for i, x in enumerate(nums):
+            if x == target:
+                return i
+        return -1
+  hints:
+    - "`lo, hi = 0, len(nums) - 1`, loop `while lo <= hi`, `mid = (lo + hi) // 2`."
+  tests:
+    - name: finds and misses
+      code: |
+        assert search([-1, 0, 3, 5, 9, 12], 9) == 4 and search([-1, 0, 3, 5, 9, 12], 2) == -1
+        assert search([], 1) == -1 and search([5], 5) == 0
+    - name: reads only O(log n) elements
+      code: |
+        class Counting(list):
+            reads = 0
+            def __getitem__(self, i):
+                Counting.reads += 1
+                return list.__getitem__(self, i)
+            def __iter__(self):
+                raise AssertionError("don't loop over the whole list; use binary search")
+            def __contains__(self, x):
+                raise AssertionError("don't use `in`; it scans the whole list")
+            def index(self, *args):
+                raise AssertionError("don't use index(); it scans the whole list")
+        data = Counting(range(1_000_000))
+        assert search(data, 765_432) == 765_432
+        assert Counting.reads <= 40, f"read {Counting.reads} elements; binary search needs about 20"
+  solution: |
+    def search(nums, target):
+        lo, hi = 0, len(nums) - 1
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if nums[mid] == target:
+                return mid
+            if nums[mid] < target:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+        return -1
+- id: daily-temperatures
+  title: Daily temperatures
+  difficulty: medium
+  prompt: |
+    Given daily temperatures, return a list where `answer[i]` is the number of days you have to wait after day `i` for a **warmer** temperature, or `0` if there's no warmer day. O(n) with a monotonic stack; the tests use 100,000 days.
+
+    ```py
+    daily_temperatures([73, 74, 75, 71, 69, 72, 76, 73])
+    # -> [1, 1, 4, 2, 1, 1, 0, 0]
+    ```
+  starter: |
+    def daily_temperatures(temps):
+        return [0] * len(temps)
+  hints:
+    - Keep a stack of indices still waiting for a warmer day.
+    - "When `temps[i]` is warmer than the top, pop it and set `answer[top] = i - top`."
+  tests:
+    - name: example
+      code: |
+        assert daily_temperatures([73, 74, 75, 71, 69, 72, 76, 73]) == [1, 1, 4, 2, 1, 1, 0, 0]
+        assert daily_temperatures([30, 60, 90]) == [1, 1, 0] and daily_temperatures([90, 60, 30]) == [0, 0, 0]
+    - name: large input quickly
+      code: |
+        import time
+        temps = list(range(100_000, 0, -1)) + [200_000]
+        t = time.perf_counter()
+        out = daily_temperatures(temps)
+        assert out[0] == 100_000 and out[-1] == 0
+        assert time.perf_counter() - t < 1.0, "too slow, use a monotonic stack"
+  solution: |
+    def daily_temperatures(temps):
+        answer = [0] * len(temps)
+        stack = []
+        for i, t in enumerate(temps):
+            while stack and temps[stack[-1]] < t:
+                j = stack.pop()
+                answer[j] = i - j
+            stack.append(i)
+        return answer
+- id: min-eating-speed
+  title: Binary search on the answer
+  difficulty: medium
+  prompt: |
+    A courier has `piles` of parcels and `hours` hours. Each hour they pick one pile and deliver up to `speed` parcels from it (if the pile has fewer, they finish it and wait out the hour). Return the **minimum integer speed** that delivers everything within `hours`. `hours >= len(piles)` is guaranteed.
+
+    ```py
+    min_speed([3, 6, 7, 11], 8)   # -> 4
+    ```
+
+    Piles can be as large as 10⁹, so trying every speed is too slow.
+  starter: |
+    import math
+
+    def min_speed(piles, hours):
+        speed = 1
+        while sum(math.ceil(p / speed) for p in piles) > hours:
+            speed += 1
+        return speed
+  hints:
+    - "Hours needed at speed s: `sum(ceil(p / s) for p in piles)`. It shrinks as s grows."
+    - "Binary search s between 1 and `max(piles)`."
+  tests:
+    - name: examples
+      code: |
+        assert min_speed([3, 6, 7, 11], 8) == 4 and min_speed([30, 11, 23, 4, 20], 5) == 30 and min_speed([30, 11, 23, 4, 20], 6) == 23
+    - name: huge piles quickly
+      code: |
+        import time
+        t = time.perf_counter()
+        assert min_speed([1_000_000_000], 2) == 500_000_000
+        assert time.perf_counter() - t < 1.0
+  solution: |
+    import math
+
+    def min_speed(piles, hours):
+        lo, hi = 1, max(piles)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if sum(math.ceil(p / mid) for p in piles) <= hours:
+                hi = mid
+            else:
+                lo = mid + 1
+        return lo

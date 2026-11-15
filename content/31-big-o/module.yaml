@@ -1,0 +1,5 @@
+title: Big-O and Python Performance
+summary: Analyse time and space complexity, and know what each built-in operation costs, which is the vocabulary every coding interview uses.
+icon: timer
+section: interview
+skills: [Complexity analysis, Big-O notation]

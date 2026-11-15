@@ -1,0 +1,20 @@
+- q: What does an embedding represent?
+  options: ["A compressed copy of the text", "A vector capturing the text's meaning, so similar meanings are close together", "The number of tokens", "An encrypted version of the text"]
+  answer: 1
+  explain: Embedding models map text to vectors where semantic similarity becomes geometric closeness.
+- q: What's the cosine similarity of two vectors pointing in exactly the same direction?
+  options: ["0", "1", "-1", "It depends on their length"]
+  answer: 1
+  explain: Cosine measures direction only, so parallel vectors score 1 regardless of length.
+- q: Why use overlap when chunking documents?
+  options: ["To save storage", "So information split at a chunk boundary still appears intact in some chunk", "Embeddings require it", "To make chunks shorter"]
+  answer: 1
+  explain: Overlap reduces the chance that a key sentence is cut in half and lost to retrieval.
+- q: What should a RAG prompt tell the model to do if the answer isn't in the retrieved context?
+  options: ["Guess the most likely answer", "Say it doesn't know", "Search the internet", "Return an empty string"]
+  answer: 1
+  explain: Explicitly allowing "I don't know" reduces hallucinated answers.
+- q: The correct chunk exists but never appears in the top-k results. Which part of the pipeline needs work?
+  options: ["Generation", "Retrieval (chunking, search, re-ranking)", "The UI", "Token counting"]
+  answer: 1
+  explain: If the right context isn't retrieved, the model can't use it. Measure and improve recall@k.

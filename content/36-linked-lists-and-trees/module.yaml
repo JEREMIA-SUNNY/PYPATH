@@ -1,0 +1,5 @@
+title: Linked Lists and Trees
+summary: Pointer manipulation with linked lists, fast/slow pointers, and binary trees with depth-first and breadth-first traversal.
+icon: tree
+section: interview
+skills: [Linked lists, Binary trees, DFS, BFS]

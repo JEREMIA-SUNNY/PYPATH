@@ -1,0 +1,5 @@
+title: Object-Oriented Programming
+summary: Classes and objects, methods and properties, inheritance and polymorphism, and the dunder methods that make your objects feel built-in.
+icon: boxes
+section: foundations
+skills: [Classes, Inheritance, Dunder methods, Properties]

@@ -1,0 +1,85 @@
+- id: word-count
+  title: Word frequency
+  difficulty: easy
+  prompt: |
+    Complete `word_count(text)` so it returns a dict mapping each **lowercased** word to how many times it appears.
+
+    ```py
+    word_count("the cat and The hat")
+    # -> {"the": 2, "cat": 1, "and": 1, "hat": 1}
+    ```
+  starter: |
+    def word_count(text):
+        counts = {}
+        return counts
+  hints:
+    - "Loop over `text.lower().split()`."
+    - "`counts[w] = counts.get(w, 0) + 1`"
+  tests:
+    - name: counts case-insensitively
+      code: |
+        assert word_count("the cat and The hat") == {"the": 2, "cat": 1, "and": 1, "hat": 1}, word_count("the cat and The hat")
+    - name: empty text
+      code: assert word_count("") == {}
+  solution: |
+    def word_count(text):
+        counts = {}
+        for w in text.lower().split():
+            counts[w] = counts.get(w, 0) + 1
+        return counts
+- id: common-items
+  title: Common items
+  difficulty: easy
+  prompt: |
+    Complete `common_items(a, b)` so it returns a **sorted list** of the items that appear in both lists, without duplicates.
+
+    ```py
+    common_items([3, 1, 2, 2], [2, 3, 5])   # -> [2, 3]
+    ```
+  starter: |
+    def common_items(a, b):
+        return []
+  hints:
+    - Convert both lists to sets and use `&`.
+    - "`sorted()` turns a set into a sorted list."
+  tests:
+    - name: numbers
+      code: assert common_items([3, 1, 2, 2], [2, 3, 5]) == [2, 3]
+    - name: strings
+      code: assert common_items(["sql", "python", "git"], ["python", "docker", "sql"]) == ["python", "sql"]
+    - name: nothing in common
+      code: assert common_items([1], [2]) == []
+  solution: |
+    def common_items(a, b):
+        return sorted(set(a) & set(b))
+- id: invert-dict
+  title: Invert a dictionary
+  difficulty: medium
+  prompt: |
+    Complete `invert(d)` so values become keys and keys become values. If several keys share a value, the new value should be a **sorted list** of those keys. Otherwise keep the single key.
+
+    ```py
+    invert({"a": 1, "b": 2, "c": 1})   # -> {1: ["a", "c"], 2: "b"}
+    ```
+  starter: |
+    def invert(d):
+        return {}
+  hints:
+    - First build a dict of lists, appending every key under its value.
+    - "Then convert: keep the list if it has more than one item, else take `keys[0]`."
+  tests:
+    - name: shared values become lists
+      code: |
+        assert invert({"a": 1, "b": 2, "c": 1}) == {1: ["a", "c"], 2: "b"}, invert({"a": 1, "b": 2, "c": 1})
+    - name: simple swap
+      code: |
+        assert invert({"x": "y"}) == {"y": "x"}
+    - name: empty
+      code: |
+        assert invert({}) == {}
+  solution: |
+    def invert(d):
+        groups = {}
+        for key, value in d.items():
+            groups.setdefault(value, []).append(key)
+        return {v: sorted(ks) if len(ks) > 1 else ks[0] for v, ks in groups.items()}

@@ -1,0 +1,28 @@
+- q: What does `nums` contain after this code?
+  code: |
+    nums = [3, 1, 2]
+    nums = nums.sort()
+  options: ["`[1, 2, 3]`", "`[3, 1, 2]`", "`None`", "An error"]
+  answer: 2
+  explain: "`list.sort()` sorts in place and returns `None`, which was then assigned to `nums`."
+- q: What is printed?
+  code: |
+    a = [1, 2]
+    b = a
+    b.append(3)
+    print(a)
+  options: ["`[1, 2]`", "`[1, 2, 3]`", "`[3]`", "An error"]
+  answer: 1
+  explain: "`b = a` doesn't copy. Both names refer to the same list, so appending through `b` changes what `a` sees."
+- q: Which creates a tuple containing one item?
+  options: ["`(5)`", "`(5,)`", "`tuple(5)`", "`[5]`"]
+  answer: 1
+  explain: "`(5)` is just the number 5 in parentheses. The trailing comma makes it a tuple."
+- q: "After `first, *rest = [10, 20, 30]`, what is `rest`?"
+  options: ["`20`", "`(20, 30)`", "`[20, 30]`", "`[10, 20, 30]`"]
+  answer: 2
+  explain: Starred unpacking always collects the remaining items into a **list**.
+- q: What is the difference between `append` and `extend`?
+  options: ["They're identical", "`append` adds one item; `extend` adds each item of an iterable", "`extend` adds to the front", "`append` only works on strings"]
+  answer: 1
+  explain: "`[1].append([2, 3])` gives `[1, [2, 3]]`, while `[1].extend([2, 3])` gives `[1, 2, 3]`."

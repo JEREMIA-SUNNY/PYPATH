@@ -1,0 +1,5 @@
+title: Embeddings, Search and RAG
+summary: Represent meaning as vectors, search by similarity, and build retrieval-augmented generation (RAG) pipelines that answer questions from your own documents with sources.
+icon: brain
+section: career
+skills: [Embeddings, Vector search, RAG pipelines, Chunking, Evaluation]

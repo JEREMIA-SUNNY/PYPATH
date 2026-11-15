@@ -1,0 +1,20 @@
+- q: Which file stops `.venv/` and `.env` from being committed?
+  options: ["`requirements.txt`", "`.gitignore`", "`pyproject.toml`", "`README.md`"]
+  answer: 1
+  explain: Patterns listed in `.gitignore` are excluded from Git tracking.
+- q: You accidentally pushed an API key to GitHub. What's the first thing to do?
+  options: ["Delete the commit", "Make the repo private", "Revoke/rotate the key", "Add the file to .gitignore"]
+  answer: 2
+  explain: Assume the key is compromised the moment it's public. Revoke it first, then clean up history.
+- q: A library at version 2.3.1 adds a new backwards-compatible feature. What's the next version?
+  options: ["2.3.2", "2.4.0", "3.0.0", "2.4.1"]
+  answer: 1
+  explain: New features without breaking changes bump MINOR and reset PATCH to 0.
+- q: Where should a database password come from in a deployed app?
+  options: ["A constant in config.py", "An environment variable or secrets manager", "The README", "A comment in main.py"]
+  answer: 1
+  explain: Config that varies by environment, especially secrets, belongs outside the code.
+- q: Inside an `except` block, which call logs the error message plus the full traceback?
+  options: ["`log.error(e)`", "`log.exception(\"msg\")`", "`print(traceback)`", "`log.debug(\"msg\")`"]
+  answer: 1
+  explain: "`logger.exception` logs at ERROR level and automatically attaches the current traceback."

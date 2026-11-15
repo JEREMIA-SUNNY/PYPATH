@@ -1,0 +1,140 @@
+- id: parse-api-response
+  title: Parse a JSON response
+  difficulty: easy
+  prompt: |
+    An API returns JSON like this:
+
+    ```json
+    {"data": {"users": [
+      {"id": 1, "name": "Ana", "active": true, "roles": ["admin"]},
+      {"id": 2, "name": "Bo", "active": false, "roles": []},
+      {"id": 3, "name": "Cy", "active": true}
+    ]}, "next": null}
+    ```
+
+    Write `active_user_names(body)` that takes the JSON **text** and returns a sorted list of names of active users. A user missing the `active` key counts as inactive.
+  starter: |
+    import json
+
+    def active_user_names(body):
+        return []
+  hints:
+    - "`json.loads(body)[\"data\"][\"users\"]`"
+    - "Use `u.get(\"active\", False)`."
+  tests:
+    - name: filters and sorts
+      code: |
+        body = '{"data": {"users": [{"id": 3, "name": "Cy", "active": true}, {"id": 1, "name": "Ana", "active": true}, {"id": 2, "name": "Bo", "active": false}, {"id": 4, "name": "Di"}]}, "next": null}'
+        assert active_user_names(body) == ["Ana", "Cy"], active_user_names(body)
+    - name: no users
+      code: |
+        assert active_user_names('{"data": {"users": []}}') == []
+  solution: |
+    import json
+
+    def active_user_names(body):
+        users = json.loads(body)["data"]["users"]
+        return sorted(u["name"] for u in users if u.get("active", False))
+- id: retry-backoff
+  title: Retry with exponential backoff
+  difficulty: medium
+  prompt: |
+    Write `retry(func, retries=3, base_delay=1.0, sleep=time.sleep)`:
+
+    - Call `func()` and return its result.
+    - If it raises `ConnectionError`, call `sleep(base_delay * 2 ** attempt)` (attempt starts at 0) and try again, up to `retries` **extra** attempts.
+    - If the last attempt also fails, re-raise the error.
+    - Any other exception should propagate immediately, with no retry.
+
+    The grader passes a fake `sleep` that records delays, so no real waiting happens.
+  starter: |
+    import time
+
+    def retry(func, retries=3, base_delay=1.0, sleep=time.sleep):
+        return func()
+  hints:
+    - "Loop `for attempt in range(retries + 1):` with a `try` inside."
+    - "In the `except ConnectionError:` block, `raise` if `attempt == retries`, otherwise sleep."
+  tests:
+    - name: succeeds after failures with growing delays
+      code: |
+        delays, outcomes = [], [ConnectionError(), ConnectionError(), "ok"]
+        def f():
+            o = outcomes.pop(0)
+            if isinstance(o, Exception):
+                raise o
+            return o
+        assert retry(f, retries=3, base_delay=0.5, sleep=delays.append) == "ok"
+        assert delays == [0.5, 1.0], delays
+    - name: gives up and re-raises
+      code: |
+        delays, calls = [], []
+        def always_fail():
+            calls.append(1)
+            raise ConnectionError("down")
+        try:
+            retry(always_fail, retries=2, base_delay=1, sleep=delays.append)
+            raise AssertionError("expected ConnectionError")
+        except ConnectionError:
+            pass
+        assert len(calls) == 3 and delays == [1, 2], (calls, delays)
+    - name: does not retry other errors
+      code: |
+        delays = []
+        def bad():
+            raise ValueError("bad request")
+        try:
+            retry(bad, sleep=delays.append)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+        assert delays == []
+  solution: |
+    import time
+
+    def retry(func, retries=3, base_delay=1.0, sleep=time.sleep):
+        for attempt in range(retries + 1):
+            try:
+                return func()
+            except ConnectionError:
+                if attempt == retries:
+                    raise
+                sleep(base_delay * 2 ** attempt)
+- id: paginate
+  title: Collect every page
+  difficulty: medium
+  prompt: |
+    Write `fetch_all(fetch_page, limit=None)`. `fetch_page(cursor)` returns a dict like `{"items": [...], "next": "abc"}`; call it first with `None`, then with each `next` cursor until `next` is missing or `None`.
+
+    Return all items in order. If `limit` is given, stop as soon as you have that many items and return exactly `limit` items, without fetching more pages than necessary.
+  starter: |
+    def fetch_all(fetch_page, limit=None):
+        return fetch_page(None)["items"]
+  hints:
+    - "`while True:` fetch, extend, check the limit, then move the cursor."
+    - Slice to the limit at the end with `items[:limit]`.
+  tests:
+    - name: follows cursors
+      code: |
+        pages = {None: {"items": [1, 2], "next": "b"}, "b": {"items": [3, 4], "next": "c"}, "c": {"items": [5]}}
+        assert fetch_all(lambda c: pages[c]) == [1, 2, 3, 4, 5]
+    - name: respects limit and stops early
+      code: |
+        seen = []
+        pages = {None: {"items": [1, 2], "next": "b"}, "b": {"items": [3, 4], "next": "c"}, "c": {"items": [5], "next": None}}
+        def fp(c):
+            seen.append(c)
+            return pages[c]
+        assert fetch_all(fp, limit=3) == [1, 2, 3]
+        assert seen == [None, "b"], seen
+  solution: |
+    def fetch_all(fetch_page, limit=None):
+        items, cursor = [], None
+        while True:
+            page = fetch_page(cursor)
+            items.extend(page["items"])
+            if limit is not None and len(items) >= limit:
+                return items[:limit]
+            cursor = page.get("next")
+            if not cursor:
+                return items

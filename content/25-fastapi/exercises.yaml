@@ -1,0 +1,197 @@
+- id: hello-api
+  title: Your first endpoints
+  difficulty: easy
+  prompt: |
+    Create a FastAPI `app` with two endpoints:
+
+    - `GET /health` returns `{"status": "ok"}`
+    - `GET /square/{n}` where `n` is an int returns `{"n": n, "square": n * n}`. A non-integer `n` must give a 422 (FastAPI does this for you if you type-hint `n: int`).
+
+    Requires `pip install fastapi httpx` on your machine.
+  starter: |
+    from fastapi import FastAPI
+
+    app = FastAPI()
+  hints:
+    - "Decorate functions with `@app.get(\"/health\")` and `@app.get(\"/square/{n}\")`."
+  tests:
+    - name: health
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        r = c.get("/health")
+        assert r.status_code == 200 and r.json() == {"status": "ok"}, r.text
+    - name: square
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        assert c.get("/square/12").json() == {"n": 12, "square": 144}
+    - name: validation
+      code: |
+        from fastapi.testclient import TestClient
+        assert TestClient(app).get("/square/abc").status_code == 422
+  solution: |
+    from fastapi import FastAPI
+
+    app = FastAPI()
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok"}
+
+    @app.get("/square/{n}")
+    def square(n: int):
+        return {"n": n, "square": n * n}
+- id: validated-create
+  title: Validated POST with Pydantic
+  difficulty: medium
+  prompt: |
+    Build `POST /products`:
+
+    - The body is a Pydantic model `ProductIn` with `name: str` (1 to 50 characters) and `price: float` that must be **greater than 0**.
+    - On success return status **201** and `{"id": <int>, "name": ..., "price": ...}`. ids start at 1 and increase.
+    - Invalid bodies must return 422 automatically.
+  starter: |
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+
+    app = FastAPI()
+    PRODUCTS = []
+  hints:
+    - "`from pydantic import Field`; `price: float = Field(gt=0)`, `name: str = Field(min_length=1, max_length=50)`."
+    - "`@app.post(\"/products\", status_code=201)`"
+    - "`product.model_dump()` turns the model into a dict."
+  tests:
+    - name: creates with 201 and increasing ids
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        r1 = c.post("/products", json={"name": "Pen", "price": 20})
+        r2 = c.post("/products", json={"name": "Bag", "price": 899.5})
+        assert r1.status_code == 201, r1.text
+        assert r1.json() == {"id": 1, "name": "Pen", "price": 20.0} and r2.json()["id"] == 2, (r1.json(), r2.json())
+    - name: rejects invalid bodies
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        assert c.post("/products", json={"name": "Free", "price": 0}).status_code == 422
+        assert c.post("/products", json={"name": "", "price": 5}).status_code == 422
+        assert c.post("/products", json={"price": 5}).status_code == 422
+  solution: |
+    from fastapi import FastAPI
+    from pydantic import BaseModel, Field
+
+    app = FastAPI()
+    PRODUCTS = []
+
+    class ProductIn(BaseModel):
+        name: str = Field(min_length=1, max_length=50)
+        price: float = Field(gt=0)
+
+    @app.post("/products", status_code=201)
+    def create_product(product: ProductIn):
+        item = {"id": len(PRODUCTS) + 1, **product.model_dump()}
+        PRODUCTS.append(item)
+        return item
+- id: todo-crud
+  title: A small CRUD API
+  difficulty: hard
+  prompt: |
+    Build an in-memory to-do API:
+
+    | Method and path | Behaviour |
+    | --- | --- |
+    | `GET /todos` | list all todos (optionally `?done=true` or `?done=false` to filter) |
+    | `POST /todos` | body `{"title": str}`; create with `done: false`; return 201 and the todo `{"id", "title", "done"}` |
+    | `GET /todos/{id}` | return the todo, or 404 with `{"detail": "Todo not found"}` |
+    | `PATCH /todos/{id}` | body may contain `title` and/or `done`; update only what's sent; 404 if missing |
+    | `DELETE /todos/{id}` | delete it; return 204 with no body; 404 if missing |
+  starter: |
+    from fastapi import FastAPI, HTTPException
+    from pydantic import BaseModel
+
+    app = FastAPI()
+    TODOS: dict[int, dict] = {}
+  hints:
+    - "For PATCH, a model with `title: str | None = None` and `done: bool | None = None`, then `patch.model_dump(exclude_unset=True)`."
+    - "Use a helper `get_or_404(todo_id)` that raises `HTTPException(404, \"Todo not found\")`."
+    - "DELETE: `@app.delete(\"/todos/{todo_id}\", status_code=204)` and return `None`."
+  tests:
+    - name: create, read, list
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        r = c.post("/todos", json={"title": "Learn FastAPI"})
+        assert r.status_code == 201, r.text
+        t = r.json()
+        assert t["title"] == "Learn FastAPI" and t["done"] is False and isinstance(t["id"], int)
+        assert c.get(f"/todos/{t['id']}").json() == t
+        assert t in c.get("/todos").json()
+    - name: patch and filter
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        a = c.post("/todos", json={"title": "A"}).json()
+        b = c.post("/todos", json={"title": "B"}).json()
+        r = c.patch(f"/todos/{a['id']}", json={"done": True})
+        assert r.status_code == 200 and r.json()["done"] is True and r.json()["title"] == "A", r.text
+        done_ids = [x["id"] for x in c.get("/todos", params={"done": "true"}).json()]
+        open_ids = [x["id"] for x in c.get("/todos", params={"done": "false"}).json()]
+        assert a["id"] in done_ids and b["id"] not in done_ids and b["id"] in open_ids
+    - name: delete and 404s
+      code: |
+        from fastapi.testclient import TestClient
+        c = TestClient(app)
+        t = c.post("/todos", json={"title": "temp"}).json()
+        r = c.delete(f"/todos/{t['id']}")
+        assert r.status_code == 204 and r.content == b"", (r.status_code, r.content)
+        assert c.get(f"/todos/{t['id']}").json() == {"detail": "Todo not found"}
+        assert c.delete(f"/todos/{t['id']}").status_code == 404
+        assert c.patch("/todos/9999", json={"done": True}).status_code == 404
+  solution: |
+    from fastapi import FastAPI, HTTPException
+    from pydantic import BaseModel
+
+    app = FastAPI()
+    TODOS: dict[int, dict] = {}
+    NEXT_ID = {"value": 1}
+
+    class TodoIn(BaseModel):
+        title: str
+
+    class TodoPatch(BaseModel):
+        title: str | None = None
+        done: bool | None = None
+
+    def get_or_404(todo_id: int) -> dict:
+        if todo_id not in TODOS:
+            raise HTTPException(status_code=404, detail="Todo not found")
+        return TODOS[todo_id]
+
+    @app.get("/todos")
+    def list_todos(done: bool | None = None):
+        items = list(TODOS.values())
+        return items if done is None else [t for t in items if t["done"] == done]
+
+    @app.post("/todos", status_code=201)
+    def create_todo(todo: TodoIn):
+        item = {"id": NEXT_ID["value"], "title": todo.title, "done": False}
+        TODOS[item["id"]] = item
+        NEXT_ID["value"] += 1
+        return item
+
+    @app.get("/todos/{todo_id}")
+    def read_todo(todo_id: int):
+        return get_or_404(todo_id)
+
+    @app.patch("/todos/{todo_id}")
+    def update_todo(todo_id: int, patch: TodoPatch):
+        item = get_or_404(todo_id)
+        item.update(patch.model_dump(exclude_unset=True))
+        return item
+
+    @app.delete("/todos/{todo_id}", status_code=204)
+    def delete_todo(todo_id: int):
+        get_or_404(todo_id)
+        del TODOS[todo_id]
+        return None

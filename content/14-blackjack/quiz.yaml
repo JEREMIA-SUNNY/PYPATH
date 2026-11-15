@@ -1,0 +1,20 @@
+- q: A hand holds Ace, Ace and 9. What is its best value?
+  options: ["31", "21", "11", "12"]
+  answer: 1
+  explain: Start at 11 + 11 + 9 = 31, then turn one Ace into a 1 to get 21, which is no longer over.
+- q: Why let `Deck.shuffle` accept a seed?
+  options: ["To make shuffling faster", "So tests can get a predictable order", "Seeds are required by `random.shuffle`", "To prevent cheating"]
+  answer: 1
+  explain: A seeded `random.Random(seed)` produces the same sequence every time, which makes tests deterministic.
+- q: When does the dealer stop hitting?
+  options: ["At 21 only", "At 17 or more", "When the player stands", "After three cards"]
+  answer: 1
+  explain: In standard rules the dealer must hit below 17 and stand on 17 or more.
+- q: Which design guideline helped choose the classes?
+  options: ["One class per function", "Nouns in the problem become classes; verbs become methods", "Every variable should be a class", "Always use inheritance"]
+  answer: 1
+  explain: Looking for nouns (card, deck, hand) and the actions on them is a simple, effective starting point.
+- q: Where should "who won?" logic live?
+  options: ["Inside Card", "Inside Deck", "In a plain function, since it involves several objects", "In `__init__`"]
+  answer: 2
+  explain: Rules that coordinate several objects often fit best as standalone functions.

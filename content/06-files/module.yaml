@@ -1,0 +1,5 @@
+title: Working with Files
+summary: Read and write text files safely with open() and the with statement, and meet pathlib.
+icon: file
+section: foundations
+skills: [File I/O, Context managers, pathlib]

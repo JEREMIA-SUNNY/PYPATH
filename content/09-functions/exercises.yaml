@@ -1,0 +1,169 @@
+- id: is-prime
+  title: Prime check
+  difficulty: easy
+  prompt: |
+    Write `is_prime(n)` that returns `True` if `n` is a prime number and `False` otherwise. Numbers below 2 are not prime.
+
+    You only need to test divisors up to the square root of `n`.
+  starter: |
+    def is_prime(n):
+        pass
+  hints:
+    - Return `False` early for `n < 2`.
+    - "Loop `for d in range(2, int(n ** 0.5) + 1)` and return `False` if `n % d == 0`."
+  tests:
+    - name: small primes
+      code: |
+        assert [n for n in range(20) if is_prime(n)] == [2, 3, 5, 7, 11, 13, 17, 19]
+    - name: square of a prime is not prime
+      code: |
+        assert is_prime(49) is False
+    - name: a large prime
+      code: |
+        assert is_prime(7919) is True
+  solution: |
+    def is_prime(n):
+        if n < 2:
+            return False
+        for d in range(2, int(n ** 0.5) + 1):
+            if n % d == 0:
+                return False
+        return True
+- id: greeting-default
+  title: Default arguments
+  difficulty: easy
+  prompt: |
+    Write `make_greeting(name, greeting="Hello", punctuation="!")` that returns e.g. `"Hello, Ana!"`. Callers can override either default by keyword.
+
+    ```py
+    make_greeting("Ana")                        # "Hello, Ana!"
+    make_greeting("Bo", greeting="Namaste")     # "Namaste, Bo!"
+    make_greeting("Cy", punctuation=".")        # "Hello, Cy."
+    ```
+  starter: |
+    def make_greeting(name):
+        return "Hello, " + name
+  hints:
+    - Add the two parameters with default values to the signature.
+  tests:
+    - name: defaults
+      code: |
+        assert make_greeting("Ana") == "Hello, Ana!"
+    - name: custom greeting
+      code: |
+        assert make_greeting("Bo", greeting="Namaste") == "Namaste, Bo!"
+    - name: custom punctuation
+      code: |
+        assert make_greeting("Cy", punctuation=".") == "Hello, Cy."
+  solution: |
+    def make_greeting(name, greeting="Hello", punctuation="!"):
+        return f"{greeting}, {name}{punctuation}"
+- id: total-args
+  title: Sum anything
+  difficulty: easy
+  prompt: |
+    Write `total(*nums)` that accepts **any number** of numbers and returns their sum. With no arguments it returns `0`.
+  starter: |
+    def total(nums):
+        return sum(nums)
+  hints:
+    - Put a `*` before the parameter name to collect positional arguments into a tuple.
+  tests:
+    - name: three arguments
+      code: |
+        assert total(1, 2, 3) == 6
+    - name: no arguments
+      code: |
+        assert total() == 0
+    - name: one argument
+      code: |
+        assert total(5.5) == 5.5
+  solution: |
+    def total(*nums):
+        return sum(nums)
+- id: build-profile
+  title: Keyword profile
+  difficulty: medium
+  prompt: |
+    Write `build_profile(name, **details)` that returns a dict with a `"name"` key plus every extra keyword argument. Keys in `details` must not overwrite `"name"`.
+
+    ```py
+    build_profile("Jerry", city="Bengaluru", role="dev")
+    # -> {"name": "Jerry", "city": "Bengaluru", "role": "dev"}
+    ```
+  starter: |
+    def build_profile(name, details):
+        return {"name": name}
+  hints:
+    - "`**details` collects keyword arguments into a dict."
+    - "Copy `details` first, then set `profile[\"name\"] = name` last so it always wins."
+  tests:
+    - name: extra fields
+      code: |
+        assert build_profile("Jerry", city="Bengaluru", role="dev") == {"name": "Jerry", "city": "Bengaluru", "role": "dev"}
+    - name: only a name
+      code: |
+        assert build_profile("Ana") == {"name": "Ana"}
+  solution: |
+    def build_profile(name, **details):
+        profile = dict(details)
+        profile["name"] = name
+        return profile
+- id: sort-by-length
+  title: Sort by length
+  difficulty: medium
+  prompt: |
+    Write `sort_words(words)` that returns the words sorted by **length**, shortest first. Words of the same length should be in **alphabetical** order (case-insensitive).
+
+    ```py
+    sort_words(["pear", "fig", "Apple", "kiwi", "date"])
+    # -> ["fig", "date", "kiwi", "pear", "Apple"]
+    ```
+  starter: |
+    def sort_words(words):
+        return sorted(words)
+  hints:
+    - Use `sorted(words, key=...)`.
+    - "Return a tuple from the key: `(len(w), w.lower())`."
+  tests:
+    - name: length then alphabetical
+      code: |
+        assert sort_words(["pear", "fig", "Apple", "kiwi", "date"]) == ["fig", "date", "kiwi", "pear", "Apple"]
+    - name: original list unchanged
+      code: |
+        w = ["bb", "a"]
+        sort_words(w)
+        assert w == ["bb", "a"]
+  solution: |
+    def sort_words(words):
+        return sorted(words, key=lambda w: (len(w), w.lower()))
+- id: apply-n-times
+  title: Apply n times
+  difficulty: medium
+  prompt: |
+    Write `apply_n(func, value, n)` that calls `func` on `value` **n** times, feeding each result into the next call, and returns the final result. With `n = 0` it returns `value` unchanged.
+
+    ```py
+    apply_n(lambda x: x * 2, 1, 5)      # -> 32
+    apply_n(str.upper, "hi", 1)         # -> "HI"
+    ```
+  starter: |
+    def apply_n(func, value, n):
+        return func(value)
+  hints:
+    - "A `for _ in range(n):` loop that reassigns `value = func(value)`."
+  tests:
+    - name: doubling five times
+      code: |
+        assert apply_n(lambda x: x * 2, 1, 5) == 32
+    - name: zero times
+      code: |
+        assert apply_n(lambda x: x + 1, 10, 0) == 10
+    - name: with a method
+      code: |
+        assert apply_n(str.upper, "hi", 1) == "HI"
+  solution: |
+    def apply_n(func, value, n):
+        for _ in range(n):
+            value = func(value)
+        return value

@@ -1,0 +1,20 @@
+- q: What does `arr[arr > 100]` do in NumPy?
+  options: ["Returns True/False for each element", "Returns only the elements greater than 100", "Sets elements above 100 to zero", "Raises an error"]
+  answer: 1
+  explain: The comparison builds a boolean mask; indexing with it keeps the elements where the mask is True.
+- q: Which filters a DataFrame for qty > 2 AND city equal to Kochi?
+  options: ["`df[df.qty > 2 and df.city == \"Kochi\"]`", "`df[(df[\"qty\"] > 2) & (df[\"city\"] == \"Kochi\")]`", "`df.filter(qty > 2, city=\"Kochi\")`", "`df[df[\"qty\"] > 2 | df[\"city\"] == \"Kochi\"]`"]
+  answer: 1
+  explain: Use `&` / `|` with each condition in parentheses. Python's `and` doesn't work on whole columns.
+- q: What does `pd.to_numeric(col, errors="coerce")` do with the value `"abc"`?
+  options: ["Raises ValueError", "Converts it to 0", "Converts it to NaN", "Leaves it as a string"]
+  answer: 2
+  explain: "`errors=\"coerce\"` replaces unparseable values with NaN, which you can then fill or drop."
+- q: Which pandas method is the equivalent of a SQL JOIN?
+  options: ["`concat`", "`merge`", "`groupby`", "`pivot`"]
+  answer: 1
+  explain: "`df.merge(other, on=..., how=...)` performs inner/left/right/outer joins."
+- q: "What does `sales.groupby(\"city\")[\"revenue\"].sum()` return?"
+  options: ["The total revenue as one number", "A Series of total revenue per city", "A DataFrame sorted by city", "The number of rows per city"]
+  answer: 1
+  explain: groupby splits rows by city, sums revenue within each group and returns a Series indexed by city.

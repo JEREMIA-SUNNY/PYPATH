@@ -1,0 +1,55 @@
+{
+  "name": "pypath",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PyPath - a local-only Python learning app with lessons, quizzes and coding exercises.",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "dev:hosted": "cross-env NEXT_PUBLIC_PYPATH_MODE=hosted next dev -p 3001",
+    "build": "next build",
+    "build:hosted": "node scripts/prepare-hosted.mjs && cross-env NEXT_PUBLIC_PYPATH_MODE=hosted next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "check:content": "node scripts/check-content.mjs",
+    "check:content:browser": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-content-pyodide.mjs",
+    "typecheck": "tsc --noEmit",
+    "predev:hosted": "node scripts/prepare-hosted.mjs"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-python": "^6.2.1",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@lezer/highlight": "^1.2.5",
+    "@uiw/codemirror-themes": "^4.25.12",
+    "@uiw/react-codemirror": "^4.25.12",
+    "clsx": "^2.1.1",
+    "geist": "^1.9.2",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^1.73.0",
+    "motion": "^14.14.0",
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.7.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "cross-env": "^10.1.0",
+    "postcss": "^8.5.33",
+    "pyodide": "^314.0.8",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3"
+  }
+}

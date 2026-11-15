@@ -1,0 +1,28 @@
+- q: What does `10 < x < 20` mean in Python?
+  options: ["`(10 < x) < 20`", "`10 < x and x < 20`", "A syntax error", "`10 < x or x < 20`"]
+  answer: 1
+  explain: Python chains comparisons, so this is true only when `x` is strictly between 10 and 20.
+- q: How many lines are printed?
+  code: |
+    n = 15
+    if n > 10:
+        print("big")
+    elif n > 5:
+        print("medium")
+    else:
+        print("small")
+  options: ["0", "1", "2", "3"]
+  answer: 1
+  explain: Only the first branch whose condition is true runs. `n > 10` matches, so only "big" is printed.
+- q: What is the value of `"yes" if 0 else "no"`?
+  options: ["`\"yes\"`", "`\"no\"`", "`0`", "`None`"]
+  answer: 1
+  explain: "`0` is falsy, so the expression takes the `else` value."
+- q: Which statement does nothing and is used as a placeholder block?
+  options: ["`continue`", "`skip`", "`pass`", "`None`"]
+  answer: 2
+  explain: "`pass` is a no-op statement, needed where syntax requires a block but you have nothing to do yet."
+- q: In a `match` statement, what does `case _:` do?
+  options: ["Matches only `None`", "Matches anything not matched earlier", "Matches an underscore string", "It is a syntax error"]
+  answer: 1
+  explain: "`_` is the wildcard pattern. It always matches, so it works as the default case."

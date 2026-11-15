@@ -1,0 +1,20 @@
+- q: Which call raises an exception if an HTTP response was a 404 or 500?
+  options: ["`resp.check()`", "`resp.raise_for_status()`", "`resp.ok()`", "`requests.verify(resp)`"]
+  answer: 1
+  explain: "`raise_for_status()` raises `HTTPError` for 4xx and 5xx responses, so failures don't pass silently."
+- q: What does `soup.select_one("li.next a")` return when nothing matches?
+  options: ["An empty list", "`None`", "An empty string", "It raises an exception"]
+  answer: 1
+  explain: "`select_one` returns the first match or `None`. `select` returns a (possibly empty) list."
+- q: Why open CSV files with `newline=""`?
+  options: ["It's faster", "It lets the csv module handle line endings correctly", "It removes blank rows", "It's required for UTF-8"]
+  answer: 1
+  explain: Without it you can get extra blank lines on Windows, and quoted fields containing newlines can break.
+- q: In a `csv.DictReader` row, what type is a numeric value like `"180"`?
+  options: ["int", "float", "str", "Decimal"]
+  answer: 2
+  explain: The csv module never converts types. Every field is a string until you convert it.
+- q: Where should an SMTP password live?
+  options: ["In the script as a constant", "In an environment variable or secrets manager", "In a comment", "In the email subject"]
+  answer: 1
+  explain: Keep secrets out of source code and Git history. Read them from the environment at runtime.

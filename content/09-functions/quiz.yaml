@@ -1,0 +1,26 @@
+- q: What does a function return if it has no `return` statement?
+  options: ["`0`", "`None`", "An empty string", "It raises an error"]
+  answer: 1
+  explain: Every function returns something; without an explicit `return`, it's `None`.
+- q: What prints?
+  code: |
+    def add(item, bucket=[]):
+        bucket.append(item)
+        return bucket
+    add(1)
+    print(add(2))
+  options: ["`[2]`", "`[1, 2]`", "`[1]`", "An error"]
+  answer: 1
+  explain: The default list is created once and shared between calls, so it remembers the 1. Use `None` as the default instead.
+- q: Inside `def f(*args, **kwargs)`, what types are `args` and `kwargs`?
+  options: ["list and dict", "tuple and dict", "tuple and list", "dict and tuple"]
+  answer: 1
+  explain: "`*args` collects extra positional arguments into a **tuple**; `**kwargs` collects keyword arguments into a **dict**."
+- q: Which sorts `words` by length, longest first?
+  options: ["`sorted(words, len)`", "`sorted(words, key=len, reverse=True)`", "`words.sort(len, desc=True)`", "`sorted(words).reverse()`"]
+  answer: 1
+  explain: Pass the function itself as `key`, and `reverse=True` for descending order.
+- q: In what order does Python resolve names (LEGB)?
+  options: ["Global, Local, Built-in, Enclosing", "Local, Enclosing, Global, Built-in", "Built-in, Global, Enclosing, Local", "Local, Global, Enclosing, Built-in"]
+  answer: 1
+  explain: Local first, then enclosing functions, then module globals, then built-ins.

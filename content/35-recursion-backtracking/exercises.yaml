@@ -1,0 +1,115 @@
+- id: subsets
+  title: All subsets
+  difficulty: medium
+  prompt: |
+    Return all subsets of a list of **distinct** integers. Each subset should keep the original order of elements, and the overall list should be **sorted** (Python's list ordering), so `[[], [1], [1, 2], ...]`.
+  starter: |
+    def subsets(nums):
+        return [nums]
+  hints:
+    - Use the backtracking template with a `start` index.
+    - Record `path[:]` at every node, then `sorted()` the result at the end.
+  tests:
+    - name: three elements
+      code: |
+        assert subsets([1, 2, 3]) == [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]], subsets([1, 2, 3])
+    - name: counts
+      code: |
+        assert subsets([]) == [[]] and len(subsets(list(range(10)))) == 1024
+  solution: |
+    def subsets(nums):
+        result, path = [], []
+
+        def backtrack(start):
+            result.append(path[:])
+            for i in range(start, len(nums)):
+                path.append(nums[i])
+                backtrack(i + 1)
+                path.pop()
+
+        backtrack(0)
+        return sorted(result)
+- id: permutations
+  title: All permutations
+  difficulty: medium
+  prompt: |
+    Return all permutations of a list of distinct items, as a **sorted** list of lists. Don't use `itertools.permutations`; build them with backtracking.
+  starter: |
+    def permutations(items):
+        return [items]
+  hints:
+    - Track which indices are used in a set.
+    - When `len(path) == len(items)`, record a copy.
+  tests:
+    - name: three items
+      code: |
+        assert permutations([1, 2, 3]) == [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+    - name: counts
+      code: |
+        assert permutations([]) == [[]] and len(permutations(list(range(6)))) == 720
+    - name: not using itertools
+      code: |
+        import inspect
+        src = inspect.getsource(permutations)
+        assert "itertools" not in src
+  solution: |
+    def permutations(items):
+        result, path, used = [], [], set()
+
+        def backtrack():
+            if len(path) == len(items):
+                result.append(path[:])
+                return
+            for i, x in enumerate(items):
+                if i in used:
+                    continue
+                used.add(i)
+                path.append(x)
+                backtrack()
+                path.pop()
+                used.remove(i)
+
+        backtrack()
+        return sorted(result)
+- id: combination-sum
+  title: Combination sum
+  difficulty: hard
+  prompt: |
+    Given distinct positive `candidates` and a `target`, return all unique combinations where the chosen numbers sum to `target`. The same number may be used **unlimited** times. Each combination is in non-decreasing order, and the result is a sorted list.
+
+    ```py
+    combination_sum([2, 3, 6, 7], 7)   # -> [[2, 2, 3], [7]]
+    ```
+  starter: |
+    def combination_sum(candidates, target):
+        return []
+  hints:
+    - Sort the candidates. Backtrack with `(start, remaining)`, and recurse with the **same** `i` to allow reuse.
+    - "Prune: if `candidates[i] > remaining`, break (later ones are bigger)."
+  tests:
+    - name: examples
+      code: |
+        assert combination_sum([2, 3, 6, 7], 7) == [[2, 2, 3], [7]]
+        assert combination_sum([2, 3, 5], 8) == [[2, 2, 2, 2], [2, 3, 3], [3, 5]]
+        assert combination_sum([2], 1) == []
+    - name: unsorted input
+      code: |
+        assert combination_sum([7, 3, 2, 6], 7) == [[2, 2, 3], [7]]
+  solution: |
+    def combination_sum(candidates, target):
+        nums = sorted(candidates)
+        result, path = [], []
+
+        def backtrack(start, remaining):
+            if remaining == 0:
+                result.append(path[:])
+                return
+            for i in range(start, len(nums)):
+                if nums[i] > remaining:
+                    break
+                path.append(nums[i])
+                backtrack(i, remaining - nums[i])
+                path.pop()
+
+        backtrack(0, target)
+        return sorted(result)

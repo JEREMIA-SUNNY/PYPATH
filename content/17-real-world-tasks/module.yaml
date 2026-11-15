@@ -1,0 +1,6 @@
+title: Python for Real Tasks
+summary: Scrape web pages, edit images, read CSV and PDF files, and send email. The everyday jobs that make Python worth learning.
+icon: globe
+section: foundations
+skills: [Web scraping, CSV processing, PDF handling, Image processing, Email automation]
+packages: [requests, beautifulsoup4, pillow, pypdf]

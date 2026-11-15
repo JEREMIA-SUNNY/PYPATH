@@ -1,0 +1,5 @@
+title: Decorators and Generators
+summary: Functions as values, closures, decorators that wrap behaviour around functions, and lazy generators with yield.
+icon: wand
+section: foundations
+skills: [Closures, Decorators, Generators, itertools]

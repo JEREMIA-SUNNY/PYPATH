@@ -1,0 +1,84 @@
+- id: count-bits
+  title: Binary digits
+  difficulty: easy
+  prompt: |
+    Write two functions:
+
+    - `to_binary(n)` returns the binary representation of a non-negative int **without** the `0b` prefix: `to_binary(10)` → `"1010"`.
+    - `count_ones(n)` returns how many 1-bits `n` has: `count_ones(10)` → `2`.
+  starter: |
+    def to_binary(n):
+        return str(n)
+
+    def count_ones(n):
+        return 0
+  hints:
+    - "`bin(10)` is `'0b1010'`; slice off the first two characters or use `format(n, \"b\")`."
+    - "`to_binary(n).count(\"1\")` works for counting."
+  tests:
+    - name: to binary
+      code: |
+        assert to_binary(10) == "1010" and to_binary(0) == "0" and to_binary(255) == "11111111"
+    - name: count ones
+      code: |
+        assert count_ones(10) == 2 and count_ones(0) == 0 and count_ones(255) == 8
+  solution: |
+    def to_binary(n):
+        return format(n, "b")
+
+    def count_ones(n):
+        return bin(n).count("1")
+- id: merge-settings
+  title: Merge settings
+  difficulty: easy
+  prompt: |
+    Write `merge_settings(defaults, *overrides)` that returns a **new** dict: start from `defaults` and apply each override dict in order, later ones winning. The inputs must not be modified.
+
+    ```py
+    merge_settings({"theme": "dark", "font": 14}, {"font": 16}, {"theme": "light"})
+    # -> {"theme": "light", "font": 16}
+    ```
+  starter: |
+    def merge_settings(defaults, *overrides):
+        return defaults
+  hints:
+    - "Start with `result = dict(defaults)` (a copy), then `result |= o` for each override."
+  tests:
+    - name: later overrides win
+      code: |
+        assert merge_settings({"theme": "dark", "font": 14}, {"font": 16}, {"theme": "light"}) == {"theme": "light", "font": 16}
+    - name: inputs untouched
+      code: |
+        d = {"a": 1}
+        merge_settings(d, {"a": 2})
+        assert d == {"a": 1}
+    - name: no overrides
+      code: |
+        assert merge_settings({"x": 0}) == {"x": 0}
+  solution: |
+    def merge_settings(defaults, *overrides):
+        result = dict(defaults)
+        for o in overrides:
+            result |= o
+        return result
+- id: sort-people
+  title: Multi-key sort
+  difficulty: medium
+  prompt: |
+    `people` is a list of dicts like `{"name": "Ana", "age": 31}`. Write `sort_people(people)` that returns them sorted by **age descending**, then **name ascending** for equal ages.
+  starter: |
+    def sort_people(people):
+        return sorted(people, key=lambda p: p["age"])
+  hints:
+    - "Return a tuple from the key and negate the age: `(-p[\"age\"], p[\"name\"])`."
+  tests:
+    - name: age desc then name asc
+      code: |
+        ppl = [{"name": "Cy", "age": 25}, {"name": "Ana", "age": 31}, {"name": "Bo", "age": 25}, {"name": "Di", "age": 40}]
+        assert [p["name"] for p in sort_people(ppl)] == ["Di", "Ana", "Bo", "Cy"], [p["name"] for p in sort_people(ppl)]
+    - name: empty
+      code: |
+        assert sort_people([]) == []
+  solution: |
+    def sort_people(people):
+        return sorted(people, key=lambda p: (-p["age"], p["name"]))

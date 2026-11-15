@@ -1,0 +1,5 @@
+title: Building with LLMs
+summary: How large language model APIs work, prompt design that holds up in production, structured JSON output with validation, and the cost, latency and safety concerns of real AI features.
+icon: bot
+section: career
+skills: [LLM APIs, Prompt engineering, Structured outputs, AI app architecture]

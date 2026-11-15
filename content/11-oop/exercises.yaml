@@ -1,0 +1,221 @@
+- id: bank-account
+  title: Bank account
+  difficulty: easy
+  prompt: |
+    Write a `BankAccount` class:
+
+    - `BankAccount(owner, balance=0)` stores both values as attributes.
+    - `deposit(amount)` adds to the balance and returns the new balance. Raise `ValueError` if `amount <= 0`.
+    - `withdraw(amount)` subtracts and returns the new balance. Raise `ValueError` if `amount` is more than the balance.
+  starter: |
+    class BankAccount:
+        def __init__(self, owner):
+            self.owner = owner
+  hints:
+    - "Give `__init__` a `balance=0` parameter and store it on `self`."
+    - "`raise ValueError(\"insufficient funds\")` stops the method."
+  tests:
+    - name: starts with the given balance
+      code: |
+        acct = BankAccount("Ana", 100)
+        assert acct.owner == "Ana" and acct.balance == 100
+    - name: deposit and withdraw
+      code: |
+        acct = BankAccount("Ana")
+        assert acct.deposit(50) == 50
+        assert acct.withdraw(20) == 30
+    - name: cannot overdraw
+      code: |
+        acct = BankAccount("Bo", 10)
+        try:
+            acct.withdraw(11)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+        assert acct.balance == 10
+    - name: rejects non-positive deposits
+      code: |
+        acct = BankAccount("Cy")
+        try:
+            acct.deposit(0)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    class BankAccount:
+        def __init__(self, owner, balance=0):
+            self.owner = owner
+            self.balance = balance
+
+        def deposit(self, amount):
+            if amount <= 0:
+                raise ValueError("deposit must be positive")
+            self.balance += amount
+            return self.balance
+
+        def withdraw(self, amount):
+            if amount > self.balance:
+                raise ValueError("insufficient funds")
+            self.balance -= amount
+            return self.balance
+- id: rectangle
+  title: Rectangle with properties
+  difficulty: easy
+  prompt: |
+    Write a `Rectangle(width, height)` class with:
+
+    - an `area` **property**
+    - a `perimeter` **property**
+    - an `is_square()` method
+    - `__eq__` so two rectangles with the same width and height are equal
+  starter: |
+    class Rectangle:
+        def __init__(self, width, height):
+            self.width = width
+            self.height = height
+  hints:
+    - "Decorate `def area(self):` with `@property`."
+    - "In `__eq__`, compare `(self.width, self.height)` with the other's tuple."
+  tests:
+    - name: area and perimeter are properties
+      code: |
+        r = Rectangle(3, 4)
+        assert r.area == 12 and r.perimeter == 14
+    - name: square check
+      code: |
+        assert Rectangle(5, 5).is_square() and not Rectangle(5, 6).is_square()
+    - name: equality
+      code: |
+        assert Rectangle(2, 3) == Rectangle(2, 3) and Rectangle(2, 3) != Rectangle(3, 2)
+  solution: |
+    class Rectangle:
+        def __init__(self, width, height):
+            self.width = width
+            self.height = height
+
+        @property
+        def area(self):
+            return self.width * self.height
+
+        @property
+        def perimeter(self):
+            return 2 * (self.width + self.height)
+
+        def is_square(self):
+            return self.width == self.height
+
+        def __eq__(self, other):
+            return isinstance(other, Rectangle) and (self.width, self.height) == (other.width, other.height)
+- id: shapes-polymorphism
+  title: Polymorphic shapes
+  difficulty: medium
+  prompt: |
+    Create a base class `Shape` with an `area()` method that raises `NotImplementedError`, and a `describe()` method that returns `f"{name} with area {area:.2f}"` where `name` is the class name (`type(self).__name__`).
+
+    Then create `Circle(radius)` and `Square(side)` subclasses that override `area()`. Use `math.pi` for circles.
+
+    Finally write `total_area(shapes)` that returns the sum of all areas.
+  starter: |
+    import math
+
+    class Shape:
+        pass
+  hints:
+    - "`class Circle(Shape):` inherits `describe` for free."
+    - "`describe` can call `self.area()`, which runs the subclass's version."
+  tests:
+    - name: circle area
+      code: |
+        assert abs(Circle(1).area() - math.pi) < 1e-9
+    - name: describe uses the subclass
+      code: |
+        assert Square(3).describe() == "Square with area 9.00", Square(3).describe()
+        assert Circle(2).describe() == "Circle with area 12.57", Circle(2).describe()
+    - name: base class is abstract
+      code: |
+        try:
+            Shape().area()
+            raise AssertionError("expected NotImplementedError")
+        except NotImplementedError:
+            pass
+    - name: total area
+      code: |
+        assert round(total_area([Square(2), Square(3), Circle(1)]), 2) == 16.14
+  solution: |
+    import math
+
+    class Shape:
+        def area(self):
+            raise NotImplementedError
+
+        def describe(self):
+            return f"{type(self).__name__} with area {self.area():.2f}"
+
+    class Circle(Shape):
+        def __init__(self, radius):
+            self.radius = radius
+
+        def area(self):
+            return math.pi * self.radius ** 2
+
+    class Square(Shape):
+        def __init__(self, side):
+            self.side = side
+
+        def area(self):
+            return self.side ** 2
+
+    def total_area(shapes):
+        return sum(s.area() for s in shapes)
+- id: vector-dunders
+  title: A Vector type
+  difficulty: medium
+  prompt: |
+    Write a `Vector(x, y)` class that supports:
+
+    - `v1 + v2` returning a new Vector
+    - `v * k` (a number) returning a new scaled Vector
+    - `v1 == v2`
+    - `abs(v)` returning its length
+    - `repr(v)` returning exactly `"Vector(3, 4)"`
+  starter: |
+    class Vector:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+  hints:
+    - "Implement `__add__`, `__mul__`, `__eq__`, `__abs__` and `__repr__`."
+    - Length is `(x ** 2 + y ** 2) ** 0.5`.
+  tests:
+    - name: addition
+      code: |
+        assert Vector(1, 2) + Vector(3, 4) == Vector(4, 6)
+    - name: scaling
+      code: |
+        assert Vector(1, -2) * 3 == Vector(3, -6)
+    - name: length
+      code: |
+        assert abs(Vector(3, 4)) == 5
+    - name: repr
+      code: |
+        assert repr(Vector(3, 4)) == "Vector(3, 4)", repr(Vector(3, 4))
+  solution: |
+    class Vector:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+        def __add__(self, other):
+            return Vector(self.x + other.x, self.y + other.y)
+
+        def __mul__(self, k):
+            return Vector(self.x * k, self.y * k)
+
+        def __eq__(self, other):
+            return isinstance(other, Vector) and (self.x, self.y) == (other.x, other.y)
+
+        def __abs__(self):
+            return (self.x ** 2 + self.y ** 2) ** 0.5
+
+        def __repr__(self):
+            return f"Vector({self.x}, {self.y})"

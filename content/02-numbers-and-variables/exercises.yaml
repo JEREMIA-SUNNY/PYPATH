@@ -1,0 +1,81 @@
+- id: split-seconds
+  title: Minutes and seconds
+  difficulty: easy
+  prompt: |
+    Complete `split_seconds(total)` so it returns how many **whole minutes** and **leftover seconds** are in `total` seconds, as two values:
+
+    ```py
+    split_seconds(125)   # -> (2, 5)
+    split_seconds(59)    # -> (0, 59)
+    ```
+
+    Write `return minutes, seconds` at the end.
+  starter: |
+    def split_seconds(total):
+        minutes = 0  # fix me
+        seconds = 0  # fix me
+        return minutes, seconds
+  hints:
+    - "`total // 60` gives whole minutes."
+    - "`total % 60` gives what's left over."
+  tests:
+    - name: 125 seconds is 2 min 5 s
+      code: assert split_seconds(125) == (2, 5), split_seconds(125)
+    - name: under a minute
+      code: assert split_seconds(59) == (0, 59)
+    - name: exact minutes
+      code: assert split_seconds(3600) == (60, 0)
+  solution: |
+    def split_seconds(total):
+        minutes = total // 60
+        seconds = total % 60
+        return minutes, seconds
+- id: average-of-three
+  title: Average of three
+  difficulty: easy
+  prompt: |
+    Complete `average(a, b, c)` so it returns the mean of the three numbers, **rounded to 2 decimal places**.
+
+    ```py
+    average(1, 2, 2)  # -> 1.67
+    ```
+  starter: |
+    def average(a, b, c):
+        return 0
+  hints:
+    - Add them up and divide by 3.
+    - "`round(value, 2)` rounds to two decimals."
+  tests:
+    - name: rounds to 2 places
+      code: assert average(1, 2, 2) == 1.67, average(1, 2, 2)
+    - name: whole result
+      code: assert average(3, 3, 3) == 3
+    - name: negatives
+      code: assert average(-1, 0, 4) == 1
+  solution: |
+    def average(a, b, c):
+        return round((a + b + c) / 3, 2)
+- id: celsius
+  title: Celsius to Fahrenheit
+  difficulty: easy
+  prompt: |
+    Bengaluru is 24 °C today. Complete `to_fahrenheit(celsius)` using the formula **F = C × 9 / 5 + 32**.
+
+    ```py
+    to_fahrenheit(100)  # -> 212.0
+    ```
+  starter: |
+    def to_fahrenheit(celsius):
+        return celsius
+  hints:
+    - "Translate the formula directly: `celsius * 9 / 5 + 32`."
+  tests:
+    - name: boiling point
+      code: assert to_fahrenheit(100) == 212
+    - name: freezing point
+      code: assert to_fahrenheit(0) == 32
+    - name: minus forty is the same in both
+      code: assert to_fahrenheit(-40) == -40
+  solution: |
+    def to_fahrenheit(celsius):
+        return celsius * 9 / 5 + 32

@@ -1,0 +1,5 @@
+title: Numbers and Variables
+summary: Integers, floats, arithmetic operators, and how Python's variables are really just names pointing at values.
+icon: calculator
+section: foundations
+skills: [Arithmetic operators, Variables, Type conversion]

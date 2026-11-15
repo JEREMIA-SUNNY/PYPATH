@@ -1,0 +1,20 @@
+- q: Which two properties signal a dynamic programming problem?
+  options: ["Sorted input and unique values", "Optimal substructure and overlapping subproblems", "A graph and a heap", "Recursion and strings"]
+  answer: 1
+  explain: The answer builds from subproblem answers, and the same subproblems repeat, so caching pays off.
+- q: Naive recursive Fibonacci makes how many calls, roughly?
+  options: ["n", "n²", "about 2ⁿ", "log n"]
+  answer: 2
+  explain: Each call branches into two, recomputing the same values repeatedly. Memoisation reduces it to n.
+- q: What does `dp[a]` mean in the coin change solution?
+  options: ["The number of coins of value a", "The fewest coins needed to make amount a", "Whether coin a exists", "The largest coin under a"]
+  answer: 1
+  explain: Defining the state precisely is the first and most important DP step.
+- q: Why can't a greedy approach always solve minimum coin change?
+  options: ["It's too slow", "Taking the largest coin first can miss a better combination", "It uses too much memory", "It only works with two coins"]
+  answer: 1
+  explain: With coins [1, 3, 4] and amount 6, greedy picks 4+1+1 (3 coins) but 3+3 needs only 2.
+- q: Top-down DP with memoisation versus bottom-up tabulation. Which is true?
+  options: ["Only bottom-up is real DP", "Both compute each subproblem once; they differ in evaluation order", "Top-down is always faster", "Bottom-up can't use less memory"]
+  answer: 1
+  explain: Memoised recursion computes on demand; tabulation fills a table in dependency order and often allows space savings.

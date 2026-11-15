@@ -1,0 +1,110 @@
+- id: valid-palindrome
+  title: Valid palindrome
+  difficulty: easy
+  prompt: |
+    Write `is_palindrome(s)` that returns `True` if `s` reads the same forwards and backwards considering **only letters and digits**, ignoring case. Use two pointers (O(1) extra space).
+
+    ```py
+    is_palindrome("A man, a plan, a canal: Panama")   # -> True
+    is_palindrome("race a car")                       # -> False
+    ```
+  starter: |
+    def is_palindrome(s):
+        return s == s[::-1]
+  hints:
+    - "Skip characters where `not ch.isalnum()`."
+    - Compare `s[i].lower()` with `s[j].lower()`.
+  tests:
+    - name: examples
+      code: |
+        assert is_palindrome("A man, a plan, a canal: Panama") is True
+        assert is_palindrome("race a car") is False
+    - name: edge cases
+      code: |
+        assert is_palindrome("") is True and is_palindrome(" .,") is True and is_palindrome("0P") is False
+  solution: |
+    def is_palindrome(s):
+        i, j = 0, len(s) - 1
+        while i < j:
+            if not s[i].isalnum():
+                i += 1
+            elif not s[j].isalnum():
+                j -= 1
+            elif s[i].lower() != s[j].lower():
+                return False
+            else:
+                i, j = i + 1, j - 1
+        return True
+- id: container-most-water
+  title: Container with most water
+  difficulty: medium
+  prompt: |
+    `heights[i]` is the height of a vertical line at position `i`. Two lines and the x-axis form a container holding `min(h[i], h[j]) * (j - i)` water. Return the maximum water any container can hold, in **O(n)**. The tests include 100,000 lines.
+
+    ```py
+    max_area([1, 8, 6, 2, 5, 4, 8, 3, 7])   # -> 49
+    ```
+  starter: |
+    def max_area(heights):
+        best = 0
+        for i in range(len(heights)):
+            for j in range(i + 1, len(heights)):
+                best = max(best, min(heights[i], heights[j]) * (j - i))
+        return best
+  hints:
+    - Start with the widest container (pointers at both ends).
+    - "Always move the pointer at the **shorter** line inward; moving the taller one can never help."
+  tests:
+    - name: examples
+      code: |
+        assert max_area([1, 8, 6, 2, 5, 4, 8, 3, 7]) == 49 and max_area([1, 1]) == 1
+    - name: large input quickly
+      code: |
+        import time
+        h = list(range(1, 100_001))
+        t = time.perf_counter()
+        assert max_area(h) == 2_500_000_000
+        assert time.perf_counter() - t < 1.0, "too slow, use two pointers"
+  solution: |
+    def max_area(heights):
+        i, j, best = 0, len(heights) - 1, 0
+        while i < j:
+            best = max(best, min(heights[i], heights[j]) * (j - i))
+            if heights[i] < heights[j]:
+                i += 1
+            else:
+                j -= 1
+        return best
+- id: longest-unique-substring
+  title: Longest substring without repeats
+  difficulty: medium
+  prompt: |
+    Return the length of the longest **substring** (contiguous) of `s` with no repeated characters, in O(n).
+
+    ```py
+    longest_unique("abcabcbb")  # -> 3  ("abc")
+    longest_unique("pwwkew")    # -> 3  ("wke")
+    ```
+  starter: |
+    def longest_unique(s):
+        return len(set(s))
+  hints:
+    - Track the last index where each character was seen.
+    - "When you see a repeat inside the window, move `left` to one past its previous index."
+  tests:
+    - name: examples
+      code: |
+        assert longest_unique("abcabcbb") == 3 and longest_unique("bbbbb") == 1 and longest_unique("pwwkew") == 3
+    - name: edge cases
+      code: |
+        assert longest_unique("") == 0 and longest_unique("abba") == 2 and longest_unique("dvdf") == 3
+  solution: |
+    def longest_unique(s):
+        last_seen = {}
+        left = best = 0
+        for right, ch in enumerate(s):
+            if ch in last_seen and last_seen[ch] >= left:
+                left = last_seen[ch] + 1
+            last_seen[ch] = right
+            best = max(best, right - left + 1)
+        return best

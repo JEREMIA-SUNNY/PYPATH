@@ -1,0 +1,20 @@
+- q: Why do chat applications resend previous messages on every API call?
+  options: ["To prevent caching", "The model is stateless and only sees what you send in the request", "It's required for streaming", "To increase the token count"]
+  answer: 1
+  explain: The API has no memory between calls; conversation history must be included in each request (within the context window).
+- q: Which temperature setting suits extracting fields from invoices?
+  options: ["High (around 1.0)", "Low (around 0 to 0.2)", "It doesn't matter", "Negative"]
+  answer: 1
+  explain: Low temperature makes output more deterministic, which is what you want for extraction and classification.
+- q: A model returns JSON wrapped in a markdown code fence. What should your code do?
+  options: ["Show it to the user as is", "Extract the JSON, parse it and validate the fields", "Raise an error and give up", "Increase max_tokens"]
+  answer: 1
+  explain: Parse defensively and validate against a schema (e.g. Pydantic); retry or fall back if it doesn't validate.
+- q: What is prompt injection?
+  options: ["Inserting variables into a template", "Untrusted input containing instructions that try to override your prompt", "Sending too many tokens", "A way to speed up responses"]
+  answer: 1
+  explain: Treat external text as data, isolate it with delimiters, and don't let model output trigger sensitive actions unchecked.
+- q: What's the purpose of an eval set?
+  options: ["Training the model", "Measuring output quality consistently whenever prompts or models change", "Reducing cost", "Encrypting prompts"]
+  answer: 1
+  explain: Evals are your regression tests for AI behaviour.

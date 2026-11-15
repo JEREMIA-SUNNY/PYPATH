@@ -1,0 +1,150 @@
+- id: create-and-insert
+  title: Create a table and insert rows
+  difficulty: easy
+  prompt: |
+    Write `setup_products(conn, products)`:
+
+    1. Create a table `products` with columns `id INTEGER PRIMARY KEY`, `name TEXT NOT NULL`, `price REAL NOT NULL`.
+    2. Insert every `(name, price)` tuple from `products` using a **parameterized** `executemany`.
+    3. Commit, and return the number of rows in the table.
+  starter: |
+    import sqlite3
+
+    def setup_products(conn, products):
+        return 0
+  hints:
+    - "`conn.execute(\"CREATE TABLE products (...)\")`"
+    - "`conn.executemany(\"INSERT INTO products (name, price) VALUES (?, ?)\", products)`"
+  tests:
+    - name: inserts rows
+      code: |
+        import sqlite3
+        conn = sqlite3.connect(":memory:")
+        n = setup_products(conn, [("Pen", 20), ("Notebook", 120.5), ("Bag", 899)])
+        assert n == 3, n
+        assert conn.execute("SELECT name FROM products WHERE price > 100 ORDER BY price").fetchall() == [("Notebook",), ("Bag",)]
+    - name: names with quotes are safe
+      code: |
+        import sqlite3
+        conn = sqlite3.connect(":memory:")
+        setup_products(conn, [("Kid's pen", 15)])
+        assert conn.execute("SELECT name FROM products").fetchone()[0] == "Kid's pen"
+  solution: |
+    import sqlite3
+
+    def setup_products(conn, products):
+        conn.execute("CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT NOT NULL, price REAL NOT NULL)")
+        conn.executemany("INSERT INTO products (name, price) VALUES (?, ?)", products)
+        conn.commit()
+        return conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+- id: find-user-safely
+  title: Parameterized lookup
+  difficulty: easy
+  prompt: |
+    A `users(id, email, name)` table exists. Write `find_user(conn, email)` that returns the user's `name`, or `None` if there's no user with that email. It must be **immune to SQL injection**.
+  starter: |
+    def find_user(conn, email):
+        row = conn.execute(f"SELECT name FROM users WHERE email = '{email}'").fetchone()
+        return row[0] if row else None
+  hints:
+    - "Replace the f-string with a `?` placeholder and pass `(email,)` as the second argument to `execute`."
+  tests:
+    - name: finds a user
+      code: |
+        import sqlite3
+        c = sqlite3.connect(":memory:")
+        c.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT, name TEXT)")
+        c.executemany("INSERT INTO users (email, name) VALUES (?, ?)", [("ana@x.in", "Ana"), ("o'neil@x.in", "Pat")])
+        assert find_user(c, "ana@x.in") == "Ana" and find_user(c, "o'neil@x.in") == "Pat"
+    - name: injection attempt finds nothing
+      code: |
+        import sqlite3
+        c = sqlite3.connect(":memory:")
+        c.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT, name TEXT)")
+        c.execute("INSERT INTO users (email, name) VALUES ('admin@x.in', 'Admin')")
+        assert find_user(c, "x' OR '1'='1") is None
+  solution: |
+    def find_user(conn, email):
+        row = conn.execute("SELECT name FROM users WHERE email = ?", (email,)).fetchone()
+        return row[0] if row else None
+- id: top-customers
+  title: GROUP BY report
+  difficulty: medium
+  prompt: |
+    Tables `customers(id, name, city)` and `orders(id, customer_id, total)` exist. Write `top_customers(conn, n)` returning a list of `(name, total_spent)` tuples for the `n` customers who spent the most, highest first. Break ties by name (A→Z). Round totals to 2 decimals in SQL with `ROUND(...)`. Customers with no orders should not appear.
+  starter: |
+    def top_customers(conn, n):
+        return conn.execute("SELECT name, 0 FROM customers").fetchall()
+  hints:
+    - "`JOIN orders o ON o.customer_id = c.id`, then `GROUP BY c.id`."
+    - "`ORDER BY total_spent DESC, c.name LIMIT ?`"
+  tests:
+    - name: ranks by spend
+      code: |
+        import sqlite3
+        c = sqlite3.connect(":memory:")
+        c.executescript("""
+        CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+        CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL);
+        INSERT INTO customers VALUES (1,'Ana','Kochi'),(2,'Bo','Pune'),(3,'Cy','Agra'),(4,'Di','Goa');
+        INSERT INTO orders VALUES (1,1,100.5),(2,2,300),(3,1,250.25),(4,3,350.75),(5,2,50);
+        """)
+        assert top_customers(c, 2) == [("Ana", 350.75), ("Cy", 350.75)], top_customers(c, 2)
+        assert top_customers(c, 3) == [("Ana", 350.75), ("Cy", 350.75), ("Bo", 350.0)], top_customers(c, 3)
+    - name: customers without orders are excluded
+      code: |
+        import sqlite3
+        c = sqlite3.connect(":memory:")
+        c.executescript("""
+        CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+        CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL);
+        INSERT INTO customers VALUES (1,'Ana','Kochi'),(2,'Bo','Pune');
+        INSERT INTO orders VALUES (1,1,10);
+        """)
+        assert top_customers(c, 5) == [("Ana", 10.0)]
+  solution: |
+    def top_customers(conn, n):
+        return conn.execute(
+            """
+            SELECT c.name, ROUND(SUM(o.total), 2) AS total_spent
+            FROM customers c
+            JOIN orders o ON o.customer_id = c.id
+            GROUP BY c.id
+            ORDER BY total_spent DESC, c.name
+            LIMIT ?
+            """,
+            (n,),
+        ).fetchall()
+- id: customers-without-orders
+  title: LEFT JOIN anti-join
+  difficulty: medium
+  prompt: |
+    Using the same `customers` and `orders` tables, write `inactive_customers(conn)` that returns a **sorted list of names** of customers who have **never** placed an order. Use a `LEFT JOIN` and `IS NULL`.
+  starter: |
+    def inactive_customers(conn):
+        return []
+  hints:
+    - "`SELECT c.name FROM customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL`"
+  tests:
+    - name: finds customers with no orders
+      code: |
+        import sqlite3
+        c = sqlite3.connect(":memory:")
+        c.executescript("""
+        CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+        CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, total REAL);
+        INSERT INTO customers VALUES (1,'Ana','Kochi'),(2,'Zed','Pune'),(3,'Cy','Agra'),(4,'Bo','Goa');
+        INSERT INTO orders VALUES (1,1,100),(2,3,50);
+        """)
+        assert inactive_customers(c) == ["Bo", "Zed"], inactive_customers(c)
+  solution: |
+    def inactive_customers(conn):
+        rows = conn.execute(
+            """
+            SELECT c.name FROM customers c
+            LEFT JOIN orders o ON o.customer_id = c.id
+            WHERE o.id IS NULL
+            ORDER BY c.name
+            """
+        ).fetchall()
+        return [r[0] for r in rows]
