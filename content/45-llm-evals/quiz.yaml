@@ -1,0 +1,24 @@
+- q: What is the best first step when building evals for an existing LLM feature?
+  options: ["Buy an eval platform", "Read real outputs and group the failures (error analysis)", "Write 10,000 random cases", "Lower the temperature"]
+  answer: 1
+  explain: Error analysis shows what actually goes wrong in your app. Those failure groups become your first eval cases.
+- q: Which check should you prefer when it is possible?
+  options: ["An LLM judge", "A deterministic check in plain code", "A human reviewer for every case", "Whatever is cheapest to describe"]
+  answer: 1
+  explain: Code checks are free, instant and perfectly repeatable. Use judges only for qualities code cannot measure.
+- q: Which is a known bias of LLM judges?
+  options: ["They prefer shorter answers", "They tend to favour longer answers and their own style", "They never disagree with humans", "They ignore rubrics"]
+  answer: 1
+  explain: Verbosity and self-preference bias are well documented. Calibrate against human labels and control for length and order.
+- q: A judge prompt should ask the model to...
+  options: ["Give an overall score from 1 to 100", "Score one criterion on a small defined scale, with a reason, in a parseable format", "Answer as fast as possible", "Rewrite the answer"]
+  answer: 1
+  explain: Narrow criteria, defined scale points and a strict output format make judge scores more consistent and usable.
+- q: A prompt change raises the overall pass rate by 1% but one critical case now fails. What should the gate do?
+  options: ["Pass, the rate improved", "Surface the regression and fail or review, because critical cases must not regress", "Ignore the case", "Retry until it passes"]
+  answer: 1
+  explain: Aggregates hide individual regressions. Report the cases that flipped from pass to fail and protect the critical ones.
+- q: How should you evaluate a RAG system?
+  options: ["Only the final answer", "Retrieval and generation separately", "Only the embedding model", "Only latency"]
+  answer: 1
+  explain: Separating retrieval metrics (recall@k) from generation metrics (faithfulness, relevance) tells you which half to fix.

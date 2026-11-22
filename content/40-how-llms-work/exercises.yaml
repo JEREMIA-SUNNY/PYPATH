@@ -1,0 +1,166 @@
+- id: token-budget
+  title: Token budget
+  difficulty: easy
+  prompt: |
+    Real tokenizers are heavy, so planning code often uses a cheap estimate. Write three functions:
+
+    - `estimate_tokens(text)`: about 4 characters per token, **rounded up**. Empty text is 0 tokens.
+    - `fits_context(prompt, reserved_output, window)`: `True` if the prompt's estimated tokens plus `reserved_output` fit inside `window`.
+    - `truncate_to_budget(text, max_tokens)`: keep the **start** of the text so that `estimate_tokens(result) <= max_tokens`. Text that already fits is returned unchanged.
+  starter: |
+    def estimate_tokens(text):
+        return len(text) // 4
+
+    def fits_context(prompt, reserved_output, window):
+        return True
+
+    def truncate_to_budget(text, max_tokens):
+        return text
+  hints:
+    - "Ceiling division without `math`: `-(-len(text) // 4)`."
+    - "`max_tokens * 4` characters is the most text that fits."
+  tests:
+    - name: estimates round up
+      code: |
+        assert estimate_tokens("") == 0
+        assert estimate_tokens("a") == 1
+        assert estimate_tokens("abcd") == 1
+        assert estimate_tokens("abcde") == 2
+    - name: context check includes the reserved answer
+      code: |
+        prompt = "x" * 400            # 100 tokens
+        assert fits_context(prompt, 50, 150) is True
+        assert fits_context(prompt, 51, 150) is False
+    - name: truncation keeps the start and respects the budget
+      code: |
+        text = "abcdefghij" * 10      # 100 chars = 25 tokens
+        out = truncate_to_budget(text, 10)
+        assert out == text[:40], out
+        assert estimate_tokens(out) <= 10
+        assert truncate_to_budget("short", 10) == "short"
+  solution: |
+    def estimate_tokens(text):
+        return -(-len(text) // 4)
+
+    def fits_context(prompt, reserved_output, window):
+        return estimate_tokens(prompt) + reserved_output <= window
+
+    def truncate_to_budget(text, max_tokens):
+        if estimate_tokens(text) <= max_tokens:
+            return text
+        return text[: max_tokens * 4]
+- id: estimate-cost
+  title: What will this cost?
+  difficulty: easy
+  prompt: |
+    Prices are quoted in dollars **per million tokens**, and output tokens cost more than input tokens.
+
+    1. `estimate_cost(input_tokens, output_tokens, price_in, price_out)` returns the cost in dollars, rounded to 6 decimals.
+    2. `cheapest(models, input_tokens, output_tokens)` takes a dict `{name: (price_in, price_out)}` and returns the **name** of the model with the lowest estimated cost. Ties go to the name that sorts first alphabetically.
+  starter: |
+    def estimate_cost(input_tokens, output_tokens, price_in, price_out):
+        return 0.0
+
+    def cheapest(models, input_tokens, output_tokens):
+        return None
+  hints:
+    - "`tokens / 1_000_000 * price` for each side, then add."
+    - "`min(models, key=lambda name: (cost, name))` handles the tie-break."
+  tests:
+    - name: cost arithmetic
+      code: |
+        assert estimate_cost(2000, 500, 3, 15) == 0.0135
+        assert estimate_cost(0, 0, 3, 15) == 0.0
+    - name: picks the cheapest model
+      code: |
+        models = {"big": (10, 30), "small": (0.2, 0.6), "mid": (3, 15)}
+        assert cheapest(models, 1000, 1000) == "small"
+    - name: output-heavy workloads can change the winner
+      code: |
+        models = {"cheap-in": (0.1, 50), "cheap-out": (1, 2)}
+        assert cheapest(models, 10_000, 10_000) == "cheap-out"
+        assert cheapest(models, 10_000, 0) == "cheap-in"
+    - name: ties break alphabetically
+      code: |
+        assert cheapest({"b": (1, 1), "a": (1, 1)}, 100, 100) == "a"
+  solution: |
+    def estimate_cost(input_tokens, output_tokens, price_in, price_out):
+        total = input_tokens / 1_000_000 * price_in + output_tokens / 1_000_000 * price_out
+        return round(total, 6)
+
+    def cheapest(models, input_tokens, output_tokens):
+        return min(models, key=lambda n: (estimate_cost(input_tokens, output_tokens, *models[n]), n))
+- id: temperature-softmax
+  title: Softmax with temperature
+  difficulty: medium
+  prompt: |
+    Implement the heart of LLM sampling.
+
+    - `softmax(logits, temperature=1.0)` returns a list of probabilities that sum to 1. Divide the logits by `temperature` first. Raise `ValueError` if `temperature <= 0`. Subtract the maximum before `math.exp` so large logits don't overflow.
+    - `top_k(probs, k)` returns the **indexes** of the `k` most probable entries, most probable first. Ties keep the lower index first.
+    - `sample(probs, r)` picks an index given a random number `r` in `[0, 1)`: walk the probabilities and return the first index where the running total exceeds `r`. (Passing `r` in keeps it testable.)
+  starter: |
+    import math
+
+    def softmax(logits, temperature=1.0):
+        return list(logits)
+
+    def top_k(probs, k):
+        return []
+
+    def sample(probs, r):
+        return 0
+  hints:
+    - "`sorted(range(len(probs)), key=lambda i: (-probs[i], i))[:k]` gives the top-k with the tie rule."
+    - "For `sample`, keep a running `total += p` and return `i` as soon as `r < total`."
+  tests:
+    - name: probabilities sum to 1
+      code: |
+        p = softmax([2.0, 1.0, 0.1])
+        assert abs(sum(p) - 1) < 1e-9
+        assert p[0] > p[1] > p[2]
+    - name: temperature sharpens and flattens
+      code: |
+        cold = softmax([2.0, 1.0], 0.1)
+        hot = softmax([2.0, 1.0], 10)
+        assert cold[0] > 0.99
+        assert abs(hot[0] - hot[1]) < 0.05
+    - name: huge logits do not overflow, bad temperature is rejected
+      code: |
+        p = softmax([1000, 1000])
+        assert abs(p[0] - 0.5) < 1e-9
+        try:
+            softmax([1, 2], 0)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+    - name: top_k and sample
+      code: |
+        assert top_k([0.1, 0.5, 0.2, 0.2], 3) == [1, 2, 3]
+        assert top_k([0.5, 0.5], 1) == [0]
+        probs = [0.2, 0.5, 0.3]
+        assert sample(probs, 0.0) == 0
+        assert sample(probs, 0.25) == 1
+        assert sample(probs, 0.99) == 2
+  solution: |
+    import math
+
+    def softmax(logits, temperature=1.0):
+        if temperature <= 0:
+            raise ValueError("temperature must be positive")
+        scaled = [x / temperature for x in logits]
+        m = max(scaled)
+        exps = [math.exp(x - m) for x in scaled]
+        total = sum(exps)
+        return [e / total for e in exps]
+
+    def top_k(probs, k):
+        return sorted(range(len(probs)), key=lambda i: (-probs[i], i))[:k]
+
+    def sample(probs, r):
+        total = 0.0
+        for i, p in enumerate(probs):
+            total += p
+            if r < total:
+                return i
+        return len(probs) - 1

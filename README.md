@@ -24,10 +24,11 @@ No accounts. No tracking. No server. Your progress is one file you own.
 
 | | |
 | --- | --- |
-| 📚 **91 lessons** | Short, focused, and every Python block has a **Run** button that executes on your machine. |
-| 🧪 **125 coding exercises** | A real editor, hints, and hidden tests. Submit and see exactly which assertion failed and why. |
-| 🧠 **195 quiz questions** | Instant explanations, plus a **spaced-repetition review queue** that brings back what you got wrong. |
-| 🧭 **5 career tracks** | Backend, Data Analyst, AI Engineer, Automation Engineer, Interview Ready. Pick one and PyPath builds your path. |
+| 📚 **111 lessons** | Short, focused, and every Python block has a **Run** button that executes on your machine. |
+| 🧪 **158 coding exercises** | A real editor, hints, and hidden tests. Submit and see exactly which assertion failed and why. |
+| 🧠 **266 quiz questions** | Instant explanations, plus a **spaced-repetition review queue** that brings back what you got wrong. |
+| 🎬 **Netflix-style profiles** | Open the app and pick **who's learning**: AI Engineer, Python, Backend, Data, Automation or Interview. Each profile has its **own syllabus and its own progress**, tracked separately. |
+| 🧭 **6 separate syllabi** | Python (20 modules), AI Engineer (32, with the Python it needs built in), Backend, Data, Automation and Interview (18 to 20 each). Learn, Quizzes, Code, Review and the dashboard only show your profile's modules. |
 | 🏗️ **Portfolio projects** | Step-by-step builds with ready-to-paste résumé bullets. |
 | 🎯 **Interview prep** | Big-O, hashing, two pointers, trees, graphs, DP, with timed **mock interviews**. |
 | 🔥 **Motivation built in** | XP, streaks, a heatmap, achievements and a daily challenge. |
@@ -44,13 +45,29 @@ No accounts. No tracking. No server. Your progress is one file you own.
 
 ## 🗺️ Curriculum
 
-**39 modules** in three sections.
+**49 modules** in three sections, plus a full **AI Engineer syllabus** (below).
 
 | Section | Modules | You will learn |
 | --- | --- | --- |
 | 🧱 **Foundations** (20) | Getting Started → Capstone | Numbers, strings, lists, dicts, files, control flow, loops, functions, OOP, modules and pip, errors and testing, decorators and generators, the standard library, modern Python, plus **Tic Tac Toe** and **Blackjack** projects. |
-| 💼 **Career** (10) | Developer Workflow → RAG | Testing and code quality, HTTP and APIs, SQL, **FastAPI**, **NumPy and pandas**, data visualization, automation and CLI tools, **building with LLMs**, embeddings and **RAG**. |
-| 🎯 **Interview** (9) | Big-O → Python Interview Questions | Arrays and hashing, two pointers and sliding window, stacks, queues and binary search, recursion and backtracking, linked lists and trees, graphs and heaps, dynamic programming. |
+| 💼 **Career** (19) | Developer Workflow → AI Capstone | Testing and code quality, HTTP and APIs, SQL, **FastAPI**, **NumPy and pandas**, data visualization, automation and CLI tools, **building with LLMs**, embeddings and **RAG**. |
+| 🎯 **Interview** (10) | Big-O → AI Engineer Interview Questions | Arrays and hashing, two pointers and sliding window, stacks, queues and binary search, recursion and backtracking, linked lists and trees, graphs and heaps, dynamic programming. |
+
+## 🤖 The AI Engineer syllabus
+
+Built from a review of a top-rated LLM engineering course (8 weeks, 8 projects) and 2026 AI engineering roadmaps and job-posting analyses, where **LLM APIs, evals, RAG and agents** are the most requested skills. Pick the **AI Engineer** profile and you get one 32-module syllabus: the Python you need first, then the AI path, with its own progress:
+
+| Stage | Modules |
+| --- | --- |
+| 1. Python and engineering base | Python Foundations, Developer Workflow, Testing, HTTP and APIs, FastAPI |
+| 2. LLM fundamentals | **How LLMs Work** (tokens, context, sampling, model choice), **Building with LLMs** (APIs, structured output, tool calling, streaming, retries), **Prompt and Context Engineering** |
+| 3. Models and retrieval | **Open-Source and Local LLMs** (Ollama, Hugging Face, quantization), **Embeddings, Search and RAG** (chunking, hybrid search, RRF, retrieval metrics) |
+| 4. Agents | **Agents and Tool Use** (the loop, memory, guardrails), **MCP and Multi-Agent Systems** (JSON-RPC, tool servers, state graphs) |
+| 5. Quality and customisation | **Evals** (datasets, checks, LLM-as-judge, regression gates), **Fine-Tuning** (SFT data, LoRA and QLoRA, proving it worked) |
+| 6. Production | **LLMOps and Security** (caching, rate limiting, PII redaction, prompt injection, observability) |
+| 7. Prove it | **AI Capstone** (documents Q&A with citations, abstention and an eval harness), **AI Engineer Interview Questions**, and four portfolio projects (brochure generator, support agent, RAG knowledge worker, multi-agent deal finder) |
+
+Every exercise is graded by real tests against **fake model clients**, so you need **no API key and no GPU**, and everything also runs in the browser version.
 
 ## 🚀 Quick start
 

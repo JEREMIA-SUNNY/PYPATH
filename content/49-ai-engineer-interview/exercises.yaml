@@ -1,0 +1,144 @@
+- id: percentile-latency
+  title: Latency percentiles (p50, p95)
+  difficulty: medium
+  prompt: |
+    Interviewers love "what's your p95 latency?". Implement `percentile(values, p)` using the **nearest-rank** method:
+
+    - Sort the values. For percentile `p` (0 to 100), the rank is `ceil(p / 100 * n)` (at least 1), and the answer is the value at that 1-based rank.
+    - `p = 0` returns the minimum; `p = 100` the maximum.
+    - Raise `ValueError` for an empty list or `p` outside 0 to 100.
+
+    Then write `latency_report(values)` returning `{"p50": ..., "p95": ..., "max": ...}`.
+  starter: |
+    import math
+
+    def percentile(values, p):
+        return 0
+
+    def latency_report(values):
+        return {}
+  hints:
+    - "`rank = max(1, math.ceil(p / 100 * len(values)))` then `sorted(values)[rank - 1]`."
+  tests:
+    - name: nearest-rank percentiles
+      code: |
+        data = [15, 20, 35, 40, 50]
+        assert percentile(data, 0) == 15
+        assert percentile(data, 30) == 20
+        assert percentile(data, 40) == 20
+        assert percentile(data, 50) == 35
+        assert percentile(data, 100) == 50
+    - name: report on an unsorted list
+      code: |
+        values = list(range(1, 101))[::-1]
+        assert latency_report(values) == {"p50": 50, "p95": 95, "max": 100}
+    - name: invalid input
+      code: |
+        for args in [([], 50), ([1], -1), ([1], 101)]:
+            try:
+                percentile(*args)
+                raise AssertionError("expected ValueError")
+            except ValueError:
+                pass
+  solution: |
+    import math
+
+    def percentile(values, p):
+        if not values or not 0 <= p <= 100:
+            raise ValueError("need values and 0 <= p <= 100")
+        ordered = sorted(values)
+        rank = max(1, math.ceil(p / 100 * len(ordered)))
+        return ordered[rank - 1]
+
+    def latency_report(values):
+        return {"p50": percentile(values, 50), "p95": percentile(values, 95), "max": max(values)}
+- id: budget-guard
+  title: A spend guard for LLM calls
+  difficulty: medium
+  prompt: |
+    Build `BudgetGuard(max_usd)` and the exception `BudgetExceeded`.
+
+    - `charge(cost_usd)` adds a cost. If the **total would go above** `max_usd`, raise `BudgetExceeded` and **do not** add the cost. A cost exactly equal to the remaining budget is allowed.
+    - `remaining()` returns the unspent budget, rounded to 6 decimals.
+    - `charge` raises `ValueError` for a negative cost.
+    - `call(fn, estimated_cost)` checks the budget **before** running: if `estimated_cost` would not fit, raise `BudgetExceeded` without calling `fn`; otherwise charge it, call `fn()` and return its result.
+  starter: |
+    class BudgetExceeded(Exception):
+        pass
+
+    class BudgetGuard:
+        def __init__(self, max_usd):
+            self.max_usd = max_usd
+            self.spent = 0.0
+
+        def charge(self, cost_usd):
+            self.spent += cost_usd
+
+        def remaining(self):
+            return self.max_usd - self.spent
+
+        def call(self, fn, estimated_cost):
+            return fn()
+  hints:
+    - "Compare `self.spent + cost > self.max_usd`, being careful with float noise: `round(..., 9)` helps."
+  tests:
+    - name: charging within budget
+      code: |
+        g = BudgetGuard(1.00)
+        g.charge(0.25)
+        g.charge(0.75)
+        assert g.remaining() == 0.0
+    - name: exceeding the budget raises and charges nothing
+      code: |
+        g = BudgetGuard(1.00)
+        g.charge(0.9)
+        try:
+            g.charge(0.2)
+            raise AssertionError("expected BudgetExceeded")
+        except BudgetExceeded:
+            pass
+        assert g.remaining() == 0.1
+        try:
+            g.charge(-1)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+    - name: call checks before running
+      code: |
+        g = BudgetGuard(0.5)
+        ran = []
+        assert g.call(lambda: ran.append(1) or "ok", 0.3) == "ok"
+        try:
+            g.call(lambda: ran.append(2), 0.3)
+            raise AssertionError("expected BudgetExceeded")
+        except BudgetExceeded:
+            pass
+        assert ran == [1]
+        assert g.remaining() == 0.2
+  solution: |
+    class BudgetExceeded(Exception):
+        pass
+
+    class BudgetGuard:
+        def __init__(self, max_usd):
+            self.max_usd = max_usd
+            self.spent = 0.0
+
+        def _fits(self, cost):
+            return round(self.spent + cost, 9) <= round(self.max_usd, 9)
+
+        def charge(self, cost_usd):
+            if cost_usd < 0:
+                raise ValueError("cost must be >= 0")
+            if not self._fits(cost_usd):
+                raise BudgetExceeded(f"budget of {self.max_usd} exceeded")
+            self.spent += cost_usd
+
+        def remaining(self):
+            return round(self.max_usd - self.spent, 6)
+
+        def call(self, fn, estimated_cost):
+            if not self._fits(estimated_cost):
+                raise BudgetExceeded("estimated cost does not fit the budget")
+            self.charge(estimated_cost)
+            return fn()

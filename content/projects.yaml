@@ -87,3 +87,64 @@
     - Test the database layer with pytest and an in-memory database
   stretch: [Import bank statement CSVs, Add a FastAPI layer and a small web UI]
   bullet: Developed a SQLite-backed expense tracker CLI with budgets, monthly reports and CSV export, with a tested data layer.
+- id: brochure-generator
+  title: AI Brochure Generator
+  track: ai
+  summary: "Give it a company website. It crawls the site, decides which pages matter using an LLM, and writes a polished brochure, streaming the result into a small web UI."
+  skills: [LLM APIs, Tool calling, Web scraping, Streaming, Gradio]
+  steps:
+    - Scrape a page with requests and BeautifulSoup and extract clean text and links
+    - Ask the model which links are relevant (about, careers, products) and return them as validated JSON
+    - Fetch the chosen pages and assemble them into a size-limited context
+    - Write the brochure prompt with a system role, delimiters and a tone parameter
+    - Stream the answer into a Gradio or FastAPI front end
+    - Add retries with backoff, a token budget and a cache for repeated sites
+    - Write tests with a fake model client and a few saved HTML pages
+  stretch: [Switch between a frontier model and a local Ollama model through config, Translate the brochure into another language]
+  bullet: Built an LLM brochure generator that crawls a website, selects relevant pages with structured tool output and streams a finished brochure, with caching, retries and tests against a fake model client.
+- id: support-agent
+  title: Customer Support Agent
+  track: ai
+  summary: "A support agent that looks up orders, checks policies and issues refunds through tools, with human approval for money movements and a full audit log."
+  skills: [Function calling, Agent loop, Guardrails, FastAPI, Evals]
+  steps:
+    - Define tools for order lookup, policy search and refund request with strict JSON schemas
+    - Write the agent loop with a step limit and errors returned to the model as tool results
+    - Add a policy layer that allows, denies or requires approval before each tool call
+    - Keep conversation memory within a token budget
+    - Expose it through a FastAPI chat endpoint with streaming
+    - Build 40 eval cases (happy paths, refusals, injection attempts) and a CI regression gate
+    - Log every step with cost and latency
+  stretch: [Add a voice interface with speech-to-text, Add a supervisor agent that reviews risky replies]
+  bullet: Developed a tool-calling support agent with approval gates, token-budgeted memory and a 40-case eval suite enforced in CI, reducing unsafe tool calls to zero on the adversarial set.
+- id: knowledge-worker
+  title: RAG Knowledge Worker
+  track: ai
+  summary: "An assistant that becomes an expert on a folder of company documents: hybrid retrieval, reranking, citations, abstention and measured retrieval quality."
+  skills: [RAG, Embeddings, Vector databases, Hybrid search, Evals]
+  steps:
+    - Ingest PDFs and Markdown, clean them and chunk with overlap and metadata
+    - Embed and store chunks in Chroma or pgvector
+    - Add keyword search and merge rankings with reciprocal rank fusion
+    - Rerank the top candidates and pack the best into a token budget
+    - Answer with numbered citations and refuse when similarity is low
+    - Build a golden set of 50 questions, including ones that should be refused
+    - Report recall@k, citation accuracy and refusal accuracy, and improve one thing at a time
+    - Serve it with FastAPI, caching and rate limiting
+  stretch: [Add query rewriting and multi-query retrieval, Add a feedback button that feeds new eval cases]
+  bullet: Built a hybrid-search RAG assistant with reranking, citations and abstention, raising recall@3 from 0.71 to 0.89 on a 50-question golden set and serving it with caching and rate limits.
+- id: deal-finder
+  title: Autonomous Deal Finder (Multi-Agent)
+  track: ai
+  summary: "A capstone modelled on a real AI engineering course: agents that scan feeds for bargains, estimate fair prices with a fine-tuned model plus RAG, and notify you of the best deals."
+  skills: [Multi-agent systems, Fine-tuning, QLoRA, MCP, Observability]
+  steps:
+    - Build a scanner agent that reads deal feeds and extracts structured candidates
+    - Build a pricing agent that estimates a fair price using a baseline frontier model
+    - Fine-tune a small open model with QLoRA on product descriptions and prices, and compare it to the baseline on held-out data
+    - Add a retrieval step with similar products to ground the estimate
+    - Add a planner agent that orchestrates the others and notifies you when savings pass a threshold
+    - Expose the tools through an MCP server so any MCP client can use them
+    - Trace every step and report cost, latency and error versus the baseline
+  stretch: [Add a critic agent that double-checks suspicious deals, Deploy the model on a serverless GPU]
+  bullet: Built a multi-agent deal finder with a QLoRA fine-tuned pricing model that beat a frontier baseline on held-out error at a fraction of the cost, orchestrated by a planner and exposed over MCP.

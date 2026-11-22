@@ -1,0 +1,24 @@
+- q: What problem does the Model Context Protocol solve?
+  options: ["Making models faster", "A standard way for AI apps to connect to tools and data, so a server is written once and reused", "Compressing prompts", "Training models"]
+  answer: 1
+  explain: MCP standardises how hosts discover and call tools, resources and prompts, like a common connector.
+- q: Which transport does MCP use for messages?
+  options: ["REST with XML", "JSON-RPC 2.0 over stdio or HTTP", "gRPC only", "WebSockets with binary frames only"]
+  answer: 1
+  explain: MCP messages are JSON-RPC 2.0, carried over stdio for local servers or HTTP for remote ones.
+- q: A JSON-RPC request has no id. What does that mean?
+  options: ["It is invalid", "It is a notification and no response is sent", "The server must generate an id", "It must be retried"]
+  answer: 1
+  explain: Notifications are fire-and-forget. Only requests with an id get a response.
+- q: Which JSON-RPC error code means "method not found"?
+  options: ["-32700", "-32600", "-32601", "-32602"]
+  answer: 2
+  explain: -32700 parse error, -32600 invalid request, -32601 method not found, -32602 invalid params.
+- q: When is a fixed workflow better than an autonomous agent?
+  options: ["When the steps are known in advance", "Never", "Only for images", "When you want randomness"]
+  answer: 0
+  explain: If the path is predictable, code the steps. It is cheaper, faster and far easier to test. Use agency only where the path is truly open-ended.
+- q: What is a real cost of splitting a task across many agents?
+  options: ["Nothing, it is free", "More calls and latency, and errors that compound between agents", "Smaller context windows", "Lower accuracy only for tiny models"]
+  answer: 1
+  explain: Each hop adds cost and a chance to lose or distort information. Use multiple agents only when it measurably helps.

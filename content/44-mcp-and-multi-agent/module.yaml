@@ -1,0 +1,5 @@
+title: MCP and Multi-Agent Systems
+summary: "Connect models to tools through the Model Context Protocol, then orchestrate work with graphs, routing and supervisor/worker agents. Learn when one agent is enough and when it is not."
+icon: bot
+section: career
+skills: [Model Context Protocol, JSON-RPC, Agent orchestration, State graphs, Multi-agent patterns]

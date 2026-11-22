@@ -18,3 +18,23 @@
   options: ["Generation", "Retrieval (chunking, search, re-ranking)", "The UI", "Token counting"]
   answer: 1
   explain: If the right context isn't retrieved, the model can't use it. Measure and improve recall@k.
+- q: Why do neighbouring chunks usually overlap by a few words?
+  options: ["To make the index larger", "So an answer is not split across a boundary and lost", "To lower embedding cost", "Models require it"]
+  answer: 1
+  explain: Overlap keeps context that straddles a chunk boundary available in at least one chunk.
+- q: A user searches for the exact error code "E1042" and vector search misses it. What helps most?
+  options: ["A bigger LLM", "Hybrid search that adds keyword (BM25) matching", "A higher temperature", "Smaller chunks only"]
+  answer: 1
+  explain: Keyword search is strong on exact terms and identifiers where embeddings are fuzzy. Hybrid search combines both.
+- q: What does Reciprocal Rank Fusion do?
+  options: ["Compresses embeddings", "Merges several ranked lists by summing 1/(k + rank) scores", "Reranks with a neural model", "Splits documents"]
+  answer: 1
+  explain: RRF is a simple, tuning-free way to combine rankings from different retrievers.
+- q: Your RAG app gives wrong answers. What should you check first?
+  options: ["The temperature", "Whether the correct chunk was actually retrieved", "The font size", "The model's name"]
+  answer: 1
+  explain: If the right evidence never reaches the model, no prompt can fix the answer. Measure retrieval (recall@k) separately from generation.
+- q: Recall@5 is 0.4. What does that mean?
+  options: ["40% of the top 5 results are relevant", "40% of the relevant documents appear in the top 5", "The model is 40% accurate", "5 documents were relevant"]
+  answer: 1
+  explain: Recall@k is the share of relevant items found in the top k. Precision@k is the share of the top k that are relevant.

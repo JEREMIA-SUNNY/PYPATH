@@ -1,0 +1,195 @@
+- id: llm-cache
+  title: An LRU cache for model calls
+  difficulty: medium
+  prompt: |
+    Build `LLMCache(max_size)`.
+
+    - `key(model, prompt, temperature)` (a static method) returns a stable string key. Different inputs must give different keys, and equal inputs the same key.
+    - `get_or_call(model, prompt, temperature, fn)`: if the key is cached, return the cached value and count a **hit**; otherwise call `fn()` once, store and return the result, and count a **miss**.
+    - The cache holds at most `max_size` entries. When full, evict the **least recently used** entry (a hit counts as a use).
+    - Keep `hits` and `misses` attributes.
+  starter: |
+    import hashlib
+    import json
+    from collections import OrderedDict
+
+    class LLMCache:
+        def __init__(self, max_size=128):
+            self.max_size = max_size
+            self._data = OrderedDict()
+            self.hits = 0
+            self.misses = 0
+
+        @staticmethod
+        def key(model, prompt, temperature):
+            return prompt
+
+        def get_or_call(self, model, prompt, temperature, fn):
+            return fn()
+  hints:
+    - "Hash `json.dumps([model, prompt, temperature])` with `hashlib.sha256`."
+    - "`OrderedDict.move_to_end(k)` marks a use; `popitem(last=False)` evicts the oldest."
+  tests:
+    - name: caches repeated calls
+      code: |
+        c = LLMCache(4)
+        calls = []
+        def fn():
+            calls.append(1)
+            return "answer"
+        assert c.get_or_call("m", "hi", 0, fn) == "answer"
+        assert c.get_or_call("m", "hi", 0, fn) == "answer"
+        assert len(calls) == 1 and c.hits == 1 and c.misses == 1
+    - name: keys depend on every input
+      code: |
+        k = LLMCache.key
+        assert k("m", "p", 0) == k("m", "p", 0)
+        assert len({k("m", "p", 0), k("m2", "p", 0), k("m", "p2", 0), k("m", "p", 0.7)}) == 4
+    - name: least recently used entry is evicted
+      code: |
+        c = LLMCache(2)
+        c.get_or_call("m", "a", 0, lambda: 1)
+        c.get_or_call("m", "b", 0, lambda: 2)
+        c.get_or_call("m", "a", 0, lambda: 99)        # hit: a is now most recent
+        c.get_or_call("m", "c", 0, lambda: 3)         # evicts b
+        assert c.get_or_call("m", "a", 0, lambda: 98) == 1
+        assert c.get_or_call("m", "b", 0, lambda: 42) == 42      # b was evicted, recomputed
+        assert c.hits == 2 and c.misses == 4, (c.hits, c.misses)
+  solution: |
+    import hashlib
+    import json
+    from collections import OrderedDict
+
+    class LLMCache:
+        def __init__(self, max_size=128):
+            self.max_size = max_size
+            self._data = OrderedDict()
+            self.hits = 0
+            self.misses = 0
+
+        @staticmethod
+        def key(model, prompt, temperature):
+            return hashlib.sha256(json.dumps([model, prompt, temperature]).encode()).hexdigest()
+
+        def get_or_call(self, model, prompt, temperature, fn):
+            k = self.key(model, prompt, temperature)
+            if k in self._data:
+                self.hits += 1
+                self._data.move_to_end(k)
+                return self._data[k]
+            self.misses += 1
+            value = fn()
+            self._data[k] = value
+            if len(self._data) > self.max_size:
+                self._data.popitem(last=False)
+            return value
+- id: redact-pii
+  title: Redact personal data
+  difficulty: medium
+  prompt: |
+    Write `redact(text)` that replaces personal data with placeholders before text is sent to a provider.
+
+    Apply these rules **in this order**:
+
+    1. Email addresses (like `jo.smith+x@example.co.uk`) become `[EMAIL]`.
+    2. Card numbers: 13 to 16 digits, optionally separated by single spaces or dashes (like `4111 1111 1111 1111`), become `[CARD]`.
+    3. Phone numbers: an optional `+`, then digits that may be separated by spaces, dashes, dots or parentheses, with **at least 10 digits in total**, become `[PHONE]`.
+
+    Everything else is left untouched (a 4-digit year or an order id like `ORD-123` stays).
+  starter: |
+    import re
+
+    def redact(text):
+        return text
+  hints:
+    - "Email: `[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+`."
+    - "Card: `\\b(?:\\d[ -]?){12,15}\\d\\b`. Do it before phones so cards are not mis-labelled."
+    - "Phone: `\\+?\\(?\\d[\\d\\s().-]{8,}\\d`: long enough to need 10 digits."
+  tests:
+    - name: emails and cards
+      code: |
+        out = redact("Mail jo.smith+x@example.co.uk, card 4111 1111 1111 1111 please")
+        assert out == "Mail [EMAIL], card [CARD] please", out
+        assert redact("card 4111-1111-1111-1111.") == "card [CARD]."
+    - name: phone numbers
+      code: |
+        assert redact("Call +1 (555) 010-9999 now") == "Call [PHONE] now"
+        assert redact("Call 555.010.9999 now") == "Call [PHONE] now"
+    - name: harmless text is untouched
+      code: |
+        text = "Order ORD-123 shipped in 2024, 3 items, 12 kg."
+        assert redact(text) == text
+  solution: |
+    import re
+
+    def redact(text):
+        text = re.sub(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", "[EMAIL]", text)
+        text = re.sub(r"\b(?:\d[ -]?){12,15}\d\b", "[CARD]", text)
+        text = re.sub(r"\+?\(?\d[\d\s().-]{8,}\d", "[PHONE]", text)
+        return text
+- id: token-bucket
+  title: A token-bucket rate limiter
+  difficulty: hard
+  prompt: |
+    Implement `TokenBucket(capacity, refill_per_sec, now)` where `now` is a **function** returning the current time in seconds (injected so tests can control it).
+
+    - The bucket starts **full** with `capacity` tokens.
+    - `allow(cost=1)` first adds `(elapsed seconds) * refill_per_sec` tokens (never exceeding `capacity`), then spends `cost` and returns `True` if enough tokens are available. Otherwise it returns `False` and spends **nothing**.
+    - Raise `ValueError` if `cost` is more than `capacity` (it could never succeed).
+  starter: |
+    class TokenBucket:
+        def __init__(self, capacity, refill_per_sec, now):
+            self.capacity = capacity
+
+        def allow(self, cost=1):
+            return True
+  hints:
+    - "Remember the time of the last refill (`self.last`) and update it on every call."
+    - "`self.tokens = min(self.capacity, self.tokens + elapsed * rate)`."
+  tests:
+    - name: bursts up to capacity, then blocks
+      code: |
+        t = [0.0]
+        b = TokenBucket(3, 1.0, lambda: t[0])
+        assert [b.allow() for _ in range(4)] == [True, True, True, False]
+    - name: refills over time but never beyond capacity
+      code: |
+        t = [0.0]
+        b = TokenBucket(2, 1.0, lambda: t[0])
+        assert b.allow() and b.allow() and not b.allow()
+        t[0] = 1.0
+        assert b.allow() is True
+        assert b.allow() is False
+        t[0] = 100.0
+        assert [b.allow() for _ in range(3)] == [True, True, False]
+    - name: costs and failures
+      code: |
+        t = [0.0]
+        b = TokenBucket(5, 1.0, lambda: t[0])
+        assert b.allow(cost=4) is True
+        assert b.allow(cost=4) is False          # only 1 left, and nothing was spent
+        assert b.allow(cost=1) is True
+        try:
+            b.allow(cost=6)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    class TokenBucket:
+        def __init__(self, capacity, refill_per_sec, now):
+            self.capacity = capacity
+            self.rate = refill_per_sec
+            self.now = now
+            self.tokens = float(capacity)
+            self.last = now()
+
+        def allow(self, cost=1):
+            if cost > self.capacity:
+                raise ValueError("cost exceeds capacity")
+            t = self.now()
+            self.tokens = min(self.capacity, self.tokens + (t - self.last) * self.rate)
+            self.last = t
+            if self.tokens >= cost:
+                self.tokens -= cost
+                return True
+            return False

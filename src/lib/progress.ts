@@ -183,6 +183,7 @@ export function applyEvent(prev: Progress, event: ProgressEvent): Progress {
         ...p.settings,
         ...("name" in event ? { name: event.name?.trim() || undefined } : {}),
         ...("trackId" in event ? { trackId: event.trackId || undefined } : {}),
+        ...("profileId" in event ? { profileId: event.profileId || undefined } : {}),
       };
       break;
   }

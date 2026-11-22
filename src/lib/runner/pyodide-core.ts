@@ -102,6 +102,8 @@ export async function createPyodideRunner(pyodide: PyodideAPI, harnessSource: st
   const decoder = () => new TextDecoder("utf-8");
 
   async function ensurePackages(sources: string[], onStatus?: (m: string) => void): Promise<string | null> {
+    // zoneinfo needs the tz database, which Pyodide ships as a separate package.
+    if (sources.some((src) => src.includes("zoneinfo"))) await pyodide.loadPackage("tzdata").catch(() => {});
     for (const src of sources) {
       try {
         await pyodide.loadPackagesFromImports(src, { messageCallback: onStatus, errorCallback: onStatus });

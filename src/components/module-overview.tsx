@@ -16,7 +16,7 @@ export function ModuleOverview({ m }: { m: ModuleIndex }) {
   const q = progress.quizzes[m.id];
 
   return (
-    <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
+    <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <Card className="p-2">
           <div className="flex items-center justify-between px-4 pb-2 pt-3">

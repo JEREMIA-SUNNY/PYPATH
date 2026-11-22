@@ -1,5 +1,5 @@
-import { emptyProgress } from "../progress";
-import type { Progress, ProgressEvent } from "../types";
+import { emptyRoot } from "../profiles";
+import type { ProgressEvent, ProgressRoot } from "../types";
 import type { FSFileHandle } from "./fs-types";
 import { isAbort, permissionState, pickOpenFile, pickSaveFile, readFile, writeFile } from "./file-io";
 import { addSnapshot, clearHandle, getSetting, putHandle, putMirror, putSetting } from "./idb";
@@ -18,8 +18,8 @@ export type StorageChoice = "file" | "browser";
 class HostedStore {
   private handle: FSFileHandle | null = null;
   private choice: StorageChoice = "browser";
-  private current: Progress = emptyProgress();
-  private initial: Progress | null = null;
+  private current: ProgressRoot = emptyRoot();
+  private initial: ProgressRoot | null = null;
   private lastFileWriteAt: number | null = null;
   private status: SaveStatus = { kind: "idle" };
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -51,7 +51,7 @@ class HostedStore {
 
   // ---------- connecting ----------
   /** Called by the gate once progress is decided. `handle` is null in browser-only mode. */
-  async connect(progress: Progress, handle: FSFileHandle | null) {
+  async connect(progress: ProgressRoot, handle: FSFileHandle | null) {
     this.current = progress;
     this.initial = progress;
     this.handle = handle;
@@ -66,7 +66,7 @@ class HostedStore {
     navigator.storage?.persist?.().catch(() => {});
   }
 
-  takeInitial(): Progress {
+  takeInitial(): ProgressRoot {
     return this.initial ?? this.current;
   }
 
@@ -79,7 +79,7 @@ class HostedStore {
   }
 
   // ---------- saving ----------
-  async save(next: Progress, event: ProgressEvent): Promise<void> {
+  async save(next: ProgressRoot, event: ProgressEvent): Promise<void> {
     const prev = this.current;
     this.current = next;
     const big = event.type === "reset" || event.type === "import";

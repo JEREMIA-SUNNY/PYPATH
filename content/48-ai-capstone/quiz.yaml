@@ -1,0 +1,16 @@
+- q: Why should the Q&A system refuse to answer when retrieval similarity is low?
+  options: ["To save tokens only", "Because answering without supporting evidence invites made-up answers", "Models cannot answer short questions", "It improves recall"]
+  answer: 1
+  explain: If no relevant source was found, an answer would be a guess. A good RAG system says it does not know instead of inventing.
+- q: Why pass `embed` and `llm` into your pipeline functions as parameters?
+  options: ["It is required by Python", "So tests can use deterministic fakes and the real clients can be swapped in", "To make them slower", "To hide the API key"]
+  answer: 1
+  explain: Dependency injection makes the pipeline testable offline and lets you swap models and providers without touching the logic.
+- q: What belongs in a capstone eval set besides questions that should be answered?
+  options: ["Nothing else", "Questions that should be refused", "Only long questions", "Random text"]
+  answer: 1
+  explain: You must test abstention as well. A system that never refuses will confidently answer out-of-scope questions.
+- q: Which statement is the most compelling in a project README?
+  options: ["I used a cool framework", "Recall@3 rose from 0.71 to 0.89 after adding hybrid search, measured on 80 questions", "It works great", "It uses AI"]
+  answer: 1
+  explain: Evidence beats adjectives. Measured improvements on a stated eval set show real engineering judgement.

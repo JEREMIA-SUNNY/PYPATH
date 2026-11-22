@@ -93,9 +93,25 @@ export interface PortfolioProject {
   bullet: string;
 }
 
+/** A "who is learning" lens shown in the profile picker. Shares one progress file with every other profile. */
+export interface Profile {
+  id: string;
+  title: string;
+  tagline: string;
+  emoji: string;
+  from: string;
+  to: string;
+  trackId: string;
+  summary: string;
+  /** This profile's own syllabus: module ids, in the order they are taught. */
+  modules: string[];
+  focus: string[];
+}
+
 export interface Catalog {
   modules: CurriculumIndex;
   tracks: Track[];
+  profiles: Profile[];
   projects: PortfolioProject[];
 }
 
@@ -121,7 +137,7 @@ export interface Progress {
   version: 1;
   createdAt: string;
   updatedAt: string;
-  settings: { name?: string; trackId?: string };
+  settings: { name?: string; trackId?: string; profileId?: string };
   lessons: Record<string, { completedAt: string }>;
   notes: Record<string, string>;
   review: Record<string, { box: number; due: string }>;
@@ -133,6 +149,18 @@ export interface Progress {
   playground: { code: string; stdin: string };
   activity: Record<string, number>;
   lastVisited?: { href: string; title: string; at: string };
+}
+
+/**
+ * The progress file. Every profile (AI Engineer, Python, ...) has its OWN progress record, so each
+ * syllabus is tracked separately. Only the learner's name and the active profile are shared.
+ */
+export interface ProgressRoot {
+  version: 2;
+  createdAt: string;
+  updatedAt: string;
+  settings: { name?: string; profileId?: string };
+  profiles: Record<string, Progress>;
 }
 
 export type ProgressEvent =
@@ -151,8 +179,8 @@ export type ProgressEvent =
   | { type: "mock.end" }
   | { type: "daily.set"; date: string; ref: string }
   | { type: "visit"; href: string; title: string }
-  | { type: "settings"; name?: string; trackId?: string }
-  | { type: "import"; data: Progress }
+  | { type: "settings"; name?: string; trackId?: string; profileId?: string }
+  | { type: "import"; data: ProgressRoot | Progress }
   | { type: "reset" };
 
 // ---------- Runner ----------

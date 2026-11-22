@@ -1,0 +1,187 @@
+- id: lora-params
+  title: How small is a LoRA adapter?
+  difficulty: easy
+  prompt: |
+    LoRA replaces a full `d_in × d_out` update with two thin matrices of rank `r`.
+
+    1. `full_params(d_in, d_out)`: parameters in the full matrix.
+    2. `lora_params(d_in, d_out, rank)`: parameters in the adapter, `rank * (d_in + d_out)`.
+    3. `lora_fraction(d_in, d_out, rank)`: adapter parameters as a **fraction** of the full matrix.
+    4. `qlora_memory_gb(params_billion, adapter_params_million)`: memory for the **4-bit** base model (`params_billion * 4 / 8` GB) plus the adapter stored at **16-bit** (`adapter_params_million / 1000 * 16 / 8` GB). Return the sum.
+  starter: |
+    def full_params(d_in, d_out):
+        return 0
+
+    def lora_params(d_in, d_out, rank):
+        return 0
+
+    def lora_fraction(d_in, d_out, rank):
+        return 0.0
+
+    def qlora_memory_gb(params_billion, adapter_params_million):
+        return 0.0
+  hints:
+    - "`lora_fraction` is `lora_params(...) / full_params(...)`."
+    - "The adapter term is `adapter_params_million / 1000 * 2` GB."
+  tests:
+    - name: parameter counts
+      code: |
+        assert full_params(4096, 4096) == 16_777_216
+        assert lora_params(4096, 4096, 16) == 131_072
+    - name: the adapter is tiny
+      code: |
+        f = lora_fraction(4096, 4096, 16)
+        assert abs(f - 131_072 / 16_777_216) < 1e-12
+        assert f < 0.01
+        assert lora_fraction(100, 200, 4) == 4 * 300 / 20000
+    - name: QLoRA memory
+      code: |
+        assert abs(qlora_memory_gb(7, 40) - (3.5 + 0.08)) < 1e-9
+        assert qlora_memory_gb(0, 0) == 0
+  solution: |
+    def full_params(d_in, d_out):
+        return d_in * d_out
+
+    def lora_params(d_in, d_out, rank):
+        return rank * (d_in + d_out)
+
+    def lora_fraction(d_in, d_out, rank):
+        return lora_params(d_in, d_out, rank) / full_params(d_in, d_out)
+
+    def qlora_memory_gb(params_billion, adapter_params_million):
+        return params_billion * 4 / 8 + adapter_params_million / 1000 * 16 / 8
+- id: sft-dataset
+  title: Build and split an SFT dataset
+  difficulty: medium
+  prompt: |
+    Prepare chat fine-tuning data.
+
+    - `to_chat_rows(pairs, system)`: `pairs` is a list of `(user, assistant)` strings. Return a list of dicts `{"messages": [system message, user message, assistant message]}` using roles `system`, `user`, `assistant`.
+    - `to_jsonl(rows)`: one `json.dumps` line per row joined with `"\n"` (no trailing newline).
+    - `split_dataset(rows, val_fraction, seed)`: shuffle a **copy** with `random.Random(seed)` (never touch the input list) and return `(train, val)`. `val` has `round(len(rows) * val_fraction)` rows, but **at least 1** when there are 2 or more rows, and the split is deterministic for a given seed. With fewer than 2 rows, `val` is empty.
+  starter: |
+    import json
+    import random
+
+    def to_chat_rows(pairs, system):
+        return []
+
+    def to_jsonl(rows):
+        return ""
+
+    def split_dataset(rows, val_fraction, seed):
+        return list(rows), []
+  hints:
+    - "`rows = list(rows)` then `random.Random(seed).shuffle(rows)`."
+    - "`n_val = max(1, round(len(rows) * val_fraction))` when `len(rows) >= 2`."
+  tests:
+    - name: chat rows and jsonl
+      code: |
+        rows = to_chat_rows([("hi", "hello"), ("bye", "ciao")], "Be kind.")
+        assert rows[0] == {"messages": [{"role": "system", "content": "Be kind."}, {"role": "user", "content": "hi"}, {"role": "assistant", "content": "hello"}]}
+        lines = to_jsonl(rows).split("\n")
+        assert len(lines) == 2 and json.loads(lines[1])["messages"][1]["content"] == "bye"
+        assert to_jsonl([]) == ""
+    - name: split sizes, disjoint and complete
+      code: |
+        data = list(range(50))
+        train, val = split_dataset(data, 0.1, seed=3)
+        assert len(val) == 5 and len(train) == 45
+        assert sorted(train + val) == data
+        assert data == list(range(50))
+    - name: deterministic and edge cases
+      code: |
+        data = list(range(30))
+        assert split_dataset(data, 0.2, 7) == split_dataset(data, 0.2, 7)
+        assert len(split_dataset([1, 2], 0.0, 0)[1]) == 1
+        assert split_dataset([1], 0.5, 0) == ([1], [])
+        assert split_dataset([], 0.5, 0) == ([], [])
+  solution: |
+    import json
+    import random
+
+    def to_chat_rows(pairs, system):
+        return [
+            {"messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+                {"role": "assistant", "content": assistant},
+            ]}
+            for user, assistant in pairs
+        ]
+
+    def to_jsonl(rows):
+        return "\n".join(json.dumps(r) for r in rows)
+
+    def split_dataset(rows, val_fraction, seed):
+        rows = list(rows)
+        random.Random(seed).shuffle(rows)
+        if len(rows) < 2:
+            return rows, []
+        n_val = max(1, round(len(rows) * val_fraction))
+        return rows[n_val:], rows[:n_val]
+- id: clean-examples
+  title: Clean training examples
+  difficulty: medium
+  prompt: |
+    Write `clean_examples(rows, min_chars=10, max_chars=500)` where each row is `{"prompt": str, "response": str}`.
+
+    Keep a row only if **all** of these hold:
+
+    - the `response` (after stripping) has between `min_chars` and `max_chars` characters inclusive
+    - the `prompt` is not empty after stripping
+    - its prompt is not a **duplicate** of an earlier kept row. Compare prompts case-insensitively with all whitespace runs collapsed to a single space.
+
+    Return `(kept_rows, stats)` where `kept_rows` keeps the original order (and the original, unstripped row dicts) and `stats` is `{"input": n, "kept": k, "too_short": a, "too_long": b, "empty_prompt": c, "duplicate": d}` counting why rows were dropped. Check the reasons in the order: empty prompt, too short, too long, duplicate, so each dropped row is counted once.
+  starter: |
+    def clean_examples(rows, min_chars=10, max_chars=500):
+        return list(rows), {"input": len(rows), "kept": len(rows), "too_short": 0, "too_long": 0, "empty_prompt": 0, "duplicate": 0}
+  hints:
+    - "`\" \".join(prompt.split()).lower()` normalises a prompt."
+    - "Keep a `seen` set of normalised prompts for rows you kept."
+  tests:
+    - name: filters and counts
+      code: |
+        rows = [
+            {"prompt": "Where is my order?", "response": "Please share your order number."},
+            {"prompt": "  where is   my ORDER? ", "response": "A different but long enough reply."},
+            {"prompt": "Hi", "response": "short"},
+            {"prompt": "", "response": "This response has plenty of characters."},
+            {"prompt": "Long one", "response": "x" * 600},
+            {"prompt": "Refund policy?", "response": "Refunds are processed within 5 days."},
+        ]
+        kept, stats = clean_examples(rows)
+        assert [r["prompt"] for r in kept] == ["Where is my order?", "Refund policy?"], kept
+        assert stats == {"input": 6, "kept": 2, "too_short": 1, "too_long": 1, "empty_prompt": 1, "duplicate": 1}, stats
+    - name: custom limits and empty input
+      code: |
+        kept, stats = clean_examples([{"prompt": "a", "response": "abc"}], min_chars=3, max_chars=3)
+        assert len(kept) == 1 and stats["kept"] == 1
+        assert clean_examples([]) == ([], {"input": 0, "kept": 0, "too_short": 0, "too_long": 0, "empty_prompt": 0, "duplicate": 0})
+    - name: a dropped duplicate does not block a later distinct row
+      code: |
+        rows = [{"prompt": "same", "response": "tiny"}, {"prompt": "same", "response": "a long enough response"}]
+        kept, stats = clean_examples(rows)
+        assert len(kept) == 1 and kept[0]["response"] == "a long enough response"
+        assert stats["too_short"] == 1 and stats["duplicate"] == 0
+  solution: |
+    def clean_examples(rows, min_chars=10, max_chars=500):
+        kept, seen = [], set()
+        stats = {"input": len(rows), "kept": 0, "too_short": 0, "too_long": 0, "empty_prompt": 0, "duplicate": 0}
+        for row in rows:
+            prompt = row["prompt"].strip()
+            n = len(row["response"].strip())
+            key = " ".join(prompt.split()).lower()
+            if not prompt:
+                stats["empty_prompt"] += 1
+            elif n < min_chars:
+                stats["too_short"] += 1
+            elif n > max_chars:
+                stats["too_long"] += 1
+            elif key in seen:
+                stats["duplicate"] += 1
+            else:
+                seen.add(key)
+                kept.append(row)
+        stats["kept"] = len(kept)
+        return kept, stats

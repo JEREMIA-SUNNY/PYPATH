@@ -17,7 +17,7 @@ export function SpotlightCard({ className, children }: { className?: string; chi
         el.style.setProperty("--y", `${e.clientY - rect.top}px`);
       }}
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800/80 dark:bg-zinc-900/40",
+        "group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 dark:border-zinc-800/80 dark:bg-zinc-900/40",
         className,
       )}
     >

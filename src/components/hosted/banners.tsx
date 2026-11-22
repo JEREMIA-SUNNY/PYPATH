@@ -65,20 +65,20 @@ function Bar({ tone, text, children }: { tone: "red" | "amber"; text: React.Reac
       ? "border-rose-500/40 bg-rose-50 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200"
       : "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950/80 dark:text-amber-200";
   return (
-    <div role="alert" className={`fixed inset-x-3 top-[68px] z-40 mx-auto flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border px-4 py-2.5 text-[13px] shadow-lg backdrop-blur sm:top-[76px] ${color}`}>
+    <div role="alert" className={`fixed inset-x-3 top-[64px] z-40 mx-auto flex max-h-[45dvh] max-w-3xl flex-wrap items-center gap-x-3 gap-y-2 overflow-y-auto rounded-xl border px-3 py-2.5 text-[12.5px] sm:px-4 sm:text-[13px] shadow-lg backdrop-blur sm:top-[76px] ${color}`}>
       <TriangleAlert className="size-4 shrink-0" />
-      <span className="min-w-0 flex-1">{text}</span>
-      <span className="flex items-center gap-2">{children}</span>
+      <span className="min-w-[12rem] flex-[1_1_12rem] leading-snug">{text}</span>
+      <span className="flex flex-wrap items-center gap-2">{children}</span>
     </div>
   );
 }
 
 function BrowserOnlyBanner() {
-  const { progress, dispatch } = useApp();
+  const { root, dispatch } = useApp();
   const [visible, setVisible] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const updatedAt = Date.parse(progress.updatedAt) || 0;
+  const updatedAt = Date.parse(root.updatedAt) || 0;
 
   useEffect(() => {
     (async () => {
@@ -100,7 +100,7 @@ function BrowserOnlyBanner() {
 
   return (
     <Bar tone="amber" text={<>Your browser can&apos;t save progress to a file automatically, so it&apos;s kept inside this browser. Clearing browsing data will erase it. <strong>Download a backup</strong> regularly, or use Chrome or Edge for automatic saving.{msg && <span className="ml-2 text-rose-600">{msg}</span>}</>}>
-      <button className={bannerBtn} onClick={async () => { downloadBackup(progress); await hide("lastBackupAt"); }}>Download backup</button>
+      <button className={bannerBtn} onClick={async () => { downloadBackup(root); await hide("lastBackupAt"); }}>Download backup</button>
       <input
         ref={fileRef}
         type="file"

@@ -45,7 +45,7 @@ export function InterviewClient() {
 
   return (
     <div className="mt-10 space-y-14">
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[1fr_1.3fr]">
         <SpotlightCard>
           <div className="text-[12px] font-medium text-zinc-500">Problems solved</div>
           <div className="mt-2 text-4xl font-semibold tabular-nums text-zinc-900 dark:text-white">
@@ -125,7 +125,7 @@ export function InterviewClient() {
 
       <section>
         <h2 className="mb-4 text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">Patterns</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {mods.map((m) => {
             const s = moduleStats(m, progress);
             return (

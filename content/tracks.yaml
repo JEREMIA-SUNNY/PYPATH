@@ -17,7 +17,7 @@
   roles: GenAI / LLM application developer
   icon: bot
   summary: Build products on top of large language models, from prompt design to retrieval-augmented generation.
-  modules: [developer-workflow, testing-and-quality, http-and-apis, fastapi, llm-apps, rag]
+  modules: [developer-workflow, testing-and-quality, http-and-apis, fastapi, how-llms-work, llm-apps, prompt-and-context-engineering, open-source-llms, rag, agents-and-tool-use, mcp-and-multi-agent, llm-evals, fine-tuning, llmops-and-security, ai-capstone, ai-engineer-interview]
   project: docs-qa
 - id: automation
   title: Automation Engineer

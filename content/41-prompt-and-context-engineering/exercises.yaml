@@ -1,0 +1,176 @@
+- id: few-shot-prompt
+  title: Build a few-shot prompt
+  difficulty: easy
+  prompt: |
+    Write `build_few_shot(task, examples, query)` that returns a single prompt string in exactly this layout:
+
+    ```text
+    <task>
+
+    Input: <example input>
+    Output: <example output>
+
+    Input: <next example input>
+    Output: <next example output>
+
+    Input: <query>
+    Output:
+    ```
+
+    - `examples` is a list of `(input, output)` pairs, used in order.
+    - Every example block is followed by one blank line.
+    - The prompt ends with `Output:` (no trailing newline) so the model completes it.
+    - Strip surrounding whitespace from `task` and `query`.
+  starter: |
+    def build_few_shot(task, examples, query):
+        return task
+  hints:
+    - "Build a list of lines and join with `\"\\n\"`."
+    - "With no examples the prompt is the task, a blank line, then `Input: ...` and `Output:`."
+  tests:
+    - name: two examples
+      code: |
+        p = build_few_shot("  Classify.  ", [("a", "x"), ("b", "y")], " c ")
+        assert p == "Classify.\n\nInput: a\nOutput: x\n\nInput: b\nOutput: y\n\nInput: c\nOutput:", repr(p)
+    - name: no examples
+      code: |
+        assert build_few_shot("T", [], "q") == "T\n\nInput: q\nOutput:"
+  solution: |
+    def build_few_shot(task, examples, query):
+        lines = [task.strip(), ""]
+        for x, y in examples:
+            lines += [f"Input: {x}", f"Output: {y}", ""]
+        lines += [f"Input: {query.strip()}", "Output:"]
+        return "\n".join(lines)
+- id: pack-context
+  title: Pack context into a budget
+  difficulty: medium
+  prompt: |
+    Write `pack_context(chunks, budget)`.
+
+    - `chunks` is a list of `(score, text)` pairs.
+    - A chunk costs `estimate_tokens(text)` tokens (provided: 4 characters per token, rounded up).
+    - Consider chunks from the **highest score** down (ties keep the original order). Add a chunk if it still fits in `budget`; **skip** it if it doesn't and keep going with smaller ones.
+    - Return the chosen texts in their **original order** (the order they appeared in `chunks`), not score order.
+  starter: |
+    def estimate_tokens(text):
+        return -(-len(text) // 4)
+
+    def pack_context(chunks, budget):
+        return [text for _, text in chunks]
+  hints:
+    - "Sort indexes by `(-score, index)` to get a stable score ranking."
+    - "Collect chosen indexes, then `sorted()` them to restore original order."
+  tests:
+    - name: highest scores win, original order returned
+      code: |
+        chunks = [(0.2, "a" * 40), (0.9, "b" * 40), (0.5, "c" * 40)]   # 10 tokens each
+        assert pack_context(chunks, 20) == ["b" * 40, "c" * 40], pack_context(chunks, 20)
+    - name: a chunk that does not fit is skipped, smaller ones still fit
+      code: |
+        chunks = [(0.9, "x" * 400), (0.5, "y" * 8), (0.4, "z" * 8)]
+        assert pack_context(chunks, 10) == ["y" * 8, "z" * 8]
+    - name: empty and zero budget
+      code: |
+        assert pack_context([], 100) == []
+        assert pack_context([(1.0, "hello")], 0) == []
+  solution: |
+    def estimate_tokens(text):
+        return -(-len(text) // 4)
+
+    def pack_context(chunks, budget):
+        order = sorted(range(len(chunks)), key=lambda i: (-chunks[i][0], i))
+        chosen, used = [], 0
+        for i in order:
+            cost = estimate_tokens(chunks[i][1])
+            if used + cost <= budget:
+                chosen.append(i)
+                used += cost
+        return [chunks[i][1] for i in sorted(chosen)]
+- id: prompt-registry
+  title: A versioned prompt registry
+  difficulty: medium
+  prompt: |
+    Build a small `PromptRegistry` class.
+
+    - `register(name, version, template)`: store a template. `version` is an int. Registering an existing `(name, version)` raises `ValueError`.
+    - `latest(name)`: the highest registered version number for `name` (raise `KeyError` for an unknown name).
+    - `render(prompt_name, version=None, **values)`: render the template with `str.format`. `version=None` means the latest. If any `{placeholder}` has no value, raise `KeyError` whose message lists the missing names, sorted, like `missing variables: ['a', 'b']`.
+  starter: |
+    import string
+
+    class PromptRegistry:
+        def __init__(self):
+            self._templates = {}
+
+        def register(self, name, version, template):
+            self._templates[(name, version)] = template
+
+        def latest(self, name):
+            return 1
+
+        def render(self, prompt_name, version=None, **values):
+            return self._templates[(prompt_name, version)].format(**values)
+  hints:
+    - "`string.Formatter().parse(template)` yields `(literal, field_name, spec, conversion)`; collect the non-empty `field_name`s."
+    - "`max(v for (n, v) in self._templates if n == name)` finds the latest version."
+  tests:
+    - name: register, latest and render
+      code: |
+        r = PromptRegistry()
+        r.register("greet", 1, "Hi {name}")
+        r.register("greet", 2, "Hello {name}, welcome to {place}")
+        assert r.latest("greet") == 2
+        assert r.render("greet", 1, name="Ada") == "Hi Ada"
+        assert r.render("greet", name="Ada", place="PyPath") == "Hello Ada, welcome to PyPath"
+    - name: duplicate versions and unknown names
+      code: |
+        r = PromptRegistry()
+        r.register("a", 1, "x")
+        for bad in (lambda: r.register("a", 1, "y"), ):
+            try:
+                bad()
+                raise AssertionError("expected ValueError")
+            except ValueError:
+                pass
+        try:
+            r.latest("nope")
+            raise AssertionError("expected KeyError")
+        except KeyError:
+            pass
+    - name: missing variables are reported
+      code: |
+        r = PromptRegistry()
+        r.register("t", 1, "{b} and {a}")
+        try:
+            r.render("t", 1)
+            raise AssertionError("expected KeyError")
+        except KeyError as e:
+            assert "['a', 'b']" in str(e), str(e)
+  solution: |
+    import string
+
+    class PromptRegistry:
+        def __init__(self):
+            self._templates = {}
+
+        def register(self, name, version, template):
+            if (name, version) in self._templates:
+                raise ValueError(f"{name} v{version} already registered")
+            self._templates[(name, version)] = template
+
+        def latest(self, name):
+            versions = [v for (n, v) in self._templates if n == name]
+            if not versions:
+                raise KeyError(name)
+            return max(versions)
+
+        def render(self, prompt_name, version=None, **values):
+            if version is None:
+                version = self.latest(prompt_name)
+            template = self._templates[(prompt_name, version)]
+            needed = {f for _, f, _, _ in string.Formatter().parse(template) if f}
+            missing = sorted(needed - values.keys())
+            if missing:
+                raise KeyError(f"missing variables: {missing}")
+            return template.format(**values)

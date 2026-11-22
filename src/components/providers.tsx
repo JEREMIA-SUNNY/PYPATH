@@ -1,16 +1,24 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { applyEvent } from "@/lib/progress";
+import { applyRootEvent, scopeModules, viewOf } from "@/lib/profiles";
 import { createFileBackend } from "@/lib/progress-backend/hosted-store";
 import { createServerBackend } from "@/lib/progress-backend/server";
 import type { ProgressBackend, SaveStatus } from "@/lib/progress-backend/types";
 import { HOSTED } from "@/lib/mode";
-import type { Catalog, CurriculumIndex, Progress, ProgressEvent } from "@/lib/types";
+import type { Catalog, CurriculumIndex, Profile, Progress, ProgressEvent, ProgressRoot } from "@/lib/types";
 
 interface AppState {
+  /** The catalog scoped to the active profile's syllabus (its modules only, in its order). */
   catalog: Catalog;
+  /** The unscoped catalog (every module), for the profile picker. */
+  fullCatalog: Catalog;
+  /** The active profile's syllabus. */
   index: CurriculumIndex;
+  profile: Profile | null;
+  /** The whole progress file: every profile's own record. */
+  root: ProgressRoot;
+  /** The ACTIVE profile's progress (with the shared name and profile id overlaid). */
   progress: Progress;
   dispatch: (event: ProgressEvent) => Promise<void>;
   saveError: string | null;
@@ -37,11 +45,10 @@ function LoadingSkeleton({ error }: { error: string | null }) {
 }
 
 export function AppProvider({ catalog, children }: { catalog: Catalog; children: React.ReactNode }) {
-  const index = catalog.modules;
   const backend = useMemo<ProgressBackend>(() => (HOSTED ? createFileBackend() : createServerBackend()), []);
-  const [progress, setProgress] = useState<Progress | null>(null);
+  const [root, setRoot] = useState<ProgressRoot | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const latest = useRef<Progress | null>(null);
+  const latest = useRef<ProgressRoot | null>(null);
   const pending = useRef(0);
   const status = useSyncExternalStore(backend.subscribe, backend.status, backend.status);
 
@@ -52,7 +59,7 @@ export function AppProvider({ catalog, children }: { catalog: Catalog; children:
       .then((p) => {
         if (!live) return;
         latest.current = p;
-        setProgress(p);
+        setRoot(p);
       })
       .catch((e) => live && setLoadError((e as Error).message));
     return () => {
@@ -64,9 +71,9 @@ export function AppProvider({ catalog, children }: { catalog: Catalog; children:
     async (event: ProgressEvent) => {
       if (!latest.current) return;
       // Optimistic: update the screen now, then persist.
-      const next = applyEvent(latest.current, event);
+      const next = applyRootEvent(latest.current, event);
       latest.current = next;
-      setProgress(next);
+      setRoot(next);
       pending.current++;
       try {
         const saved = await backend.save(next, event);
@@ -74,7 +81,7 @@ export function AppProvider({ catalog, children }: { catalog: Catalog; children:
         // Server mode: adopt the server's copy once every in-flight write has landed.
         if (saved && pending.current === 0) {
           latest.current = saved;
-          setProgress(saved);
+          setRoot(saved);
         }
       } catch {
         pending.current--; // the backend status already carries the error
@@ -84,10 +91,22 @@ export function AppProvider({ catalog, children }: { catalog: Catalog; children:
   );
 
   const saveError = status.kind === "error" ? status.message : null;
-  const value = useMemo(
-    () => (progress ? { catalog, index, progress, dispatch, saveError, saveStatus: status } : null),
-    [catalog, index, progress, dispatch, saveError, status],
-  );
+  const value = useMemo<AppState | null>(() => {
+    if (!root) return null;
+    const profile = catalog.profiles.find((p) => p.id === root.settings.profileId) ?? null;
+    const index = scopeModules(catalog.modules, profile);
+    return {
+      catalog: { ...catalog, modules: index },
+      fullCatalog: catalog,
+      index,
+      profile,
+      root,
+      progress: viewOf(root),
+      dispatch,
+      saveError,
+      saveStatus: status,
+    };
+  }, [catalog, root, dispatch, saveError, status]);
   if (!value) return <LoadingSkeleton error={loadError} />;
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -1,0 +1,62 @@
+# Netflix-style profiles. Each profile has its OWN syllabus (modules, in order) and its OWN progress.
+# `trackId` points at content/tracks.yaml and is only used for the career page's portfolio projects.
+- id: ai
+  title: "AI Engineer"
+  tagline: "LLMs, RAG, agents, evals and deployment"
+  emoji: "🤖"
+  from: "#6366f1"
+  to: "#a855f7"
+  trackId: "ai"
+  summary: "One path from Python to production AI: just the Python you need, then LLM APIs, prompting, open-source models, RAG, agents, MCP, evals, fine-tuning, LLMOps and a capstone."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, files, control-flow, loops, functions, oop, modules-and-packages, errors-and-testing, decorators-and-generators, standard-library, modern-python, real-world-tasks, developer-workflow, testing-and-quality, http-and-apis, fastapi, how-llms-work, llm-apps, prompt-and-context-engineering, open-source-llms, rag, agents-and-tool-use, mcp-and-multi-agent, llm-evals, fine-tuning, llmops-and-security, ai-capstone, ai-engineer-interview]
+  focus: ["Python for AI", "LLM APIs and prompting", "RAG and vector search", "Agents, tools and MCP", "Evals, fine-tuning and LLMOps"]
+- id: python
+  title: "Python"
+  tagline: "From your first print() to advanced Python"
+  emoji: "🐍"
+  from: "#3776ab"
+  to: "#ffd43b"
+  trackId: ""
+  summary: "The complete Python course, from your first print() through OOP, testing, decorators, the standard library and two projects, ending with a capstone."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, files, control-flow, loops, functions, tic-tac-toe, oop, modules-and-packages, errors-and-testing, blackjack, decorators-and-generators, standard-library, real-world-tasks, builtins-in-depth, modern-python, capstone]
+  focus: ["Core language", "OOP", "Testing and errors", "Standard library", "Real-world scripts"]
+- id: backend
+  title: "Backend"
+  tagline: "APIs, databases and services"
+  emoji: "🛠️"
+  from: "#0ea5e9"
+  to: "#14b8a6"
+  trackId: "backend"
+  summary: "Python essentials, then the backend toolkit: developer workflow, testing, HTTP and REST, SQL and FastAPI."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, files, control-flow, loops, functions, oop, modules-and-packages, errors-and-testing, decorators-and-generators, standard-library, modern-python, developer-workflow, testing-and-quality, http-and-apis, sql-and-databases, fastapi]
+  focus: ["HTTP and REST", "SQL", "FastAPI", "Testing"]
+- id: data
+  title: "Data"
+  tagline: "Analyse, query and chart data"
+  emoji: "📊"
+  from: "#10b981"
+  to: "#84cc16"
+  trackId: "data"
+  summary: "Python essentials, then SQL, data analysis with NumPy and pandas, charts and reports."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, files, control-flow, loops, functions, oop, modules-and-packages, errors-and-testing, standard-library, modern-python, developer-workflow, sql-and-databases, data-analysis, data-visualization]
+  focus: ["pandas and NumPy", "SQL", "Visualization", "Reporting"]
+- id: automation
+  title: "Automation"
+  tagline: "Script away repetitive work"
+  emoji: "⚙️"
+  from: "#f97316"
+  to: "#f43f5e"
+  trackId: "automation"
+  summary: "Python essentials, real-world scripting, then testing, APIs and the automation toolkit."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, files, control-flow, loops, functions, oop, modules-and-packages, errors-and-testing, decorators-and-generators, standard-library, modern-python, real-world-tasks, developer-workflow, testing-and-quality, http-and-apis, automation]
+  focus: ["Files and CLIs", "APIs", "Reports", "Test automation"]
+- id: interview
+  title: "Interview"
+  tagline: "Algorithms and patterns under time pressure"
+  emoji: "🎯"
+  from: "#ec4899"
+  to: "#8b5cf6"
+  trackId: "interview"
+  summary: "Just the Python you need for coding rounds, then every algorithm pattern, drilled with tests, plus Python interview questions."
+  modules: [getting-started, numbers-and-variables, strings, lists-and-tuples, dicts-sets-booleans, control-flow, loops, functions, oop, big-o, arrays-and-hashing, two-pointers, stacks-queues-binary-search, recursion-backtracking, linked-lists-and-trees, graphs-and-heaps, dynamic-programming, python-interview-questions]
+  focus: ["Big-O", "Hashing and two pointers", "Trees and graphs", "Dynamic programming"]

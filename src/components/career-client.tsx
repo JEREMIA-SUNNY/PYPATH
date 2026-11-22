@@ -138,7 +138,7 @@ export function CareerClient() {
       <section>
         <h2 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">Choose your target role</h2>
         <p className="mt-1 text-sm text-zinc-500">Your dashboard, next steps and daily challenge follow this track. You can switch any time.</p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {catalog.tracks.map((t) => {
             const active = t.id === track?.id;
             const mods = stats.filter((s) => t.modules.includes(s.module.id));
@@ -243,7 +243,7 @@ export function CareerClient() {
         <p className="mt-1 text-sm text-zinc-500">
           Build these in your own GitHub repo, outside the app. Tick steps as you go; a finished project unlocks a resume bullet and 150 XP.
         </p>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
           {projects.map((p) => (
             <ProjectCard key={p.id} p={p} highlight={p.id === track?.project} />
           ))}
@@ -255,7 +255,7 @@ export function CareerClient() {
         <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
           <Award className="size-5" /> Achievements
         </h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {ach.map((a) => (
             <div
               key={a.id}

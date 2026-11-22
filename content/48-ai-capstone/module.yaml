@@ -1,0 +1,6 @@
+title: "AI Capstone: Documents Q&A with Evals"
+summary: "Put it all together. Build the core of a production-style RAG question answering system (retrieve, answer with citations, refuse when unsure) and the eval harness that proves it works."
+icon: flag
+kind: capstone
+section: career
+skills: [RAG pipeline, Citations, Abstention, Eval harness, End-to-end AI engineering]

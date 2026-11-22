@@ -13,8 +13,11 @@ export function relTime(when: number | string | null | undefined, now = Date.now
   return plural(Math.round(h / 24), "day");
 }
 
-export function summarize(p: { lessons: Record<string, unknown>; exercises: Record<string, { status: string }> }): string {
-  const lessons = Object.keys(p.lessons).length;
-  const exercises = Object.values(p.exercises).filter((e) => e.status === "passed").length;
+type Slice = { lessons: Record<string, unknown>; exercises: Record<string, { status: string }> };
+
+export function summarize(file: { profiles: Record<string, Slice> }): string {
+  const slices = Object.values(file.profiles);
+  const lessons = slices.reduce((a, p) => a + Object.keys(p.lessons).length, 0);
+  const exercises = slices.reduce((a, p) => a + Object.values(p.exercises).filter((e) => e.status === "passed").length, 0);
   return `${lessons} lesson${lessons === 1 ? "" : "s"} · ${exercises} exercise${exercises === 1 ? "" : "s"}`;
 }

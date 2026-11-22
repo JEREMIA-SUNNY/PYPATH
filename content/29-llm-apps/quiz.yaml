@@ -18,3 +18,19 @@
   options: ["Training the model", "Measuring output quality consistently whenever prompts or models change", "Reducing cost", "Encrypting prompts"]
   answer: 1
   explain: Evals are your regression tests for AI behaviour.
+- q: In tool calling, who actually runs the function?
+  options: ["The model, inside the API", "Your code, using the name and arguments the model returned", "The model provider's servers", "The browser"]
+  answer: 1
+  explain: The model only asks for a call. Your application validates the arguments, runs the function and sends the result back.
+- q: A tool call fails (bad arguments). What is a good way to handle it?
+  options: ["Crash the request", "Return the error as the tool result so the model can adjust", "Ignore the call", "Retry forever"]
+  answer: 1
+  explain: Feeding the error back lets the model correct its arguments or explain the problem to the user.
+- q: A streamed response ends with finish_reason "length". What does that mean?
+  options: ["It completed normally", "The answer was cut off by the token limit", "The model refused", "The network dropped"]
+  answer: 1
+  explain: "\"length\" means max tokens was hit mid-answer. Increase the limit or shorten the request instead of showing a half answer as complete."
+- q: Which errors should be retried with backoff?
+  options: ["Every error", "Transient ones such as rate limits and timeouts", "Invalid request errors", "Authentication errors"]
+  answer: 1
+  explain: Retrying a request that is wrong will fail again and cost money. Retry rate limits, timeouts and overloaded servers.

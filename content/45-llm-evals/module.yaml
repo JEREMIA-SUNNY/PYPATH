@@ -1,0 +1,5 @@
+title: Evals for LLM Applications
+summary: "The most in-demand and least taught AI engineering skill. Build eval datasets, write deterministic checks and LLM-as-judge rubrics, and gate releases on regression tests so quality never silently drops."
+icon: bot
+section: career
+skills: [Eval datasets, Error analysis, LLM-as-judge, Regression testing, RAG metrics]

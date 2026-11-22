@@ -93,7 +93,7 @@ export function LearnGrid() {
               <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">{sec.title}</h2>
               <p className="mt-1 text-sm text-zinc-500">{sec.blurb}</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {mods.map((m, i) => (
                 <ModuleCard key={m.id} m={m} i={i} />
               ))}

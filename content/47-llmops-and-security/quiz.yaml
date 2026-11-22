@@ -1,0 +1,28 @@
+- q: What should an LLM cache key include?
+  options: ["Only the prompt", "Everything that changes the answer, such as model, prompt and parameters", "The user's name", "A random number"]
+  answer: 1
+  explain: If the model or temperature differs, the cached answer may be wrong. Key on all inputs that affect the output.
+- q: Where should API keys live?
+  options: ["In the repository", "In front-end code", "In environment variables or a secrets manager", "In the system prompt"]
+  answer: 2
+  explain: Keys in code or prompts leak. Use environment variables or a secrets manager and rotate any key that is exposed.
+- q: What is indirect prompt injection?
+  options: ["A user typing a jailbreak", "Malicious instructions hidden in content the app feeds to the model, like a web page or email", "A slow request", "An invalid API key"]
+  answer: 1
+  explain: The attack arrives through data the model reads, so the user never typed it. Least privilege and untrusted-output handling are the defences.
+- q: Which is the strongest single defence against injection causing real damage?
+  options: ["A longer system prompt", "Least privilege and human approval for sensitive actions", "A higher temperature", "Using a bigger model"]
+  answer: 1
+  explain: You cannot fully stop the model being fooled, so limit what a fooled model is able to do.
+- q: Why redact personal data before sending text to a model provider or logs?
+  options: ["It makes answers longer", "To limit what leaves your system and reduce privacy risk", "Models cannot read emails", "It lowers latency"]
+  answer: 1
+  explain: Data minimisation reduces exposure if logs or providers are breached and helps with privacy regulation.
+- q: What does a token bucket rate limiter allow?
+  options: ["No bursts at all", "Bursts up to its capacity while capping the average rate", "Unlimited requests", "One request per day"]
+  answer: 1
+  explain: Tokens refill at a steady rate; a full bucket can absorb a short burst, then requests are throttled.
+- q: Which metrics are most useful to alert on for an LLM service?
+  options: ["Font size", "Cost per day, error rate, p95 latency and eval score drift", "Number of files", "Lines of code"]
+  answer: 1
+  explain: Spend, reliability, speed and quality are the four things that go wrong silently in production.

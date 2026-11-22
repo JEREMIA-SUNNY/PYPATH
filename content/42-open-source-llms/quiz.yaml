@@ -1,0 +1,24 @@
+- q: Roughly how much memory do the weights of a 7B model need at 4-bit quantization?
+  options: ["About 28 GB", "About 14 GB", "About 3.5 GB", "About 0.5 GB"]
+  answer: 2
+  explain: 7 billion parameters × 4 bits ÷ 8 = 3.5 GB, before overhead for the context cache and runtime.
+- q: What does quantization trade?
+  options: ["Speed for accuracy of the tokenizer", "A little quality for much lower memory use", "Context length for license freedom", "Training data for parameters"]
+  answer: 1
+  explain: Fewer bits per weight shrinks memory a lot while usually losing only a small amount of quality.
+- q: Which is a good reason to choose an open-weight model over a frontier API?
+  options: ["It is always more accurate", "Data must stay on your own infrastructure", "It needs no hosting", "It has no license"]
+  answer: 1
+  explain: Privacy, control and cost at scale are the classic reasons. Accuracy and convenience usually favour frontier APIs.
+- q: Why does a chat template matter when running a raw instruct model?
+  options: ["It speeds up the GPU", "The model was trained on a specific message layout and degrades with the wrong one", "It encrypts the prompt", "It sets the temperature"]
+  answer: 1
+  explain: The template inserts the special role tokens the model was trained with. APIs do this for you; raw models need it applied explicitly.
+- q: Ollama's /api/generate streams its reply as...
+  options: ["One big JSON document", "NDJSON, one JSON object per line, with done true at the end", "Server-sent HTML", "Binary frames"]
+  answer: 1
+  explain: Each line is a JSON object containing a piece of the response. The final object has done set to true.
+- q: Which should you check before shipping a product on an open model?
+  options: ["Only its leaderboard rank", "Its license and model card", "Its logo", "Nothing, open means free"]
+  answer: 1
+  explain: Licenses differ (some restrict commercial use or very large deployments). The model card documents intended use and limits.

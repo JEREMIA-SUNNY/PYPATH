@@ -1,4 +1,5 @@
 import { rejectUnlessLocal } from "@/lib/guard";
+import { looksLikeProgressFile } from "@/lib/profiles";
 import { readProgress, updateProgress } from "@/lib/progress-store";
 import type { ProgressEvent } from "@/lib/types";
 
@@ -37,8 +38,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Unknown event type." }, { status: 400 });
   }
   if (event.type === "import") {
-    const d = event.data as unknown as Record<string, unknown> | undefined;
-    if (!d || typeof d !== "object" || d.version !== 1 || typeof d.lessons !== "object") {
+    if (!looksLikeProgressFile(event.data)) {
       return Response.json({ error: "That file is not a PyPath progress export." }, { status: 400 });
     }
   }

@@ -1,0 +1,210 @@
+- id: agent-loop
+  title: Write the agent loop
+  difficulty: medium
+  prompt: |
+    Implement `run_agent(llm, tools, question, max_steps=5)`.
+
+    - Start with `messages = [{"role": "user", "content": question}]`.
+    - Each step call `llm(messages)`. It returns either `{"content": "..."}` (a final answer) or `{"tool_calls": [{"id", "name", "arguments"}, ...]}` where `arguments` is a **dict**.
+    - A final answer ends the loop: return `(content, steps_used)`, counting model calls (the first call is step 1).
+    - For tool calls, append `{"role": "assistant", "tool_calls": calls}` and then, for each call, a `{"role": "tool", "tool_call_id": id, "content": str(result)}` message with the result of `tools[name](**arguments)`.
+    - If a tool is unknown or raises, the `content` is `"error: <message>"` (for an unknown tool use `error: unknown tool <name>`). Never crash on a tool error.
+    - If `max_steps` model calls pass without a final answer, raise `RuntimeError("max steps reached")`.
+  starter: |
+    def run_agent(llm, tools, question, max_steps=5):
+        reply = llm([{"role": "user", "content": question}])
+        return reply.get("content"), 1
+  hints:
+    - "A `for step in range(1, max_steps + 1)` loop makes the step count easy."
+    - "`calls = reply.get(\"tool_calls\")`; no calls (or an empty list) means a final answer."
+  tests:
+    - name: one tool call, then an answer
+      code: |
+        def llm(messages):
+            last = messages[-1]
+            if last["role"] == "user":
+                return {"tool_calls": [{"id": "1", "name": "add", "arguments": {"a": 2, "b": 3}}]}
+            return {"content": "The answer is " + last["content"]}
+        assert run_agent(llm, {"add": lambda a, b: a + b}, "2+3?") == ("The answer is 5", 2)
+    - name: answers immediately when no tools are needed
+      code: |
+        assert run_agent(lambda m: {"content": "hi"}, {}, "hello") == ("hi", 1)
+    - name: tool errors are shown to the model
+      code: |
+        def llm(messages):
+            last = messages[-1]
+            if last["role"] == "user":
+                return {"tool_calls": [{"id": "a", "name": "nope", "arguments": {}}, {"id": "b", "name": "boom", "arguments": {}}]}
+            return {"content": last["content"]}
+        tools = {"boom": lambda: 1 / 0}
+        answer, steps = run_agent(llm, tools, "go")
+        assert steps == 2
+        assert answer.startswith("error:"), answer
+    - name: runaway agents are stopped
+      code: |
+        looping = lambda m: {"tool_calls": [{"id": "x", "name": "t", "arguments": {}}]}
+        try:
+            run_agent(looping, {"t": lambda: 1}, "go", max_steps=3)
+            raise AssertionError("expected RuntimeError")
+        except RuntimeError as e:
+            assert "max steps" in str(e)
+  solution: |
+    def run_agent(llm, tools, question, max_steps=5):
+        messages = [{"role": "user", "content": question}]
+        for step in range(1, max_steps + 1):
+            reply = llm(messages)
+            calls = reply.get("tool_calls")
+            if not calls:
+                return reply["content"], step
+            messages.append({"role": "assistant", "tool_calls": calls})
+            for call in calls:
+                try:
+                    if call["name"] not in tools:
+                        raise KeyError(f"unknown tool {call['name']}")
+                    result = tools[call["name"]](**call["arguments"])
+                except KeyError as e:
+                    result = f"error: {e.args[0]}"
+                except Exception as e:
+                    result = f"error: {e}"
+                messages.append({"role": "tool", "tool_call_id": call["id"], "content": str(result)})
+        raise RuntimeError("max steps reached")
+- id: tool-guardrails
+  title: Guardrails for tool calls
+  difficulty: medium
+  prompt: |
+    Agents need rules enforced in code. Write two functions.
+
+    `check_call(call, policy, calls_so_far)` returns one of `"allow"`, `"approve"` (needs a human) or `"deny"`:
+
+    - `policy` is `{"allowed": set_of_names, "needs_approval": set_of_names, "max_calls": int}`.
+    - Deny if the tool is not in `allowed`, **or** `calls_so_far >= max_calls`.
+    - Otherwise `"approve"` if the tool is in `needs_approval`, else `"allow"`.
+
+    `validate_args(args, schema)` checks a dict of arguments against a schema like `{"to": str, "count": int}`. Return a **list of error strings** (empty means valid), in this order and wording:
+
+    - for every schema key missing from `args`: `"missing: <key>"` (in schema order)
+    - for every key in `args` that is not in the schema: `"unexpected: <key>"` (sorted)
+    - for a present key with the wrong type: `"wrong type: <key>"` (in schema order). A `bool` is **not** accepted where `int` is expected.
+  starter: |
+    def check_call(call, policy, calls_so_far):
+        return "allow"
+
+    def validate_args(args, schema):
+        return []
+  hints:
+    - "`isinstance(True, int)` is `True` in Python, so check for `bool` explicitly."
+    - "Build the three kinds of errors in separate loops and concatenate them in the required order."
+  tests:
+    - name: allow, approve and deny
+      code: |
+        policy = {"allowed": {"search", "send_email"}, "needs_approval": {"send_email"}, "max_calls": 2}
+        assert check_call({"name": "search"}, policy, 0) == "allow"
+        assert check_call({"name": "send_email"}, policy, 1) == "approve"
+        assert check_call({"name": "rm_rf"}, policy, 0) == "deny"
+        assert check_call({"name": "search"}, policy, 2) == "deny"
+    - name: valid arguments
+      code: |
+        assert validate_args({"to": "a@b.c", "count": 2}, {"to": str, "count": int}) == []
+    - name: errors in the documented order
+      code: |
+        errs = validate_args({"count": "2", "zzz": 1, "aaa": 2}, {"to": str, "count": int})
+        assert errs == ["missing: to", "unexpected: aaa", "unexpected: zzz", "wrong type: count"], errs
+    - name: booleans are not integers
+      code: |
+        assert validate_args({"count": True}, {"count": int}) == ["wrong type: count"]
+  solution: |
+    def check_call(call, policy, calls_so_far):
+        if call["name"] not in policy["allowed"] or calls_so_far >= policy["max_calls"]:
+            return "deny"
+        if call["name"] in policy["needs_approval"]:
+            return "approve"
+        return "allow"
+
+    def validate_args(args, schema):
+        errors = [f"missing: {k}" for k in schema if k not in args]
+        errors += [f"unexpected: {k}" for k in sorted(args) if k not in schema]
+        for k, typ in schema.items():
+            if k in args:
+                v = args[k]
+                if not isinstance(v, typ) or (typ is int and isinstance(v, bool)):
+                    errors.append(f"wrong type: {k}")
+        return errors
+- id: conversation-memory
+  title: A token-budgeted memory
+  difficulty: hard
+  prompt: |
+    Build `ConversationMemory(max_tokens)`.
+
+    - `add(role, content)` appends a message dict `{"role": role, "content": content}`.
+    - A message costs `estimate_tokens(content) + 4` (provided: 4 chars per token, rounded up; the `+4` is per-message overhead).
+    - `messages()` returns the messages that fit in `max_tokens`:
+      1. **Every** `system` message is always kept (and counted against the budget), in their original order, at the start.
+      2. Then the **newest** non-system messages, added newest-first while they fit. **Stop** at the first one that doesn't fit (history must stay contiguous).
+      3. Return them in chronological order after the system messages.
+  starter: |
+    def estimate_tokens(text):
+        return -(-len(text) // 4)
+
+    class ConversationMemory:
+        def __init__(self, max_tokens):
+            self.max_tokens = max_tokens
+            self._messages = []
+
+        def add(self, role, content):
+            self._messages.append({"role": role, "content": content})
+
+        def messages(self):
+            return list(self._messages)
+  hints:
+    - "Compute the system messages' cost first and subtract it from the budget."
+    - "Iterate `reversed(non_system)`, `break` when a message doesn't fit, then reverse the kept list."
+  tests:
+    - name: keeps the system message and the newest messages that fit
+      code: |
+        mem = ConversationMemory(30)
+        mem.add("system", "x" * 8)                 # 2 + 4 = 6
+        for i in range(5):
+            mem.add("user", f"{i}" * 16)           # 4 + 4 = 8 each -> budget 24 fits 3
+        out = mem.messages()
+        assert out[0]["role"] == "system"
+        assert [m["content"][0] for m in out[1:]] == ["2", "3", "4"], out
+    - name: everything fits
+      code: |
+        mem = ConversationMemory(1000)
+        mem.add("user", "hi")
+        mem.add("assistant", "hello")
+        assert [m["role"] for m in mem.messages()] == ["user", "assistant"]
+    - name: history stays contiguous
+      code: |
+        mem = ConversationMemory(20)
+        mem.add("user", "a" * 8)                   # 2 + 4 = 6
+        mem.add("user", "b" * 100)                 # 25 + 4 = 29, too big
+        mem.add("user", "c" * 8)                   # 6
+        out = mem.messages()
+        assert [m["content"][0] for m in out] == ["c"], out
+  solution: |
+    def estimate_tokens(text):
+        return -(-len(text) // 4)
+
+    class ConversationMemory:
+        def __init__(self, max_tokens):
+            self.max_tokens = max_tokens
+            self._messages = []
+
+        def add(self, role, content):
+            self._messages.append({"role": role, "content": content})
+
+        @staticmethod
+        def _cost(m):
+            return estimate_tokens(m["content"]) + 4
+
+        def messages(self):
+            system = [m for m in self._messages if m["role"] == "system"]
+            budget = self.max_tokens - sum(self._cost(m) for m in system)
+            kept = []
+            for m in reversed([m for m in self._messages if m["role"] != "system"]):
+                if self._cost(m) > budget:
+                    break
+                kept.append(m)
+                budget -= self._cost(m)
+            return system + kept[::-1]

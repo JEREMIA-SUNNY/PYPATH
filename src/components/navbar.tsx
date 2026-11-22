@@ -36,7 +36,8 @@ export function Logo({ className }: { className?: string }) {
 
 export function Navbar() {
   const pathname = usePathname();
-  const { saveError, saveStatus } = useApp();
+  const { saveError, saveStatus, catalog, progress } = useApp();
+  const profile = catalog.profiles.find((p) => p.id === progress.settings.profileId);
   const [, tick] = useState(0);
   useEffect(() => {
     if (!HOSTED) return;
@@ -64,16 +65,17 @@ export function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-1.5 backdrop-blur-xl transition-all duration-300",
+          "pointer-events-auto flex w-full max-w-[28rem] items-center justify-between gap-1 rounded-full border px-2 py-1.5 backdrop-blur-xl transition-all duration-300 md:w-auto md:max-w-none md:justify-start",
           scrolled
             ? "border-zinc-200/80 bg-white/80 shadow-lg shadow-zinc-900/5 dark:border-zinc-800 dark:bg-zinc-950/75 dark:shadow-black/40"
             : "border-zinc-200/60 bg-white/60 dark:border-zinc-800/60 dark:bg-zinc-950/40",
         )}
       >
-        <Link href="/" className="mr-1 rounded-full px-2 py-1" aria-label="PyPath home">
+        <Link href="/" className="rounded-full px-2 py-1 md:mr-1" aria-label="PyPath home">
           <Logo className="text-sm" />
         </Link>
-        <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-800" />
+        <div className="mx-1 hidden h-5 w-px bg-zinc-200 md:block dark:bg-zinc-800" />
+        <div className="hidden items-center gap-1 md:flex">
         {links.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -95,7 +97,9 @@ export function Navbar() {
             <span className="relative hidden lg:inline">{label}</span>
           </Link>
         ))}
-        <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-800" />
+        </div>
+        <div className="mx-1 hidden h-5 w-px bg-zinc-200 md:block dark:bg-zinc-800" />
+        <div className="flex items-center gap-1">
         {HOSTED ? <SavePill status={saveStatus} /> : saveError && (
           <span title={saveError} className="mr-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
             Not saved
@@ -113,6 +117,17 @@ export function Navbar() {
           </kbd>
         </button>
         <ThemeToggle />
+        {profile && (
+          <button
+            onClick={() => window.dispatchEvent(new Event("pypath:profiles"))}
+            aria-label={`Profile: ${profile.title}. Switch profile`}
+            title={`${profile.title} profile. Switch profile`}
+            className="grid size-8 place-items-center rounded-full text-[15px] transition-transform hover:scale-110"
+            style={{ background: `linear-gradient(135deg, ${profile.from}, ${profile.to})` }}
+          >
+            <span aria-hidden>{profile.emoji}</span>
+          </button>
+        )}
         <Link
           href="/settings"
           aria-label="Settings"
@@ -123,7 +138,9 @@ export function Navbar() {
         >
           <Settings className="size-4" />
         </Link>
+        </div>
       </motion.nav>
+      <BottomNav active={active} />
     </div>
   );
 }
@@ -171,9 +188,39 @@ function SavePill({ status }: { status: Status }) {
     warn: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
     bad: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   }[tone];
+  const dot = { ok: "bg-emerald-500", warn: "bg-amber-500", bad: "bg-rose-500" }[tone];
   return (
-    <span title={title} className={cn("mr-1 hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline", color)}>
-      {label}
-    </span>
+    <>
+      <span title={title} className={cn("mr-1 hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline", color)}>
+        {label}
+      </span>
+      <span title={`${label}: ${title}`} aria-label={label} className={cn("mx-1.5 size-2 rounded-full sm:hidden", dot)} />
+    </>
+  );
+}
+
+/** Phone navigation: a bottom tab bar (thumb reach), shown below the md breakpoint. */
+function BottomNav({ active }: { active: (href: string) => boolean }) {
+  return (
+    <nav
+      aria-label="Main"
+      className="pointer-events-auto fixed inset-x-0 bottom-0 z-50 grid grid-cols-7 border-t border-zinc-200 bg-white/90 px-1 pt-1 backdrop-blur-xl md:hidden dark:border-zinc-800 dark:bg-zinc-950/90"
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 4px)" }}
+    >
+      {links.map(({ href, label, icon: Icon }) => (
+        <Link
+          key={href}
+          href={href}
+          aria-current={active(href) ? "page" : undefined}
+          className={cn(
+            "flex min-w-0 flex-col items-center gap-0.5 rounded-lg py-1.5 text-[10px] font-medium transition-colors",
+            active(href) ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-500 dark:text-zinc-400",
+          )}
+        >
+          <Icon className="size-[18px]" />
+          <span className="max-w-full truncate">{label}</span>
+        </Link>
+      ))}
+    </nav>
   );
 }

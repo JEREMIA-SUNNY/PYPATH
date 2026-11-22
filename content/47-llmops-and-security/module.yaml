@@ -1,0 +1,5 @@
+title: LLMOps, Deployment and Security
+summary: "Ship AI features safely: containerise the service, cache and rate-limit calls, trace cost and latency, and defend against prompt injection, data leaks and runaway spend."
+icon: bot
+section: career
+skills: [Docker deployment, Caching, Rate limiting, Observability and tracing, Prompt injection defence, PII handling]

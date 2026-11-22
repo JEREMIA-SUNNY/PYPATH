@@ -4,7 +4,7 @@ import { ArrowRight, Award, BookOpen, CalendarCheck, CircleCheck, Code2, Flame, 
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { achievements, learningPath, localDay, moduleStats, nextStep, overallStats, pickDaily } from "@/lib/progress";
+import { achievements, localDay, moduleStats, nextStep, overallStats, pickDaily } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { Heatmap } from "./heatmap";
 import { ModuleIcon } from "./module-icon";
@@ -25,13 +25,13 @@ function greeting() {
 
 function Stat({ icon: Icon, label, value, hint, i }: { icon: typeof Zap; label: string; value: React.ReactNode; hint?: string; i: number }) {
   return (
-    <motion.div variants={fadeUp} custom={i} initial="hidden" animate="show" className="col-span-6 sm:col-span-3 lg:col-span-2">
+    <motion.div variants={fadeUp} custom={i} initial="hidden" animate="show" className="col-span-3 lg:col-span-2">
       <SpotlightCard className="h-full">
         <div className="flex items-center gap-2 text-[12px] font-medium text-zinc-500">
           <Icon className="size-4" />
           {label}
         </div>
-        <div className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-white">{value}</div>
+        <div className="mt-3 text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl text-zinc-900 dark:text-white">{value}</div>
         {hint && <div className="mt-1 text-[12px] text-zinc-500">{hint}</div>}
       </SpotlightCard>
     </motion.div>
@@ -39,12 +39,12 @@ function Stat({ icon: Icon, label, value, hint, i }: { icon: typeof Zap; label: 
 }
 
 export function Dashboard() {
-  const { catalog, index, progress, dispatch } = useApp();
+  const { catalog, index, progress, profile, dispatch } = useApp();
   const [hello, setHello] = useState("Welcome back");
   useEffect(() => setHello(greeting()), []);
 
-  const track = catalog.tracks.find((t) => t.id === progress.settings.trackId) ?? null;
-  const path = useMemo(() => learningPath(index, track), [index, track]);
+  // The profile's syllabus IS the path: its own modules, in its own order.
+  const path = index;
   const stats = useMemo(() => overallStats(index, progress, catalog.projects.length), [index, progress, catalog.projects.length]);
   const next = nextStep(path, progress);
   const pathStats = path.map((m) => moduleStats(m, progress));
@@ -81,31 +81,27 @@ export function Dashboard() {
               {name ? `, ${name}` : ""}
             </p>
             <h1 className="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-900 sm:text-5xl dark:text-white">
-              {stats.percent === 0 ? (
+              {profile && pathPercent === 0 ? (
+                <>
+                  {profile.emoji} {profile.title}. <span className="text-zinc-400 dark:text-zinc-500">{profile.tagline}.</span>
+                </>
+              ) : stats.percent === 0 ? (
                 <>
                   Learn Python. <span className="text-zinc-400 dark:text-zinc-500">Get job-ready.</span>
                 </>
               ) : (
                 <>
-                  You&apos;re {pathPercent}% along <span className="text-zinc-400 dark:text-zinc-500">your path.</span>
+                  You&apos;re {pathPercent}% along <span className="text-zinc-400 dark:text-zinc-500">your {profile ? `${profile.title} ` : ""}path.</span>
                 </>
               )}
             </h1>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {track ? (
+              {profile ? (
                 <>
-                  Foundations, then the <span className="font-medium text-zinc-900 dark:text-white">{track.title}</span> track. Lessons, quizzes and real
-                  code, saved on this computer.
+                  {profile.summary} <span className="font-medium text-zinc-900 dark:text-white">{index.length} modules</span>, its own progress, saved on this computer.
                 </>
               ) : (
-                <>
-                  {index.length} modules from your first <code className="font-mono text-[13px]">print()</code> to APIs, data, AI apps and interview
-                  problems. Everything runs and saves on this computer.{" "}
-                  <Link href="/career" className="text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400">
-                    Pick a career track
-                  </Link>{" "}
-                  to focus your path.
-                </>
+                <>Pick a profile to get a syllabus built for your goal.</>
               )}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -128,7 +124,7 @@ export function Dashboard() {
             <ProgressRing value={stats.percent} size={168} stroke={12} sublabel="all content" />
             <div className="space-y-3 text-sm">
               <div>
-                <div className="text-zinc-500">{track ? `${track.title} path` : "Your path"}</div>
+                <div className="text-zinc-500">{profile ? `${profile.title} path` : "Your path"}</div>
                 <div className="font-semibold tabular-nums text-zinc-900 dark:text-white">{pathPercent}%</div>
               </div>
               <div>
@@ -207,13 +203,13 @@ export function Dashboard() {
 
           <Stat i={4} icon={Zap} label="Experience" value={stats.xp.toLocaleString()} hint="XP from lessons, quizzes, code and projects" />
           <Stat i={5} icon={Flame} label="Day streak" value={stats.streak} hint={`Longest: ${stats.longestStreak} days`} />
-          <motion.div variants={fadeUp} custom={6} initial="hidden" animate="show" className="col-span-6 sm:col-span-3 lg:col-span-2">
+          <motion.div variants={fadeUp} custom={6} initial="hidden" animate="show" className="col-span-3 lg:col-span-2">
             <Link href="/review" className="block h-full">
               <SpotlightCard className="h-full">
                 <div className="flex items-center gap-2 text-[12px] font-medium text-zinc-500">
                   <Repeat2 className="size-4" /> Review due
                 </div>
-                <div className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-white">{stats.reviewDue}</div>
+                <div className="mt-3 text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl text-zinc-900 dark:text-white">{stats.reviewDue}</div>
                 <div className="mt-1 flex items-center gap-1 text-[12px] text-zinc-500">
                   {stats.reviewDue ? "Missed questions ready to revisit" : "Nothing due. Nice."} <ArrowRight className="size-3" />
                 </div>
@@ -265,14 +261,14 @@ export function Dashboard() {
         <section className="mt-16">
           <div className="mb-5 flex items-end justify-between">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">{track ? `Your ${track.title} path` : "Your path"}</h2>
-              <p className="mt-1 text-sm text-zinc-500">Foundations first, then {track ? "the modules your target role needs" : "career modules and interview prep"}.</p>
+              <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">{profile ? `Your ${profile.title} syllabus` : "Your path"}</h2>
+              <p className="mt-1 text-sm text-zinc-500">{index.length} modules, in the order they are taught.</p>
             </div>
             <Link href="/learn" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
               All modules →
             </Link>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2">
             {pathStats.map((s, i) => (
               <Link
                 key={s.module.id}

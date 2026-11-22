@@ -1,0 +1,187 @@
+- id: eval-checks
+  title: Deterministic output checks
+  difficulty: medium
+  prompt: |
+    Write `check_output(output, check)` that returns a **list of failure strings** (empty means pass). `check` may contain any of these keys:
+
+    - `"contains"`: list of phrases that must appear (case-insensitive). Failure text: `"missing: <phrase>"`.
+    - `"not_contains"`: phrases that must **not** appear (case-insensitive). Failure: `"forbidden: <phrase>"`.
+    - `"max_words"`: the output may have at most this many whitespace-separated words. Failure: `"too long"`.
+    - `"json_keys"`: the output must be a JSON object containing these keys. Failure: `"not valid JSON"` if it can't be parsed as a JSON object (an array or a string is not an object), else `"missing key: <key>"` for each absent key.
+
+    Report failures in the order of the keys above (contains, then not_contains, then max_words, then json_keys), keeping list order within each.
+  starter: |
+    import json
+
+    def check_output(output, check):
+        return []
+  hints:
+    - "Compare `phrase.lower()` against `output.lower()`."
+    - "`isinstance(data, dict)` decides whether parsed JSON counts as an object."
+  tests:
+    - name: passing output
+      code: |
+        assert check_output("Refunds take 5 days.", {"contains": ["refund", "5 days"], "max_words": 10}) == []
+    - name: contains, forbidden and length
+      code: |
+        out = check_output("Sorry, I cannot help with that request at all today", {"contains": ["refund"], "not_contains": ["sorry"], "max_words": 5})
+        assert out == ["missing: refund", "forbidden: sorry", "too long"], out
+    - name: JSON checks
+      code: |
+        assert check_output('{"a": 1, "b": 2}', {"json_keys": ["a", "b"]}) == []
+        assert check_output('{"a": 1}', {"json_keys": ["a", "b", "c"]}) == ["missing key: b", "missing key: c"]
+        assert check_output("not json", {"json_keys": ["a"]}) == ["not valid JSON"]
+        assert check_output("[1, 2]", {"json_keys": ["a"]}) == ["not valid JSON"]
+  solution: |
+    import json
+
+    def check_output(output, check):
+        failures = []
+        low = output.lower()
+        for phrase in check.get("contains", []):
+            if phrase.lower() not in low:
+                failures.append(f"missing: {phrase}")
+        for phrase in check.get("not_contains", []):
+            if phrase.lower() in low:
+                failures.append(f"forbidden: {phrase}")
+        if "max_words" in check and len(output.split()) > check["max_words"]:
+            failures.append("too long")
+        if "json_keys" in check:
+            try:
+                data = json.loads(output)
+            except ValueError:
+                data = None
+            if not isinstance(data, dict):
+                failures.append("not valid JSON")
+            else:
+                failures += [f"missing key: {k}" for k in check["json_keys"] if k not in data]
+        return failures
+- id: run-eval-suite
+  title: Run an eval suite
+  difficulty: medium
+  prompt: |
+    Write `run_evals(cases, model_fn)`.
+
+    - Each case is `{"id": ..., "input": ..., "check": {...}}`. Call `model_fn(case["input"])` to get the output.
+    - `check_output(output, check)` is **provided** (same rules as the previous exercise).
+    - If `model_fn` raises an exception, that case fails with the failure `"error: <message>"` (and the suite keeps going).
+    - Return `{"total": n, "passed": count_passed, "pass_rate": passed / total (0.0 if no cases), "failures": {case_id: [failure strings]}}`. Only failing cases appear in `failures`.
+  starter: |
+    def check_output(output, check):
+        failures = []
+        for phrase in check.get("contains", []):
+            if phrase.lower() not in output.lower():
+                failures.append(f"missing: {phrase}")
+        for phrase in check.get("not_contains", []):
+            if phrase.lower() in output.lower():
+                failures.append(f"forbidden: {phrase}")
+        return failures
+
+    def run_evals(cases, model_fn):
+        return {"total": 0, "passed": 0, "pass_rate": 0.0, "failures": {}}
+  hints:
+    - "Wrap the `model_fn` call in `try/except Exception as e`."
+  tests:
+    - name: report with failures
+      code: |
+        def model(q):
+            return {"refund?": "Refunds take 5 days.", "hours?": "We are open."}[q]
+        cases = [
+            {"id": "c1", "input": "refund?", "check": {"contains": ["5 days"]}},
+            {"id": "c2", "input": "hours?", "check": {"contains": ["9am"], "not_contains": ["open"]}},
+        ]
+        r = run_evals(cases, model)
+        assert r["total"] == 2 and r["passed"] == 1 and r["pass_rate"] == 0.5
+        assert r["failures"] == {"c2": ["missing: 9am", "forbidden: open"]}, r
+    - name: model errors fail the case but not the suite
+      code: |
+        def model(q):
+            if q == "bad":
+                raise RuntimeError("timeout")
+            return "fine"
+        cases = [{"id": "a", "input": "bad", "check": {}}, {"id": "b", "input": "ok", "check": {"contains": ["fine"]}}]
+        r = run_evals(cases, model)
+        assert r["passed"] == 1
+        assert r["failures"] == {"a": ["error: timeout"]}, r
+    - name: empty suite
+      code: |
+        assert run_evals([], lambda q: "x") == {"total": 0, "passed": 0, "pass_rate": 0.0, "failures": {}}
+  solution: |
+    def check_output(output, check):
+        failures = []
+        for phrase in check.get("contains", []):
+            if phrase.lower() not in output.lower():
+                failures.append(f"missing: {phrase}")
+        for phrase in check.get("not_contains", []):
+            if phrase.lower() in output.lower():
+                failures.append(f"forbidden: {phrase}")
+        return failures
+
+    def run_evals(cases, model_fn):
+        failures = {}
+        for case in cases:
+            try:
+                out = model_fn(case["input"])
+                problems = check_output(out, case["check"])
+            except Exception as e:
+                problems = [f"error: {e}"]
+            if problems:
+                failures[case["id"]] = problems
+        total = len(cases)
+        passed = total - len(failures)
+        return {"total": total, "passed": passed, "pass_rate": passed / total if total else 0.0, "failures": failures}
+- id: regression-gate
+  title: A regression gate for CI
+  difficulty: hard
+  prompt: |
+    Write `compare_runs(baseline, candidate, max_drop=0.02)` for a CI gate.
+
+    `baseline` and `candidate` map case id → `True` (passed) or `False`.
+
+    Return a dict with:
+
+    - `"baseline_rate"` and `"candidate_rate"`: pass rates (0.0 for an empty dict).
+    - `"regressions"`: sorted list of case ids that **passed in the baseline but fail in the candidate** (a case missing from the candidate counts as failing).
+    - `"improvements"`: sorted list of case ids that failed in the baseline and pass in the candidate.
+    - `"ok"`: `True` only if `candidate_rate >= baseline_rate - max_drop` **and** there are no regressions among the cases tagged critical. Critical ids come from the extra parameter `critical=()`.
+  starter: |
+    def compare_runs(baseline, candidate, max_drop=0.02, critical=()):
+        return {"baseline_rate": 0.0, "candidate_rate": 0.0, "regressions": [], "improvements": [], "ok": True}
+  hints:
+    - "Compute `rate = lambda r: sum(r.values()) / len(r) if r else 0.0`."
+    - "A critical case regressing blocks the gate even if the overall rate is fine."
+  tests:
+    - name: rates, regressions and improvements
+      code: |
+        base = {"a": True, "b": True, "c": False, "d": True}
+        cand = {"a": True, "b": False, "c": True, "d": True}
+        r = compare_runs(base, cand, max_drop=0.5)
+        assert r["baseline_rate"] == 0.75 and r["candidate_rate"] == 0.75
+        assert r["regressions"] == ["b"] and r["improvements"] == ["c"]
+        assert r["ok"] is True
+    - name: a large drop fails the gate
+      code: |
+        base = {"a": True, "b": True, "c": True, "d": True}
+        cand = {"a": True, "b": False, "c": False, "d": True}
+        assert compare_runs(base, cand, max_drop=0.1)["ok"] is False
+        assert compare_runs(base, cand, max_drop=0.5)["ok"] is True
+    - name: critical regressions block even when the rate improves
+      code: |
+        base = {"a": True, "b": False, "c": False}
+        cand = {"a": False, "b": True, "c": True}
+        r = compare_runs(base, cand, critical=("a",))
+        assert r["candidate_rate"] > r["baseline_rate"]
+        assert r["ok"] is False
+        assert compare_runs(base, cand)["ok"] is True
+    - name: missing cases count as failing
+      code: |
+        r = compare_runs({"a": True, "b": True}, {"a": True})
+        assert r["regressions"] == ["b"]
+  solution: |
+    def compare_runs(baseline, candidate, max_drop=0.02, critical=()):
+        rate = lambda r: sum(r.values()) / len(r) if r else 0.0
+        regressions = sorted(c for c, ok in baseline.items() if ok and not candidate.get(c, False))
+        improvements = sorted(c for c, ok in baseline.items() if not ok and candidate.get(c, False))
+        b, c = rate(baseline), rate(candidate)
+        ok = c >= b - max_drop and not any(r in critical for r in regressions)
+        return {"baseline_rate": b, "candidate_rate": c, "regressions": regressions, "improvements": improvements, "ok": ok}

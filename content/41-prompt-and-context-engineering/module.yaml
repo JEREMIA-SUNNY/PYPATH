@@ -1,0 +1,5 @@
+title: Prompt and Context Engineering
+summary: "Prompt patterns that hold up (roles, delimiters, few-shot, reasoning), then the harder skill: assembling the right context under a token budget, with versioned prompts you can test."
+icon: bot
+section: career
+skills: [Prompt patterns, Few-shot prompting, Context assembly, Prompt versioning]

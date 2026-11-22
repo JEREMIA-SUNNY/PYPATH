@@ -4,7 +4,7 @@ import { FileJson, TriangleAlert } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HOSTED } from "@/lib/mode";
-import { emptyProgress } from "@/lib/progress";
+import { emptyRoot } from "@/lib/profiles";
 import type { FSFileHandle } from "@/lib/progress-backend/fs-types";
 import {
   DEFAULT_FILE_NAME, hasFilePicker, isAbort, permissionState, pickOpenFile, pickSaveFile, ProgressFileError, readFile, writeFile,
@@ -12,7 +12,7 @@ import {
 import { addSnapshot, clearHandle, getHandle, getMirror, getSetting } from "@/lib/progress-backend/idb";
 import { hostedStore } from "@/lib/progress-backend/hosted-store";
 import { relTime, summarize } from "@/lib/rel-time";
-import type { Progress } from "@/lib/types";
+import type { ProgressRoot } from "@/lib/types";
 import { Button, Card } from "../ui";
 
 type Step =
@@ -30,7 +30,7 @@ export function ProgressGate({ children }: { children: React.ReactNode }) {
 
 function HostedGate({ children }: { children: React.ReactNode }) {
   const [step, setStep] = useState<Step>({ id: "checking" });
-  const [mirror, setMirror] = useState<Progress | null>(null);
+  const [mirror, setMirror] = useState<ProgressRoot | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const booted = useRef(false);
@@ -38,7 +38,7 @@ function HostedGate({ children }: { children: React.ReactNode }) {
   const refreshMirror = useCallback(async () => setMirror((await getMirror()) ?? null), []);
 
   const toBrowserOnly = useCallback(async () => {
-    const p = (await getMirror()) ?? emptyProgress();
+    const p = (await getMirror()) ?? emptyRoot();
     await hostedStore.connect(p, null);
     setStep({ id: "ready" });
   }, []);
@@ -46,7 +46,7 @@ function HostedGate({ children }: { children: React.ReactNode }) {
   /** Reads `handle` and connects it. `preferFile`: the user picked this file on purpose, so it wins over the browser copy. */
   const loadFromHandle = useCallback(
     async (handle: FSFileHandle, preferFile: boolean) => {
-      let fileProgress: Progress;
+      let fileProgress: ProgressRoot;
       try {
         fileProgress = await readFile(handle);
       } catch (e) {
@@ -121,7 +121,7 @@ function HostedGate({ children }: { children: React.ReactNode }) {
 
   const createFile = act(async () => {
     const h = await pickSaveFile();
-    const data = mirror ?? emptyProgress();
+    const data = mirror ?? emptyRoot();
     await writeFile(h, data);
     await hostedStore.connect(data, h);
     setStep({ id: "ready" });
@@ -180,7 +180,7 @@ function HostedGate({ children }: { children: React.ReactNode }) {
             if (!confirm("This starts with empty progress. Your browser backup is kept.")) return;
             if (mirror) await addSnapshot(mirror, "start-fresh");
             const h = await pickSaveFile();
-            const fresh = emptyProgress();
+            const fresh = emptyRoot();
             await writeFile(h, fresh);
             await hostedStore.connect(fresh, h);
             setStep({ id: "ready" });
@@ -204,7 +204,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 const linkBtn = "text-[13px] text-zinc-500 underline-offset-2 hover:text-zinc-900 hover:underline disabled:opacity-50 dark:hover:text-white";
 
-function Setup({ mirror, busy, onCreate, onExisting, onSkip }: { mirror: Progress | null; busy: boolean; onCreate: () => void; onExisting: () => void; onSkip: () => void }) {
+function Setup({ mirror, busy, onCreate, onExisting, onSkip }: { mirror: ProgressRoot | null; busy: boolean; onCreate: () => void; onExisting: () => void; onSkip: () => void }) {
   const [ok, setOk] = useState(false);
   return (
     <>
@@ -270,7 +270,7 @@ function Welcome({
 
 function Missing({
   reason, message, mirror, busy, onFind, onRestore, onFresh,
-}: { reason: "missing" | "corrupt" | "error"; message: string; mirror: Progress | null; busy: boolean; onFind: () => void; onRestore: () => void; onFresh: () => void }) {
+}: { reason: "missing" | "corrupt" | "error"; message: string; mirror: ProgressRoot | null; busy: boolean; onFind: () => void; onRestore: () => void; onFresh: () => void }) {
   const corrupt = reason === "corrupt";
   return (
     <>

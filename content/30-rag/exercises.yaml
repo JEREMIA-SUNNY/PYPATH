@@ -147,3 +147,96 @@
         scored = [s for s in scored if s[0] > 0]
         scored.sort(key=lambda pair: (-pair[0], pair[1]))
         return [doc_id for _, doc_id in scored[:k]]
+- id: reciprocal-rank-fusion
+  title: Merge rankings with RRF
+  difficulty: medium
+  prompt: |
+    Hybrid search produces two or more ranked lists (vector, keyword...). Merge them with **Reciprocal Rank Fusion**.
+
+    Write `rrf(*rankings, k=60)`:
+
+    - Each ranking is a list of document ids, best first. A document at **rank r** (starting from 1) earns `1 / (k + r)` points from that list.
+    - A document's score is the sum of its points over all lists it appears in.
+    - Return all document ids sorted by score, highest first. Break ties by id (alphabetically).
+  starter: |
+    def rrf(*rankings, k=60):
+        return list(rankings[0]) if rankings else []
+  hints:
+    - "Use a dict and `enumerate(ranking, start=1)`."
+    - "`sorted(scores, key=lambda d: (-scores[d], d))`"
+  tests:
+    - name: documents found by several lists rise to the top
+      code: |
+        assert rrf(["a", "b"], ["b", "c"], ["b", "a"]) == ["b", "a", "c"], rrf(["a", "b"], ["b", "c"], ["b", "a"])
+    - name: ties are alphabetical
+      code: |
+        assert rrf(["a", "b"], ["b", "a"]) == ["a", "b"]
+    - name: single list and no lists
+      code: |
+        assert rrf(["x", "y", "z"]) == ["x", "y", "z"]
+        assert rrf() == []
+  solution: |
+    def rrf(*rankings, k=60):
+        scores = {}
+        for ranking in rankings:
+            for rank, doc in enumerate(ranking, start=1):
+                scores[doc] = scores.get(doc, 0) + 1 / (k + rank)
+        return sorted(scores, key=lambda d: (-scores[d], d))
+- id: retrieval-metrics
+  title: Measure retrieval quality
+  difficulty: medium
+  prompt: |
+    Write three retrieval metrics. `retrieved` is a ranked list of ids (best first) and `relevant` is a collection of ids that **should** be found.
+
+    - `recall_at_k(retrieved, relevant, k)`: the fraction of `relevant` ids that appear in `retrieved[:k]`. `0.0` if `relevant` is empty.
+    - `precision_at_k(retrieved, relevant, k)`: the fraction of the top `k` retrieved ids that are relevant. Divide by `k` even if fewer than `k` were retrieved. `0.0` if `k <= 0`.
+    - `mrr(results)`: **mean reciprocal rank** over a list of `(retrieved, relevant)` pairs. Each query scores `1 / rank` of the first relevant result (rank starts at 1), or `0` if none is found. Return the average (`0.0` for an empty list).
+  starter: |
+    def recall_at_k(retrieved, relevant, k):
+        return 0.0
+
+    def precision_at_k(retrieved, relevant, k):
+        return 0.0
+
+    def mrr(results):
+        return 0.0
+  hints:
+    - "Turn `relevant` into a `set` first."
+    - "For MRR, `next((i for i, d in enumerate(retrieved, 1) if d in relevant), None)`."
+  tests:
+    - name: recall
+      code: |
+        assert abs(recall_at_k(["a", "b", "c"], {"a", "c", "z"}, 2) - 1 / 3) < 1e-9
+        assert recall_at_k(["a"], [], 5) == 0.0
+    - name: precision
+      code: |
+        assert precision_at_k(["a", "b", "c", "d"], {"a", "d"}, 2) == 0.5
+        assert precision_at_k(["a"], {"a"}, 4) == 0.25
+        assert precision_at_k(["a"], {"a"}, 0) == 0.0
+    - name: mean reciprocal rank
+      code: |
+        results = [(["x", "a"], {"a"}), (["a", "b"], {"a"}), (["q"], {"z"})]
+        assert abs(mrr(results) - (0.5 + 1 + 0) / 3) < 1e-9
+        assert mrr([]) == 0.0
+  solution: |
+    def recall_at_k(retrieved, relevant, k):
+        relevant = set(relevant)
+        if not relevant:
+            return 0.0
+        return len(set(retrieved[:k]) & relevant) / len(relevant)
+
+    def precision_at_k(retrieved, relevant, k):
+        if k <= 0:
+            return 0.0
+        relevant = set(relevant)
+        return len([d for d in retrieved[:k] if d in relevant]) / k
+
+    def mrr(results):
+        if not results:
+            return 0.0
+        total = 0.0
+        for retrieved, relevant in results:
+            relevant = set(relevant)
+            rank = next((i for i, d in enumerate(retrieved, 1) if d in relevant), None)
+            total += 1 / rank if rank else 0
+        return total / len(results)

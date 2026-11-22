@@ -1,0 +1,5 @@
+title: Agents and Tool Use
+summary: "Build the agent loop from scratch: let a model call tools, observe results and decide what to do next, with step limits, memory, approvals and guardrails that keep agents safe."
+icon: bot
+section: career
+skills: [Agent loop, Tool use, ReAct and planning, Agent memory, Guardrails]

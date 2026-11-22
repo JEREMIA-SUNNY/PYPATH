@@ -1,5 +1,5 @@
-import { normalizeProgress } from "../progress";
-import type { Progress } from "../types";
+import { looksLikeProgressFile, normalizeRoot } from "../profiles";
+import type { ProgressRoot } from "../types";
 import type { FSFileHandle, FilePickerOptions, PickerWindow } from "./fs-types";
 
 export const DEFAULT_FILE_NAME = "pypath-progress.json";
@@ -8,7 +8,7 @@ const PICKER_TYPES: FilePickerOptions["types"] = [{ description: "PyPath progres
 export const hasFilePicker = () => typeof window !== "undefined" && "showSaveFilePicker" in window;
 
 /** Same bytes as local mode's data/progress.json: 2-space JSON plus a trailing newline. */
-export const serialize = (p: Progress) => JSON.stringify(p, null, 2) + "\n";
+export const serialize = (p: ProgressRoot) => JSON.stringify(p, null, 2) + "\n";
 
 export class ProgressFileError extends Error {
   constructor(
@@ -20,21 +20,20 @@ export class ProgressFileError extends Error {
 }
 
 /** Parses and validates a progress document. Throws ProgressFileError("corrupt") if it isn't one. */
-export function parseProgressText(text: string): Progress {
+export function parseProgressText(text: string): ProgressRoot {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
     throw new ProgressFileError("corrupt", "Your progress file is damaged");
   }
-  const d = raw as Record<string, unknown> | null;
-  if (!d || typeof d !== "object" || d.version !== 1 || !d.lessons || typeof d.lessons !== "object") {
+  if (!looksLikeProgressFile(raw)) {
     throw new ProgressFileError("corrupt", "That file is not a PyPath progress file");
   }
-  return normalizeProgress(raw);
+  return normalizeRoot(raw);
 }
 
-export async function readFile(handle: FSFileHandle): Promise<Progress> {
+export async function readFile(handle: FSFileHandle): Promise<ProgressRoot> {
   let file: File;
   try {
     file = await handle.getFile();
@@ -47,7 +46,7 @@ export async function readFile(handle: FSFileHandle): Promise<Progress> {
   return parseProgressText(await file.text());
 }
 
-export async function writeFile(handle: FSFileHandle, p: Progress): Promise<void> {
+export async function writeFile(handle: FSFileHandle, p: ProgressRoot): Promise<void> {
   const w = await handle.createWritable();
   try {
     await w.write(serialize(p));
@@ -76,7 +75,7 @@ export async function permissionState(h: FSFileHandle, request: boolean): Promis
   return h.requestPermission(opts);
 }
 
-export function downloadBackup(p: Progress) {
+export function downloadBackup(p: ProgressRoot) {
   const blob = new Blob([serialize(p)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);

@@ -156,3 +156,172 @@
             chosen.append(d)
             total += t
         return chosen
+- id: dispatch-tool-calls
+  title: Run the model's tool calls
+  difficulty: medium
+  prompt: |
+    The model returned a list of tool calls. Write `run_tool_calls(tool_calls, tools)`.
+
+    - Each call is `{"id": "call_1", "name": "add", "arguments": "{\"a\": 1, \"b\": 2}"}`. `arguments` is a **JSON string**.
+    - `tools` maps names to Python functions. Call `tools[name](**arguments)`.
+    - For every call return a message dict `{"role": "tool", "tool_call_id": <id>, "content": <json string>}` in the same order.
+    - On success `content` is `json.dumps({"result": value})`.
+    - On **any** failure (unknown tool, invalid JSON, the function raised) `content` is `json.dumps({"error": "<message>"})`. One failing call must not stop the others.
+  starter: |
+    import json
+
+    def run_tool_calls(tool_calls, tools):
+        return []
+  hints:
+    - "Wrap the body for each call in `try/except Exception`."
+    - "An unknown tool raises `KeyError` on `tools[name]`; `json.loads` raises `ValueError`."
+  tests:
+    - name: runs calls in order and returns tool messages
+      code: |
+        tools = {"add": lambda a, b: a + b, "upper": lambda s: s.upper()}
+        calls = [
+            {"id": "c1", "name": "add", "arguments": '{"a": 1, "b": 2}'},
+            {"id": "c2", "name": "upper", "arguments": '{"s": "hi"}'},
+        ]
+        out = run_tool_calls(calls, tools)
+        assert out == [
+            {"role": "tool", "tool_call_id": "c1", "content": json.dumps({"result": 3})},
+            {"role": "tool", "tool_call_id": "c2", "content": json.dumps({"result": "HI"})},
+        ], out
+    - name: failures become error results and do not stop later calls
+      code: |
+        tools = {"boom": lambda: 1 / 0, "ok": lambda: "fine"}
+        calls = [
+            {"id": "a", "name": "nope", "arguments": "{}"},
+            {"id": "b", "name": "ok", "arguments": "not json"},
+            {"id": "c", "name": "boom", "arguments": "{}"},
+            {"id": "d", "name": "ok", "arguments": "{}"},
+        ]
+        out = run_tool_calls(calls, tools)
+        assert [m["tool_call_id"] for m in out] == ["a", "b", "c", "d"]
+        assert all("error" in json.loads(m["content"]) for m in out[:3])
+        assert json.loads(out[3]["content"]) == {"result": "fine"}
+  solution: |
+    import json
+
+    def run_tool_calls(tool_calls, tools):
+        messages = []
+        for call in tool_calls:
+            try:
+                args = json.loads(call["arguments"])
+                content = json.dumps({"result": tools[call["name"]](**args)})
+            except Exception as e:
+                content = json.dumps({"error": f"{type(e).__name__}: {e}"})
+            messages.append({"role": "tool", "tool_call_id": call["id"], "content": content})
+        return messages
+- id: collect-stream
+  title: Assemble a streamed reply
+  difficulty: easy
+  prompt: |
+    A streaming API yields chunk dicts like `{"delta": "Hel", "finish_reason": None}`. `delta` can be `None` (for example on the last chunk).
+
+    Write `collect_stream(chunks)` that returns `(text, finish_reason)`:
+
+    - `text` is every non-`None` delta joined together, in order.
+    - `finish_reason` is the last non-`None` finish reason, or `None` if there was none.
+    - If the finish reason is `"length"`, raise `RuntimeError("truncated")` instead: a cut-off answer must not be treated as complete.
+  starter: |
+    def collect_stream(chunks):
+        return "", None
+  hints:
+    - "Loop once: append deltas, remember any non-None finish reason."
+  tests:
+    - name: joins deltas and reports the finish reason
+      code: |
+        chunks = [{"delta": "Hel", "finish_reason": None}, {"delta": "lo", "finish_reason": None}, {"delta": None, "finish_reason": "stop"}]
+        assert collect_stream(chunks) == ("Hello", "stop")
+    - name: no finish reason
+      code: |
+        assert collect_stream([{"delta": "a", "finish_reason": None}]) == ("a", None)
+        assert collect_stream([]) == ("", None)
+    - name: truncated replies are an error
+      code: |
+        try:
+            collect_stream([{"delta": "partial", "finish_reason": "length"}])
+            raise AssertionError("expected RuntimeError")
+        except RuntimeError as e:
+            assert "truncated" in str(e)
+  solution: |
+    def collect_stream(chunks):
+        parts, reason = [], None
+        for c in chunks:
+            if c.get("delta") is not None:
+                parts.append(c["delta"])
+            if c.get("finish_reason") is not None:
+                reason = c["finish_reason"]
+        if reason == "length":
+            raise RuntimeError("truncated")
+        return "".join(parts), reason
+- id: retry-with-backoff
+  title: Retry with exponential backoff
+  difficulty: medium
+  prompt: |
+    Write `call_with_retry(fn, retries=3, base_delay=1.0, sleep=time.sleep)`.
+
+    - Call `fn()`. If it returns, return the value.
+    - If it raises `TransientError` (defined for you), wait and try again. Before retry number `n` (counting from 0) sleep `base_delay * 2**n` seconds by calling the `sleep` argument.
+    - Allow **`retries` retries**, so up to `retries + 1` calls in total. If it still fails, re-raise the last `TransientError`.
+    - Any **other** exception is raised immediately, with no retry and no sleep.
+  starter: |
+    import time
+
+    class TransientError(Exception):
+        pass
+
+    def call_with_retry(fn, retries=3, base_delay=1.0, sleep=time.sleep):
+        return fn()
+  hints:
+    - "A `for attempt in range(retries + 1)` loop with `try/except TransientError`."
+    - "Only sleep when another attempt will follow."
+  tests:
+    - name: succeeds after transient failures with growing delays
+      code: |
+        calls, delays = [], []
+        def flaky():
+            calls.append(1)
+            if len(calls) < 3:
+                raise TransientError("429")
+            return "ok"
+        assert call_with_retry(flaky, retries=3, base_delay=0.5, sleep=delays.append) == "ok"
+        assert delays == [0.5, 1.0], delays
+    - name: gives up after the allowed retries
+      code: |
+        delays = []
+        def always():
+            raise TransientError("down")
+        try:
+            call_with_retry(always, retries=2, base_delay=1, sleep=delays.append)
+            raise AssertionError("expected TransientError")
+        except TransientError:
+            pass
+        assert delays == [1, 2], delays
+    - name: other errors are not retried
+      code: |
+        delays = []
+        def bad():
+            raise ValueError("bad request")
+        try:
+            call_with_retry(bad, sleep=delays.append)
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+        assert delays == []
+  solution: |
+    import time
+
+    class TransientError(Exception):
+        pass
+
+    def call_with_retry(fn, retries=3, base_delay=1.0, sleep=time.sleep):
+        for attempt in range(retries + 1):
+            try:
+                return fn()
+            except TransientError:
+                if attempt == retries:
+                    raise
+                sleep(base_delay * 2**attempt)

@@ -1,0 +1,166 @@
+- id: answer-question
+  title: Answer with citations
+  difficulty: hard
+  prompt: |
+    Build the core of the Q&A pipeline. You are given `cosine(a, b)`.
+
+    Write `answer_question(question, docs, embed, llm, k=2, threshold=0.3)`:
+
+    - `docs` is a list of `{"id": ..., "text": ...}`. `embed(text)` returns a vector. `llm(prompt)` returns a string.
+    - Score every doc by `cosine(embed(question), embed(doc["text"]))`. Take the top `k`, best first (ties keep the original doc order).
+    - **Abstain:** if there are no docs or the best score is **below `threshold`**, return `{"answer": "I don't know based on the provided documents.", "sources": [], "abstained": True}` **without calling `llm`**.
+    - Otherwise keep only the top-`k` docs whose score is `>= threshold`, build the prompt below with **numbered sources starting at 1**, call `llm(prompt)` once, and return `{"answer": <llm reply>, "sources": [doc ids in order], "abstained": False}`.
+
+    The prompt must be exactly:
+
+    ```text
+    Answer the question using only the sources below. Cite sources like [1].
+
+    [1] <text of source 1>
+    [2] <text of source 2>
+
+    Question: <question>
+    ```
+  starter: |
+    import math
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        na = math.sqrt(sum(x * x for x in a))
+        nb = math.sqrt(sum(y * y for y in b))
+        return dot / (na * nb) if na and nb else 0.0
+
+    def answer_question(question, docs, embed, llm, k=2, threshold=0.3):
+        return {"answer": llm(question), "sources": [], "abstained": False}
+  hints:
+    - "`sorted(range(len(docs)), key=lambda i: (-scores[i], i))[:k]` ranks with the tie rule."
+    - "Build the prompt with `\"\\n\".join(lines)`; one blank line after the instruction and one before `Question:`."
+  tests:
+    - name: retrieves, cites and answers
+      code: |
+        embed = lambda t: [t.lower().count(w) for w in ("refund", "ship", "warranty")]
+        docs = [
+            {"id": "shipping", "text": "We ship worldwide."},
+            {"id": "refunds", "text": "Refund within 30 days."},
+            {"id": "warranty", "text": "Warranty lasts two years."},
+        ]
+        seen = []
+        def llm(prompt):
+            seen.append(prompt)
+            return "Refunds take 30 days [1]."
+        r = answer_question("how do refund requests work", docs, embed, llm, k=2, threshold=0.3)
+        assert r == {"answer": "Refunds take 30 days [1].", "sources": ["refunds"], "abstained": False}, r
+        assert seen == ["Answer the question using only the sources below. Cite sources like [1].\n\n[1] Refund within 30 days.\n\nQuestion: how do refund requests work"], seen
+    - name: abstains without calling the model
+      code: |
+        embed = lambda t: [t.lower().count(w) for w in ("refund", "ship")]
+        docs = [{"id": "d", "text": "We ship worldwide."}]
+        def llm(prompt):
+            raise AssertionError("must not call the model")
+        r = answer_question("what is the weather", docs, embed, llm)
+        assert r == {"answer": "I don't know based on the provided documents.", "sources": [], "abstained": True}, r
+        assert answer_question("anything", [], embed, llm)["abstained"] is True
+    - name: multiple sources are numbered in rank order
+      code: |
+        embed = lambda t: [t.lower().count("a"), t.lower().count("b")]
+        docs = [{"id": "x", "text": "a"}, {"id": "y", "text": "ab"}, {"id": "z", "text": "b"}]
+        prompts = []
+        r = answer_question("a", docs, embed, lambda p: prompts.append(p) or "ok", k=2, threshold=0.5)
+        assert r["sources"] == ["x", "y"], r
+        assert "[1] a\n[2] ab\n" in prompts[0], prompts[0]
+  solution: |
+    import math
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        na = math.sqrt(sum(x * x for x in a))
+        nb = math.sqrt(sum(y * y for y in b))
+        return dot / (na * nb) if na and nb else 0.0
+
+    def answer_question(question, docs, embed, llm, k=2, threshold=0.3):
+        refusal = {"answer": "I don't know based on the provided documents.", "sources": [], "abstained": True}
+        if not docs:
+            return refusal
+        q = embed(question)
+        scores = [cosine(q, embed(d["text"])) for d in docs]
+        order = sorted(range(len(docs)), key=lambda i: (-scores[i], i))[:k]
+        chosen = [i for i in order if scores[i] >= threshold]
+        if not chosen:
+            return refusal
+        lines = ["Answer the question using only the sources below. Cite sources like [1].", ""]
+        for n, i in enumerate(chosen, start=1):
+            lines.append(f"[{n}] {docs[i]['text']}")
+        lines += ["", f"Question: {question}"]
+        return {"answer": llm("\n".join(lines)), "sources": [docs[i]["id"] for i in chosen], "abstained": False}
+- id: evaluate-pipeline
+  title: Evaluate the pipeline
+  difficulty: hard
+  prompt: |
+    Write `evaluate_pipeline(cases, pipeline)` for a golden set.
+
+    - Each case is `{"question": str, "expected_source": str | None}`. `expected_source` is the doc id that should be cited, or `None` when the system **should refuse**.
+    - `pipeline(question)` returns the same dict shape as `answer_question`: `{"answer", "sources", "abstained"}`.
+    - A case with an expected source **passes** if the pipeline did not abstain and `expected_source` is in `sources`.
+    - A case with `expected_source` of `None` **passes** if the pipeline abstained.
+    - Return `{"total", "passed", "pass_rate", "answerable_hit_rate", "refusal_rate", "failed": [questions]}` where
+      `answerable_hit_rate` is the pass rate among cases with an expected source, `refusal_rate` the pass rate among cases that should be refused (use `None` for a rate whose group is empty), and `failed` lists failing questions in order. `pass_rate` is `0.0` for no cases.
+  starter: |
+    def evaluate_pipeline(cases, pipeline):
+        return {"total": 0, "passed": 0, "pass_rate": 0.0, "answerable_hit_rate": None, "refusal_rate": None, "failed": []}
+  hints:
+    - "Evaluate each case into `(passed, should_refuse)` first, then compute the three rates."
+  tests:
+    - name: mixed golden set
+      code: |
+        def pipeline(q):
+            return {
+                "q1": {"answer": "a", "sources": ["refunds"], "abstained": False},
+                "q2": {"answer": "a", "sources": ["shipping"], "abstained": False},
+                "q3": {"answer": "idk", "sources": [], "abstained": True},
+                "q4": {"answer": "made up", "sources": ["x"], "abstained": False},
+            }[q]
+        cases = [
+            {"question": "q1", "expected_source": "refunds"},
+            {"question": "q2", "expected_source": "refunds"},
+            {"question": "q3", "expected_source": None},
+            {"question": "q4", "expected_source": None},
+        ]
+        r = evaluate_pipeline(cases, pipeline)
+        assert r["total"] == 4 and r["passed"] == 2 and r["pass_rate"] == 0.5
+        assert r["answerable_hit_rate"] == 0.5 and r["refusal_rate"] == 0.5
+        assert r["failed"] == ["q2", "q4"], r
+    - name: groups can be empty
+      code: |
+        ok = lambda q: {"answer": "a", "sources": ["d"], "abstained": False}
+        r = evaluate_pipeline([{"question": "x", "expected_source": "d"}], ok)
+        assert r["answerable_hit_rate"] == 1.0 and r["refusal_rate"] is None
+        r = evaluate_pipeline([], ok)
+        assert r["total"] == 0 and r["pass_rate"] == 0.0 and r["failed"] == []
+    - name: abstaining on an answerable question fails
+      code: |
+        idk = lambda q: {"answer": "idk", "sources": [], "abstained": True}
+        r = evaluate_pipeline([{"question": "x", "expected_source": "d"}], idk)
+        assert r["passed"] == 0 and r["failed"] == ["x"]
+  solution: |
+    def evaluate_pipeline(cases, pipeline):
+        results = []
+        for case in cases:
+            out = pipeline(case["question"])
+            expected = case["expected_source"]
+            if expected is None:
+                ok = bool(out["abstained"])
+            else:
+                ok = (not out["abstained"]) and expected in out["sources"]
+            results.append((case["question"], expected is None, ok))
+        rate = lambda group: (sum(ok for _, _, ok in group) / len(group)) if group else None
+        answerable = [r for r in results if not r[1]]
+        refusals = [r for r in results if r[1]]
+        passed = sum(ok for _, _, ok in results)
+        return {
+            "total": len(results),
+            "passed": passed,
+            "pass_rate": passed / len(results) if results else 0.0,
+            "answerable_hit_rate": rate(answerable),
+            "refusal_rate": rate(refusals),
+            "failed": [q for q, _, ok in results if not ok],
+        }

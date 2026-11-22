@@ -1,0 +1,5 @@
+title: Open-Source and Local LLMs
+summary: "Run models on your own machine: model sizes and quantization, how much memory you need, chat templates, Ollama and Hugging Face. Know when open models beat an API."
+icon: bot
+section: career
+skills: [Ollama, Hugging Face, Quantization, Chat templates, Local inference]

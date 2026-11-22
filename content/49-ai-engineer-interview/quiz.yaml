@@ -1,0 +1,32 @@
+- q: A RAG chatbot gives a wrong answer. What should you check first?
+  options: ["Rewrite the system prompt", "Whether the correct chunk was retrieved", "Switch to a bigger model", "Increase the temperature"]
+  answer: 1
+  explain: Retrieval failures and generation failures need different fixes. Check retrieval first, because no prompt can use evidence it never received.
+- q: You need the model to answer from documents that change weekly. Which approach fits?
+  options: ["Fine-tune weekly", "RAG with periodic re-indexing", "A longer prompt with everything pasted", "Lower temperature"]
+  answer: 1
+  explain: RAG keeps knowledge outside the weights, so updates are cheap and answers can cite sources.
+- q: Which is the best first lever when LLM costs are too high?
+  options: ["Fine-tune a model", "Caching, shorter context and routing easy requests to a smaller model", "Remove all evals", "Increase max tokens"]
+  answer: 1
+  explain: Cheap, low-risk changes come first. Always re-run evals so savings do not hide a quality drop.
+- q: Why is "average latency" a poor metric for a chat feature?
+  options: ["It is too precise", "Users feel slow tail requests and time to first token, so p95 and TTFT matter", "Averages cannot be computed", "Latency does not matter"]
+  answer: 1
+  explain: A few very slow responses ruin the experience while the mean hides them. Streaming improves perceived latency.
+- q: Which statement about LLM-as-judge is most accurate?
+  options: ["It is always objective", "It is useful for fuzzy qualities but needs a rubric and calibration against human labels", "It replaces all other evals", "It only works for code"]
+  answer: 1
+  explain: Judges have biases such as verbosity and self-preference. Use narrow rubrics and check agreement with humans.
+- q: Which approach best limits the damage from indirect prompt injection in an agent?
+  options: ["Telling the model to be careful", "Least-privilege tools, untrusted-output handling and human approval for sensitive actions", "Using a longer context", "Turning off logging"]
+  answer: 1
+  explain: You cannot make the model immune, so constrain what it is able to do and verify actions in code.
+- q: When is a fine-tune the right answer?
+  options: ["To add new facts", "To get a consistent style, format or narrow-task quality from a smaller, cheaper model", "To avoid evals", "To reduce the context window"]
+  answer: 1
+  explain: Fine-tuning shapes behaviour. Facts belong in retrieval, where they can be updated and cited.
+- q: What makes a strong interview answer about an AI project?
+  options: ["Naming many frameworks", "Concrete, measured results and the trade-offs you weighed", "Saying it used AI", "A long architecture diagram only"]
+  answer: 1
+  explain: Interviewers look for judgement and evidence. Specific numbers from evals show you can build and verify.

@@ -1,0 +1,28 @@
+- q: What does a large language model fundamentally do?
+  options: ["Looks up answers in a database", "Predicts the next token given the text so far", "Translates text to numbers and stops", "Runs your Python code"]
+  answer: 1
+  explain: An LLM assigns a probability to every possible next token and one is chosen, over and over. Everything else (chat, tools, reasoning) is built on that loop.
+- q: Roughly how many characters is one token in English text?
+  options: ["1", "About 4", "About 20", "A whole sentence"]
+  answer: 1
+  explain: A common rule of thumb is about 4 characters, or 3/4 of a word, per token. Code and other languages usually need more tokens.
+- q: A model has a 10,000 token context window and your prompt is 9,200 tokens. What is the longest answer it can give?
+  options: ["10,000 tokens", "9,200 tokens", "About 800 tokens", "Unlimited"]
+  answer: 2
+  explain: The window covers input and output together, so only about 800 tokens remain for the answer.
+- q: Which temperature is the best fit for extracting fields from invoices?
+  options: ["1.5", "1.0", "Around 0 to 0.2", "It has no effect"]
+  answer: 2
+  explain: Low temperature makes the most likely token dominate, which gives focused, repeatable output.
+- q: What does softmax do to a list of logits?
+  options: ["Sorts them", "Turns them into probabilities that sum to 1", "Removes the lowest value", "Rounds them to integers"]
+  answer: 1
+  explain: Softmax exponentiates and normalises the scores into a probability distribution over tokens.
+- q: What does top-p (nucleus) sampling do?
+  options: ["Keeps only the k most likely tokens", "Keeps the smallest set of tokens whose probabilities add up to p", "Raises the temperature", "Penalises repeated tokens"]
+  answer: 1
+  explain: Top-p trims the long tail of unlikely tokens by cumulative probability. Top-k trims by a fixed count.
+- q: You want to know whether a cheaper model is good enough for your feature. What is the most reliable way to find out?
+  options: ["Read a public leaderboard", "Run both on your own eval set and compare", "Pick the one with the larger context window", "Ask the model"]
+  answer: 1
+  explain: Public benchmarks do not match your data. A small eval set built from your real inputs is the evidence that counts.

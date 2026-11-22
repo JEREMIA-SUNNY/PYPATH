@@ -14,7 +14,7 @@ const title = "text-sm font-medium text-zinc-900 dark:text-white";
 const sub = "text-[13px] text-zinc-500";
 
 export function HostedProgressCard() {
-  const { progress, dispatch } = useApp();
+  const { root, dispatch } = useApp();
   useSyncExternalStore(hostedStore.subscribe, hostedStore.getVersion, hostedStore.getVersion);
   const fileName = hostedStore.fileName();
   const lastWrite = hostedStore.lastWriteAt();
@@ -103,7 +103,7 @@ export function HostedProgressCard() {
         <Button
           variant="secondary"
           onClick={async () => {
-            downloadBackup(progress);
+            downloadBackup(root);
             await putSetting("lastBackupAt", Date.now());
           }}
         >
@@ -144,13 +144,13 @@ export function HostedProgressCard() {
       <div className={row}>
         <div>
           <div className={`${title} text-rose-600 dark:text-rose-400`}>Reset progress</div>
-          <div className={sub}>Start over. A snapshot of the current progress is kept in this browser.</div>
+          <div className={sub}>Start over with the CURRENT profile only; other profiles keep their progress. A snapshot is kept in this browser.</div>
         </div>
         <Button
           variant="secondary"
           className="border-rose-500/40 text-rose-600 hover:bg-rose-500/10 dark:text-rose-400"
           onClick={act(async () => {
-            if (!confirm("Reset all progress? A snapshot is kept in this browser.")) return;
+            if (!confirm("Reset this profile's progress? Other profiles are not touched. A snapshot is kept in this browser.")) return;
             await dispatch({ type: "reset" });
             location.href = "/";
           })}

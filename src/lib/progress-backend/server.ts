@@ -1,4 +1,4 @@
-import type { Progress, ProgressEvent } from "../types";
+import type { ProgressEvent, ProgressRoot } from "../types";
 import type { ProgressBackend, SaveStatus } from "./types";
 
 const headers = { "content-type": "application/json", "x-pypath": "1" };
@@ -15,15 +15,15 @@ export function createServerBackend(): ProgressBackend {
     async load() {
       const res = await fetch("/api/progress", { cache: "no-store" });
       if (!res.ok) throw new Error("Could not load progress");
-      return (await res.json()) as Progress;
+      return (await res.json()) as ProgressRoot;
     },
-    async save(_next: Progress, event: ProgressEvent) {
+    async save(_next: ProgressRoot, event: ProgressEvent) {
       try {
         const res = await fetch("/api/progress", { method: "POST", headers, body: JSON.stringify(event) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Could not save progress");
         set({ kind: "saved-server" });
-        return data as Progress;
+        return data as ProgressRoot;
       } catch (e) {
         set({ kind: "error", message: (e as Error).message });
         throw e;

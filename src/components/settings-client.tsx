@@ -4,7 +4,7 @@ import { Download, LoaderCircle, RefreshCw, Trash2, Upload } from "lucide-react"
 import { useEffect, useRef, useState } from "react";
 import { postEvent } from "@/lib/client-api";
 import { HOSTED, PYODIDE_VERSION } from "@/lib/mode";
-import type { Progress } from "@/lib/types";
+import type { ProgressRoot } from "@/lib/types";
 import { useApp } from "./providers";
 import { HostedProgressCard } from "./hosted/settings-card";
 import { Button, Card } from "./ui";
@@ -42,6 +42,17 @@ export function SettingsClient({ dataFile }: { dataFile: string }) {
       <Card className="px-6">
         <div className={row}>
           <div>
+            <div className="text-sm font-medium text-zinc-900 dark:text-white">Profile</div>
+            <div className="text-[13px] text-zinc-500">
+              {catalog.profiles.find((p) => p.id === progress.settings.profileId)?.title ?? "None chosen"}. Each profile has its own syllabus and its own progress.
+            </div>
+          </div>
+          <Button variant="secondary" onClick={() => window.dispatchEvent(new Event("pypath:profiles"))}>
+            Switch profile
+          </Button>
+        </div>
+        <div className={row}>
+          <div>
             <div className="text-sm font-medium text-zinc-900 dark:text-white">Your name</div>
             <div className="text-[13px] text-zinc-500">Used for the dashboard greeting.</div>
           </div>
@@ -52,24 +63,6 @@ export function SettingsClient({ dataFile }: { dataFile: string }) {
             placeholder="Your name"
             className="h-10 w-full rounded-xl border border-zinc-200 bg-transparent px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64 dark:border-zinc-800"
           />
-        </div>
-        <div className={row}>
-          <div>
-            <div className="text-sm font-medium text-zinc-900 dark:text-white">Career track</div>
-            <div className="text-[13px] text-zinc-500">Shapes your path, next steps and daily challenge.</div>
-          </div>
-          <select
-            value={progress.settings.trackId ?? ""}
-            onChange={(e) => dispatch({ type: "settings", trackId: e.target.value })}
-            className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm outline-none sm:w-64 dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <option value="">No track (everything)</option>
-            {catalog.tracks.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
         </div>
         {HOSTED ? (
           <div className={row}>
@@ -134,7 +127,7 @@ export function SettingsClient({ dataFile }: { dataFile: string }) {
                 const f = e.target.files?.[0];
                 if (!f) return;
                 try {
-                  const data = JSON.parse(await f.text()) as Progress;
+                  const data = JSON.parse(await f.text()) as ProgressRoot;
                   await postEvent({ type: "import", data });
                   setMsg("Imported. Reloading…");
                   setTimeout(() => location.reload(), 600);
@@ -151,13 +144,13 @@ export function SettingsClient({ dataFile }: { dataFile: string }) {
         <div className={row}>
           <div>
             <div className="text-sm font-medium text-rose-600 dark:text-rose-400">Reset progress</div>
-            <div className="text-[13px] text-zinc-500">Start over. A backup of the current file is kept in the data folder.</div>
+            <div className="text-[13px] text-zinc-500">Start over with the CURRENT profile only; other profiles keep their progress. A backup of the file is kept in the data folder.</div>
           </div>
           <Button
             variant="secondary"
             className="border-rose-500/40 text-rose-600 hover:bg-rose-500/10 dark:text-rose-400"
             onClick={async () => {
-              if (!confirm("Reset all progress? A backup is saved in the data folder.")) return;
+              if (!confirm("Reset this profile's progress? Other profiles are not touched. A backup is saved in the data folder.")) return;
               await postEvent({ type: "reset" });
               location.href = "/";
             }}

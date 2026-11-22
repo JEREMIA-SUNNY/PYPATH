@@ -1,13 +1,13 @@
 import { HOSTED } from "./mode";
-import type { ExerciseTest, Progress, ProgressEvent, RunResult } from "./types";
+import type { ExerciseTest, ProgressEvent, ProgressRoot, RunResult } from "./types";
 
 const headers = { "content-type": "application/json", "x-pypath": "1" };
 
-export async function postEvent(event: ProgressEvent): Promise<Progress> {
+export async function postEvent(event: ProgressEvent): Promise<ProgressRoot> {
   const res = await fetch("/api/progress", { method: "POST", headers, body: JSON.stringify(event) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Could not save progress");
-  return data as Progress;
+  return data as ProgressRoot;
 }
 
 export interface RunBody {

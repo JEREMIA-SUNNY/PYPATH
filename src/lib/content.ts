@@ -4,7 +4,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import YAML from "yaml";
 import type {
-  Catalog, CourseModule, CurriculumIndex, Difficulty, Exercise, Lesson, ModuleKind, PortfolioProject, QuizQuestion, Section, Track,
+  Catalog, CourseModule, CurriculumIndex, Difficulty, Exercise, Lesson, ModuleKind, PortfolioProject, Profile, QuizQuestion, Section, Track,
 } from "./types";
 
 const CONTENT_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "content");
@@ -125,7 +125,8 @@ export function getCatalog(): Catalog {
     stretch: p.stretch ?? [],
     steps: p.steps.map((s, i) => (typeof s === "string" ? { id: `s${i + 1}`, text: s } : s)),
   }));
-  return { modules: getIndex(), tracks, projects };
+  const profiles = readYaml<Profile[]>(path.join(CONTENT_DIR, "profiles.yaml"), []).map((p) => ({ ...p, trackId: p.trackId ?? "", focus: p.focus ?? [] }));
+  return { modules: getIndex(), tracks, profiles, projects };
 }
 
 /** Every quiz question keyed by "moduleId/questionId", for the review queue. */

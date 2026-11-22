@@ -1,0 +1,24 @@
+- q: Why wrap user-provided text in tags such as `<email> ... </email>` inside a prompt?
+  options: ["It makes the prompt shorter", "It separates data from instructions and reduces prompt-injection risk", "It lowers the cost per token", "Models require XML"]
+  answer: 1
+  explain: Delimiters make it clear which part is data. They are not a complete defence, but they are a basic and effective layer.
+- q: When are few-shot examples most valuable?
+  options: ["When the task is trivial", "To teach output format and tricky edge cases", "Only for image models", "To increase temperature"]
+  answer: 1
+  explain: Examples show format and edge cases far better than prose rules. Choose examples that cover the hard inputs.
+- q: A model's reply must be JSON with specific keys. What should your code do?
+  options: ["Trust it", "Validate it, and retry once with the error if it fails", "Lower the temperature to zero and hope", "Use regex to guess missing keys"]
+  answer: 1
+  explain: "Treat model output as untrusted input: parse, validate against a schema and handle failure explicitly."
+- q: Which description best fits "context engineering"?
+  options: ["Writing clever wording to trick the model", "Choosing and ordering the information put into each request", "Fine-tuning the model weights", "Compressing the model"]
+  answer: 1
+  explain: It is the work of assembling the right instructions, documents, history and tool results within the token budget.
+- q: You have 5 candidate documents but room for 3. What is a sound default?
+  options: ["Pick the first 3", "Rank by relevance and add the highest scoring ones that fit", "Concatenate all and let the model decide", "Pick the longest ones"]
+  answer: 1
+  explain: Rank, then fill the budget from the top. Skip items that do not fit and keep going.
+- q: Why log the prompt name and version with each model call?
+  options: ["It is required by providers", "So a quality change can be traced to a specific prompt change", "It makes responses faster", "It reduces tokens"]
+  answer: 1
+  explain: Without versions you cannot tell whether a regression came from the prompt, the model or the data.

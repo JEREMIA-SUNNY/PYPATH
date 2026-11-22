@@ -107,7 +107,7 @@ export function Workspace({ exercise, module: m }: { exercise: Exercise; module:
   );
 
   return (
-    <main className="mx-auto flex h-[100dvh] max-w-[1600px] flex-col px-3 pb-3 pt-[76px] sm:px-4 sm:pt-[84px]">
+    <main className="mx-auto flex min-h-[calc(100dvh-var(--bottom-nav))] max-w-[1600px] flex-col lg:h-[100dvh] px-3 pb-3 pt-[76px] sm:px-4 sm:pt-[84px]">
       {mock && countdown && (
         <div
           className={cn(
@@ -126,9 +126,9 @@ export function Workspace({ exercise, module: m }: { exercise: Exercise; module:
           </span>
         </div>
       )}
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(340px,0.85fr)_1.4fr]">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(340px,0.85fr)_1.4fr]">
         {/* Left: prompt */}
-        <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+        <section className="flex max-h-[60dvh] min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white lg:max-h-none dark:border-zinc-800 dark:bg-zinc-900/40">
           <div className="border-b border-zinc-200 px-5 pb-0 pt-4 dark:border-zinc-800">
             <div className="flex items-center justify-between gap-2 text-[12px] text-zinc-500">
               <Link href={`/learn/${m.id}`} className="truncate hover:text-zinc-900 dark:hover:text-white">

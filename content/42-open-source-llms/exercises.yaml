@@ -1,0 +1,153 @@
+- id: model-memory
+  title: Will this model fit my GPU?
+  difficulty: easy
+  prompt: |
+    Weights need `params_billion * bits / 8` gigabytes. Real use also needs room for the context cache and runtime, so we add **20% overhead**.
+
+    1. `model_memory_gb(params_billion, bits)`: the raw weight size in GB.
+    2. `fits_gpu(params_billion, bits, vram_gb)`: `True` if the weights **plus 20%** fit in `vram_gb`.
+    3. `best_quantization(params_billion, vram_gb)`: of the bit widths `16, 8, 4`, return the **highest** (best quality) that fits, or `None` if none do.
+  starter: |
+    def model_memory_gb(params_billion, bits):
+        return 0
+
+    def fits_gpu(params_billion, bits, vram_gb):
+        return True
+
+    def best_quantization(params_billion, vram_gb):
+        return 16
+  hints:
+    - "`fits_gpu` is `model_memory_gb(...) * 1.2 <= vram_gb`."
+    - "Loop over `(16, 8, 4)` in that order and return the first one that fits."
+  tests:
+    - name: raw size
+      code: |
+        assert model_memory_gb(7, 16) == 14
+        assert model_memory_gb(7, 4) == 3.5
+    - name: overhead is included
+      code: |
+        assert fits_gpu(7, 4, 4.2) is True      # 3.5 * 1.2 = 4.2
+        assert fits_gpu(7, 4, 4.1) is False
+    - name: picks the best quantization that fits
+      code: |
+        assert best_quantization(7, 24) == 16     # 14 * 1.2 = 16.8
+        assert best_quantization(7, 10) == 8      # 8.4 fits at 8-bit
+        assert best_quantization(7, 5) == 4
+        assert best_quantization(70, 8) is None
+  solution: |
+    def model_memory_gb(params_billion, bits):
+        return params_billion * bits / 8
+
+    def fits_gpu(params_billion, bits, vram_gb):
+        return model_memory_gb(params_billion, bits) * 1.2 <= vram_gb
+
+    def best_quantization(params_billion, vram_gb):
+        for bits in (16, 8, 4):
+            if fits_gpu(params_billion, bits, vram_gb):
+                return bits
+        return None
+- id: chat-template
+  title: Apply a chat template
+  difficulty: easy
+  prompt: |
+    Write `apply_chatml(messages, add_generation_prompt=True)` that renders a list of `{"role", "content"}` dicts in the ChatML layout:
+
+    ```text
+    <|im_start|>system
+    You are concise.<|im_end|>
+    <|im_start|>user
+    Hi!<|im_end|>
+    <|im_start|>assistant
+    ```
+
+    - Each message is `<|im_start|>{role}\n{content}<|im_end|>\n`.
+    - If `add_generation_prompt` is true, finish with `<|im_start|>assistant\n` so the model knows to answer.
+    - Raise `ValueError` for a role that is not `system`, `user` or `assistant`.
+  starter: |
+    def apply_chatml(messages, add_generation_prompt=True):
+        return ""
+  hints:
+    - "Build the string with a loop, then add the generation prompt at the end."
+  tests:
+    - name: renders a conversation
+      code: |
+        out = apply_chatml([{"role": "system", "content": "You are concise."}, {"role": "user", "content": "Hi!"}])
+        assert out == "<|im_start|>system\nYou are concise.<|im_end|>\n<|im_start|>user\nHi!<|im_end|>\n<|im_start|>assistant\n", repr(out)
+    - name: generation prompt is optional
+      code: |
+        out = apply_chatml([{"role": "user", "content": "x"}], add_generation_prompt=False)
+        assert out == "<|im_start|>user\nx<|im_end|>\n"
+    - name: unknown roles are rejected
+      code: |
+        try:
+            apply_chatml([{"role": "robot", "content": "beep"}])
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+  solution: |
+    def apply_chatml(messages, add_generation_prompt=True):
+        out = ""
+        for m in messages:
+            if m["role"] not in ("system", "user", "assistant"):
+                raise ValueError(f"unknown role: {m['role']}")
+            out += f"<|im_start|>{m['role']}\n{m['content']}<|im_end|>\n"
+        if add_generation_prompt:
+            out += "<|im_start|>assistant\n"
+        return out
+- id: parse-ndjson-stream
+  title: Parse an Ollama stream
+  difficulty: medium
+  prompt: |
+    Ollama streams one JSON object per line, like `{"response": "Hel", "done": false}`. The last has `"done": true`.
+
+    Write `parse_ndjson_stream(lines)` where `lines` is any iterable of strings:
+
+    - Skip blank lines.
+    - Join every `response` value into the final text.
+    - Return `(text, stats)` where `stats` is the **last** object (the one with `done` true), so callers can read fields like `eval_count`.
+    - If a non-blank line is not valid JSON, raise `ValueError`.
+    - If the stream ends before a `done: true` object, raise `RuntimeError("stream ended early")`.
+  starter: |
+    import json
+
+    def parse_ndjson_stream(lines):
+        return "", {}
+  hints:
+    - "`json.loads` raises `json.JSONDecodeError`, which is already a `ValueError`."
+    - "Keep a `done_obj = None` and set it when `obj.get(\"done\")` is true."
+  tests:
+    - name: joins the response pieces
+      code: |
+        lines = ['{"response": "Hel", "done": false}', '', '{"response": "lo", "done": false}', '{"response": "", "done": true, "eval_count": 2}']
+        text, stats = parse_ndjson_stream(lines)
+        assert text == "Hello"
+        assert stats["done"] is True and stats["eval_count"] == 2
+    - name: invalid JSON is a ValueError
+      code: |
+        try:
+            parse_ndjson_stream(['{"response": "a", "done": false}', 'oops'])
+            raise AssertionError("expected ValueError")
+        except ValueError:
+            pass
+    - name: a truncated stream is an error
+      code: |
+        try:
+            parse_ndjson_stream(['{"response": "a", "done": false}'])
+            raise AssertionError("expected RuntimeError")
+        except RuntimeError as e:
+            assert "ended early" in str(e)
+  solution: |
+    import json
+
+    def parse_ndjson_stream(lines):
+        parts, done_obj = [], None
+        for line in lines:
+            if not line.strip():
+                continue
+            obj = json.loads(line)
+            parts.append(obj.get("response", ""))
+            if obj.get("done"):
+                done_obj = obj
+        if done_obj is None:
+            raise RuntimeError("stream ended early")
+        return "".join(parts), done_obj

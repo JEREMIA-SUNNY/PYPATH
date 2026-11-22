@@ -1,0 +1,5 @@
+title: Fine-Tuning with LoRA and QLoRA
+summary: "Decide when fine-tuning beats prompting and RAG, prepare clean training data, understand how low-rank adapters train a huge model on one GPU, and prove the result with a baseline comparison."
+icon: bot
+section: career
+skills: [Fine-tuning strategy, SFT datasets, LoRA and QLoRA, Data cleaning, Baseline evaluation]

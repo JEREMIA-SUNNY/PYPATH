@@ -30,8 +30,8 @@ export function PlaygroundClient() {
   }, [code, stdin]);
 
   return (
-    <main className="mx-auto flex h-[100dvh] max-w-[1600px] flex-col px-3 pb-3 pt-[76px] sm:px-4 sm:pt-[84px]">
-      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.5fr_1fr]">
+    <main className="mx-auto flex min-h-[calc(100dvh-var(--bottom-nav))] max-w-[1600px] flex-col lg:h-[100dvh] px-3 pb-3 pt-[76px] sm:px-4 sm:pt-[84px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[1.5fr_1fr]">
         <section className="flex min-h-[420px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
           <div className="flex items-center justify-between border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
             <span className="text-sm font-semibold text-zinc-900 dark:text-white">Playground</span>

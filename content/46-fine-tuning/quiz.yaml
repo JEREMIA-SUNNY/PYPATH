@@ -1,0 +1,24 @@
+- q: Your assistant needs to answer questions about a product manual that changes monthly. What is the right tool?
+  options: ["Fine-tune every month", "RAG over the manual", "A bigger temperature", "A longer system prompt only"]
+  answer: 1
+  explain: Fine-tuning teaches behaviour, not reliable facts. RAG gives current knowledge with citations and is easy to update.
+- q: Which goal is a good fit for fine-tuning?
+  options: ["Teaching the model last week's news", "Matching a consistent brand voice or format at scale with a small cheap model", "Searching documents", "Reducing hallucination by memorising facts"]
+  answer: 1
+  explain: Style, format and narrow-task performance are behaviours that fine-tuning handles well.
+- q: What does LoRA train?
+  options: ["All model weights", "Small low-rank adapter matrices while the base weights stay frozen", "Only the tokenizer", "The embedding database"]
+  answer: 1
+  explain: LoRA learns two thin matrices per adapted layer, a tiny fraction of the full parameter count.
+- q: What does QLoRA add on top of LoRA?
+  options: ["Bigger adapters", "A 4-bit quantized frozen base model, so training fits on one modest GPU", "Automatic evaluation", "Faster tokenizing"]
+  answer: 1
+  explain: Quantizing the frozen base to 4-bit slashes memory while the adapters still train in higher precision.
+- q: Training loss keeps falling but validation loss rises. What is happening?
+  options: ["Everything is fine", "Overfitting; stop earlier or add data", "The learning rate is zero", "The tokenizer is wrong"]
+  answer: 1
+  explain: The model is memorising the training set. Validation loss is the signal that generalisation is getting worse.
+- q: How do you decide whether to keep a fine-tuned model?
+  options: ["Its training loss is low", "It beats a well-prompted base model on a held-out eval set, on quality, cost and latency", "It took long to train", "It is larger"]
+  answer: 1
+  explain: Compare against strong baselines on data the model never saw, and include cost and latency in the decision.

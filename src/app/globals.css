@@ -12,6 +12,7 @@
 }
 
 :root {
+  --bottom-nav: 0px;
   color-scheme: light;
   --bg: #fafafa;
   --fg: #18181b;
@@ -22,10 +23,21 @@
   --fg: #fafafa;
 }
 
+/* Phones get a bottom tab bar; reserve its height so content and full-height pages stay clear of it. */
+@media (max-width: 767px) {
+  :root {
+    --bottom-nav: calc(58px + env(safe-area-inset-bottom, 0px));
+  }
+  body {
+    padding-bottom: var(--bottom-nav);
+  }
+}
+
 html,
 body {
   background: var(--bg);
   color: var(--fg);
+  overflow-x: clip;
 }
 body {
   font-family: var(--font-sans);

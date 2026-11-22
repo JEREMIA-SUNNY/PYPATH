@@ -19,7 +19,7 @@ export function QuizHub() {
 
   return (
     <div className="mt-10 space-y-12">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-3">
         <SpotlightCard className="flex items-center gap-5">
           <ProgressRing value={stats.quizzesTotal ? (stats.quizzesPassed / stats.quizzesTotal) * 100 : 0} size={84} stroke={8} label={stats.quizzesPassed} />
           <div>
@@ -56,7 +56,7 @@ export function QuizHub() {
         return (
           <section key={sec.id}>
             <h2 className="mb-4 text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">{sec.title}</h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {mods.map((m) => {
                 const s = moduleStats(m, progress);
                 const q = progress.quizzes[m.id];

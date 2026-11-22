@@ -1,0 +1,5 @@
+title: How LLMs Work
+summary: Tokens, context windows, sampling and temperature, and how to compare frontier and open-source models by quality, cost and latency. The mental model every AI engineer needs before writing a prompt.
+icon: bot
+section: career
+skills: [Tokens and context windows, Sampling and temperature, Model selection, Cost estimation]

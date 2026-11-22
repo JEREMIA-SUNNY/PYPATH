@@ -1,0 +1,262 @@
+- id: jsonrpc-handler
+  title: A JSON-RPC 2.0 handler
+  difficulty: medium
+  prompt: |
+    MCP speaks JSON-RPC 2.0. Write `handle_request(raw, methods)` where `raw` is a JSON **string** and `methods` maps method names to Python functions that take `**params` (a dict) and return a result.
+
+    Return the response as a **dict**, or `None` for notifications:
+
+    - Invalid JSON: `{"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}`
+    - Not an object, or `method` is missing or not a string: error `-32600` "Invalid Request" (use the request's `id` if it has one, else `None`).
+    - Unknown method: error `-32601` "Method not found".
+    - The method raises `TypeError` (bad params): error `-32602` "Invalid params".
+    - Success: `{"jsonrpc": "2.0", "id": <id>, "result": <value>}`.
+    - A request with **no `id` key** is a notification: run it if the method exists, but always return `None` (never respond, even with an error).
+  starter: |
+    import json
+
+    def handle_request(raw, methods):
+        return None
+  hints:
+    - "Check `\"id\" in req` to detect a notification."
+    - "Build a small `error(id, code, message)` helper."
+  tests:
+    - name: successful call
+      code: |
+        r = handle_request('{"jsonrpc": "2.0", "id": 1, "method": "add", "params": {"a": 1, "b": 2}}', {"add": lambda a, b: a + b})
+        assert r == {"jsonrpc": "2.0", "id": 1, "result": 3}, r
+    - name: errors
+      code: |
+        assert handle_request("{oops", {})["error"]["code"] == -32700
+        assert handle_request('{"jsonrpc": "2.0", "id": 7}', {})["error"]["code"] == -32600
+        assert handle_request("[1]", {})["error"]["code"] == -32600
+        r = handle_request('{"jsonrpc": "2.0", "id": 2, "method": "nope"}', {})
+        assert r["error"]["code"] == -32601 and r["id"] == 2
+        r = handle_request('{"jsonrpc": "2.0", "id": 3, "method": "add", "params": {"x": 1}}', {"add": lambda a, b: a + b})
+        assert r["error"]["code"] == -32602 and r["id"] == 3
+    - name: notifications get no response
+      code: |
+        calls = []
+        assert handle_request('{"jsonrpc": "2.0", "method": "log", "params": {"m": "x"}}', {"log": lambda m: calls.append(m)}) is None
+        assert calls == ["x"]
+        assert handle_request('{"jsonrpc": "2.0", "method": "missing"}', {}) is None
+  solution: |
+    import json
+
+    def handle_request(raw, methods):
+        def err(id_, code, message):
+            return {"jsonrpc": "2.0", "id": id_, "error": {"code": code, "message": message}}
+
+        try:
+            req = json.loads(raw)
+        except ValueError:
+            return err(None, -32700, "Parse error")
+        if not isinstance(req, dict) or not isinstance(req.get("method"), str):
+            return err(req.get("id") if isinstance(req, dict) else None, -32600, "Invalid Request")
+        notification = "id" not in req
+        id_ = req.get("id")
+        fn = methods.get(req["method"])
+        if fn is None:
+            return None if notification else err(id_, -32601, "Method not found")
+        params = req.get("params") or {}
+        try:
+            result = fn(**params)
+        except TypeError:
+            return None if notification else err(id_, -32602, "Invalid params")
+        return None if notification else {"jsonrpc": "2.0", "id": id_, "result": result}
+- id: tool-server
+  title: A tiny MCP-style tool server
+  difficulty: medium
+  prompt: |
+    Build a `ToolServer` class that mimics the heart of an MCP server.
+
+    - `tool(name, description, params)` is a **decorator factory** that registers a function. `params` is a dict like `{"a": int, "b": int}`.
+    - `list_tools()` returns a list of `{"name", "description", "inputSchema"}` dicts, in registration order. `inputSchema` is `{"type": "object", "properties": {key: {"type": "integer" | "string" | "number" | "boolean"}}, "required": [all keys]}` (map `int`→`"integer"`, `str`→`"string"`, `float`→`"number"`, `bool`→`"boolean"`).
+    - `call_tool(name, arguments)` runs the function and returns `{"content": [{"type": "text", "text": str(result)}], "isError": False}`.
+    - Unknown tool, missing required arguments, or an exception in the function gives `{"content": [{"type": "text", "text": "<message>"}], "isError": True}` instead of raising.
+  starter: |
+    class ToolServer:
+        def __init__(self):
+            self._tools = {}
+
+        def tool(self, name, description, params):
+            def decorator(fn):
+                return fn
+            return decorator
+
+        def list_tools(self):
+            return []
+
+        def call_tool(self, name, arguments):
+            return {"content": [], "isError": False}
+  hints:
+    - "Store `(fn, description, params)` in an ordered dict (plain `dict` keeps insertion order)."
+    - "Check `set(params) - set(arguments)` for missing arguments."
+  tests:
+    - name: registers and lists tools
+      code: |
+        s = ToolServer()
+        @s.tool("add", "Add numbers", {"a": int, "b": int})
+        def add(a, b):
+            return a + b
+        @s.tool("greet", "Say hi", {"name": str})
+        def greet(name):
+            return "hi " + name
+        tools = s.list_tools()
+        assert [t["name"] for t in tools] == ["add", "greet"]
+        assert tools[0]["inputSchema"] == {"type": "object", "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}}, "required": ["a", "b"]}
+        assert add(1, 2) == 3
+    - name: calls tools
+      code: |
+        s = ToolServer()
+        @s.tool("add", "Add numbers", {"a": int, "b": int})
+        def add(a, b):
+            return a + b
+        assert s.call_tool("add", {"a": 2, "b": 3}) == {"content": [{"type": "text", "text": "5"}], "isError": False}
+    - name: errors are returned, not raised
+      code: |
+        s = ToolServer()
+        @s.tool("boom", "Fails", {"x": int})
+        def boom(x):
+            raise RuntimeError("kaput")
+        assert s.call_tool("nope", {})["isError"] is True
+        assert s.call_tool("boom", {})["isError"] is True          # missing x
+        r = s.call_tool("boom", {"x": 1})
+        assert r["isError"] is True and "kaput" in r["content"][0]["text"]
+  solution: |
+    class ToolServer:
+        TYPES = {int: "integer", str: "string", float: "number", bool: "boolean"}
+
+        def __init__(self):
+            self._tools = {}
+
+        def tool(self, name, description, params):
+            def decorator(fn):
+                self._tools[name] = (fn, description, params)
+                return fn
+            return decorator
+
+        def list_tools(self):
+            out = []
+            for name, (fn, description, params) in self._tools.items():
+                out.append({
+                    "name": name,
+                    "description": description,
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {k: {"type": self.TYPES.get(t, "string")} for k, t in params.items()},
+                        "required": list(params),
+                    },
+                })
+            return out
+
+        def call_tool(self, name, arguments):
+            def result(text, is_error):
+                return {"content": [{"type": "text", "text": text}], "isError": is_error}
+
+            if name not in self._tools:
+                return result(f"unknown tool: {name}", True)
+            fn, _, params = self._tools[name]
+            missing = [k for k in params if k not in arguments]
+            if missing:
+                return result(f"missing arguments: {missing}", True)
+            try:
+                return result(str(fn(**arguments)), False)
+            except Exception as e:
+                return result(f"{type(e).__name__}: {e}", True)
+- id: state-graph
+  title: A tiny state graph
+  difficulty: hard
+  prompt: |
+    Build the `Graph` class used by agent frameworks.
+
+    - `add_node(name, fn)`: `fn(state)` returns a **dict of updates**.
+    - `add_edge(src, dst)`: `dst` is either a node name, the string `"END"`, or a **function** `dst(state)` that returns the next name (a conditional edge).
+    - `run(start, state, max_steps=20)`: starting at `start`, repeat: run the node, **merge** its updates into a **new** state dict (never mutate the dict that was passed in), then follow the node's edge. When the current name is `"END"`, return the final state.
+    - Count every node execution; if more than `max_steps` would run, raise `RuntimeError("max steps reached")`.
+    - Raise `KeyError` if a node has no outgoing edge, or an edge points at an unknown node.
+  starter: |
+    END = "END"
+
+    class Graph:
+        def __init__(self):
+            self.nodes = {}
+            self.edges = {}
+
+        def add_node(self, name, fn):
+            self.nodes[name] = fn
+
+        def add_edge(self, src, dst):
+            self.edges[src] = dst
+
+        def run(self, start, state, max_steps=20):
+            return state
+  hints:
+    - "Loop `for _ in range(max_steps)` and `return` when `current == END`; after the loop, raise."
+    - "`state = {**state, **updates}` makes a new dict each step."
+  tests:
+    - name: linear flow merges state without mutating the input
+      code: |
+        g = Graph()
+        g.add_node("a", lambda s: {"x": 1})
+        g.add_node("b", lambda s: {"y": s["x"] + 1})
+        g.add_edge("a", "b")
+        g.add_edge("b", END)
+        start = {"seed": 0}
+        assert g.run("a", start) == {"seed": 0, "x": 1, "y": 2}
+        assert start == {"seed": 0}
+    - name: conditional edges make loops
+      code: |
+        g = Graph()
+        g.add_node("count", lambda s: {"n": s["n"] + 1})
+        g.add_edge("count", lambda s: END if s["n"] >= 3 else "count")
+        assert g.run("count", {"n": 0}) == {"n": 3}
+    - name: runaway loops stop, bad graphs raise KeyError
+      code: |
+        g = Graph()
+        g.add_node("loop", lambda s: {})
+        g.add_edge("loop", "loop")
+        try:
+            g.run("loop", {}, max_steps=5)
+            raise AssertionError("expected RuntimeError")
+        except RuntimeError as e:
+            assert "max steps" in str(e)
+        g2 = Graph()
+        g2.add_node("solo", lambda s: {})
+        try:
+            g2.run("solo", {})
+            raise AssertionError("expected KeyError")
+        except KeyError:
+            pass
+        g3 = Graph()
+        g3.add_node("a", lambda s: {})
+        g3.add_edge("a", "ghost")
+        try:
+            g3.run("a", {})
+            raise AssertionError("expected KeyError")
+        except KeyError:
+            pass
+  solution: |
+    END = "END"
+
+    class Graph:
+        def __init__(self):
+            self.nodes = {}
+            self.edges = {}
+
+        def add_node(self, name, fn):
+            self.nodes[name] = fn
+
+        def add_edge(self, src, dst):
+            self.edges[src] = dst
+
+        def run(self, start, state, max_steps=20):
+            current, steps = start, 0
+            while current != END:
+                if steps >= max_steps:
+                    raise RuntimeError("max steps reached")
+                state = {**state, **self.nodes[current](state)}
+                steps += 1
+                nxt = self.edges[current]
+                current = nxt(state) if callable(nxt) else nxt
+            return state

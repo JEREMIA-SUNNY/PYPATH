@@ -83,19 +83,20 @@ export function LessonFooter({ m, lessonId, title }: { m: ModuleIndex; lessonId:
     <div className="mt-14 border-t border-zinc-200 pt-8 dark:border-zinc-800">
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         {prev ? (
-          <ButtonLink href={`/learn/${m.id}/${prev.id}`} variant="ghost">
+          <ButtonLink href={`/learn/${m.id}/${prev.id}`} variant="ghost" className="h-auto min-h-10 whitespace-normal py-2 text-left sm:whitespace-nowrap">
             <ArrowLeft className="size-4" /> {prev.title}
           </ButtonLink>
         ) : (
           <span />
         )}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           {done ? (
             <Button variant="secondary" onClick={() => dispatch({ type: "lesson.uncomplete", ref })}>
               <CircleCheck className="size-4 text-emerald-500" /> Completed
             </Button>
           ) : null}
           <Button
+            className="h-auto min-h-10 whitespace-normal py-2 text-left sm:whitespace-nowrap"
             onClick={() => {
               if (!done) dispatch({ type: "lesson.complete", ref });
               router.push(after.href);

@@ -1,4 +1,4 @@
-import type { Progress, ProgressEvent } from "../types";
+import type { ProgressEvent, ProgressRoot } from "../types";
 
 export type SaveStatus =
   | { kind: "idle" }
@@ -12,9 +12,9 @@ export type SaveStatus =
 
 export interface ProgressBackend {
   /** Initial progress. In hosted mode the ProgressGate has already connected a file or chosen browser-only. */
-  load(): Promise<Progress>;
+  load(): Promise<ProgressRoot>;
   /** Persist the result of `event`. May return a newer authoritative copy (server mode). */
-  save(next: Progress, event: ProgressEvent): Promise<Progress | void>;
+  save(next: ProgressRoot, event: ProgressEvent): Promise<ProgressRoot | void>;
   status(): SaveStatus;
   subscribe(fn: () => void): () => void;
 }

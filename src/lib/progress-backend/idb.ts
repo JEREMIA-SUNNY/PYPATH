@@ -1,9 +1,10 @@
-import type { Progress } from "../types";
+import { normalizeRoot } from "../profiles";
+import type { ProgressRoot } from "../types";
 import type { FSFileHandle } from "./fs-types";
 
 // IndexedDB layout (database "pypath"):
 //   handles    progressFile -> FileSystemFileHandle
-//   progress   current      -> Progress (mirror of the file)
+//   progress   current      -> ProgressRoot (mirror of the file)
 //   snapshots  <timestamp>  -> { at, reason, data }   (newest 5 kept)
 //   settings   key -> value (mode choice, lastBackupAt, banner dismissals)
 const DB = "pypath";
@@ -46,13 +47,17 @@ export const getHandle = () => get<FSFileHandle>("handles", "progressFile").catc
 export const putHandle = (h: FSFileHandle) => put("handles", "progressFile", h);
 export const clearHandle = () => del("handles", "progressFile").catch(() => undefined);
 
-export const getMirror = () => get<Progress>("progress", "current").catch(() => undefined);
-export const putMirror = (p: Progress) => put("progress", "current", p);
+/** Older mirrors hold the single-profile format; normalizeRoot upgrades them (they become the Python profile). */
+export const getMirror = async (): Promise<ProgressRoot | undefined> => {
+  const raw = await get<unknown>("progress", "current").catch(() => undefined);
+  return raw ? normalizeRoot(raw) : undefined;
+};
+export const putMirror = (p: ProgressRoot) => put("progress", "current", p);
 
 export interface Snapshot {
   at: number;
   reason: string;
-  data: Progress;
+  data: ProgressRoot;
 }
 
 export async function listSnapshots(): Promise<Snapshot[]> {
@@ -60,7 +65,7 @@ export async function listSnapshots(): Promise<Snapshot[]> {
     const db = await open();
     return await new Promise((resolve, reject) => {
       const req = db.transaction("snapshots", "readonly").objectStore("snapshots").getAll();
-      req.onsuccess = () => resolve((req.result as Snapshot[]).sort((a, b) => b.at - a.at));
+      req.onsuccess = () => resolve((req.result as Snapshot[]).map((x) => ({ ...x, data: normalizeRoot(x.data) })).sort((a, b) => b.at - a.at));
       req.onerror = () => reject(req.error);
     });
   } catch {
@@ -68,7 +73,7 @@ export async function listSnapshots(): Promise<Snapshot[]> {
   }
 }
 
-export async function addSnapshot(data: Progress, reason: string): Promise<void> {
+export async function addSnapshot(data: ProgressRoot, reason: string): Promise<void> {
   try {
     const at = Date.now();
     await put("snapshots", String(at).padStart(16, "0"), { at, reason, data } satisfies Snapshot);

@@ -74,7 +74,7 @@ export function CodeHub({ sections = ["foundations", "career", "interview"] as S
           return (
             <section key={sec.id}>
               {sections.length > 1 && <h2 className="mb-4 text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">{sec.title}</h2>}
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
                 {mods.map(({ m, items }) => (
                   <div key={m.id} className="rounded-2xl border border-zinc-200 bg-white p-2 dark:border-zinc-800/80 dark:bg-zinc-900/40">
                     <Link href={`/learn/${m.id}`} className="flex items-center justify-between px-3 pb-1 pt-2 text-sm font-semibold text-zinc-900 hover:underline dark:text-white">
